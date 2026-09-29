@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CIP Simulator: liquid delegation, caps and cycles</title>
+<meta name="description" content="An illustrative model of liquid democracy: what a per-delegate cap and different cycle rules do to voting weight and to close outcomes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&family=Newsreader:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#eef1f4; --card:#ffffff; --ink:#14213d; --muted:#4a5a73; --line:#cbd3dd;
+  --teal:#0f8b8d; --amber:#d98a1f; --bar:#0f8b8d; --warn:#9a5b00;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0e1522; --card:#16202f; --ink:#e8edf4; --muted:#a3b3c9; --line:#2b394d;
+    --teal:#3cc0c2; --amber:#f0a94a; --bar:#3cc0c2; --warn:#f0a94a;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0e1522; --card:#16202f; --ink:#e8edf4; --muted:#a3b3c9; --line:#2b394d;
+  --teal:#3cc0c2; --amber:#f0a94a; --bar:#3cc0c2; --warn:#f0a94a;
+}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0; min-height:100%; background:var(--paper); color:var(--ink);
+  font:16px/1.55 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px; margin:0 auto; padding:20px 18px 56px}
+a{color:var(--teal)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--amber); outline-offset:2px}
+h1{font:600 clamp(1.7rem,4.5vw,2.3rem)/1.15 Newsreader,Georgia,serif; margin:.6em 0 .3em}
+h2{font:600 1.35rem/1.2 Newsreader,Georgia,serif; margin:0 0 .5em}
+p{margin:.5em 0; max-width:68ch}
+.lede{font-size:1.06rem}
+.card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; margin:18px 0}
+.ctl{display:grid; grid-template-columns:1fr auto; gap:2px 12px; margin:12px 0}
+.ctl label{font-weight:600}
+.ctl output{font-variant-numeric:tabular-nums; color:var(--muted); text-align:right; min-width:4.5ch}
+.ctl input[type=range]{grid-column:1/-1; width:100%; accent-color:var(--teal)}
+.ctl small{grid-column:1/-1; color:var(--muted)}
+fieldset{border:1px solid var(--line); border-radius:8px; margin:14px 0; padding:8px 12px}
+legend{font-weight:600; padding:0 6px}
+fieldset label{display:block; margin:6px 0}
+.row{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px}
+button{font:inherit; font-weight:600; border-radius:8px; padding:9px 14px; cursor:pointer;
+  border:1px solid var(--teal); background:var(--teal); color:#fff}
+button.alt{background:transparent; color:var(--teal)}
+:root[data-theme="dark"] button:not(.alt){color:#0e1522}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button:not(.alt){color:#0e1522}}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; min-width:420px}
+th,td{text-align:left; padding:7px 8px; border-bottom:1px solid var(--line)}
+td:last-child,th:last-child{text-align:right; font-variant-numeric:tabular-nums}
+.bars{margin:10px 0; display:grid; gap:5px}
+.bar{display:grid; grid-template-columns:5.5rem 1fr 4.5rem; gap:8px; align-items:center; font-size:.92rem}
+.bar .track{position:relative; height:14px; background:var(--paper); border:1px solid var(--line); border-radius:3px}
+.bar .fill{height:100%; background:var(--bar); border-radius:2px}
+.bar .capline{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--amber)}
+.bar span:last-child{text-align:right; font-variant-numeric:tabular-nums}
+.note{color:var(--muted); font-size:.92rem}
+.flag{color:var(--warn); font-weight:600}
+.empty{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<p><a href="../../">&larr; Citizens Internet Portal</a> &nbsp;|&nbsp; <a href="../">Simulator: mild majority, intense minority</a></p>
+<h1>Liquid delegation: caps and cycles</h1>
+<p class="lede">Some voters hand their vote to someone they trust, and that person may hand it on. The paper proposes a cap so no delegate speaks for more than 1% of the population. This model shows what the cap and different cycle rules do to voting weight, and how often they change a close result.</p>
+
+<section class="card" aria-labelledby="setup">
+<h2 id="setup">Set up the electorate</h2>
+<div id="sliders"></div>
+<fieldset>
+  <legend>Delegation cap</legend>
+  <label><input type="checkbox" id="capOn" checked> Enforce the cap (paper proposal: 1% of the population per delegate)</label>
+  <div class="ctl" id="capCtl"></div>
+</fieldset>
+<fieldset>
+  <legend>When delegations form a loop</legend>
+  <label><input type="radio" name="cyc" value="fallback" checked> Everyone in the loop votes directly; people delegating into it follow them</label>
+  <label><input type="radio" name="cyc" value="lost"> Every vote that reaches the loop is lost</label>
+</fieldset>
+<div class="ctl">
+  <label for="seed">Random seed</label><output id="seedOut"></output>
+  <input type="number" id="seed" value="1" min="1" step="1" style="grid-column:1/-1;max-width:10rem;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)">
+</div>
+<div class="row">
+  <button type="button" id="one">Run one trial</button>
+  <button type="button" id="many">Run 300 trials</button>
+  <button type="button" class="alt" data-preset="paper">Preset: paper proposal</button>
+  <button type="button" class="alt" data-preset="nocap">Preset: no cap</button>
+  <button type="button" class="alt" data-preset="loops">Preset: many loops, votes lost</button>
+</div>
+</section>
+
+<section class="card" aria-labelledby="oneh" aria-live="polite">
+<h2 id="oneh">One trial</h2>
+<div id="oneOut" class="empty">Run a trial to see the heaviest delegates and the tally.</div>
+</section>
+
+<section class="card" aria-labelledby="manyh" aria-live="polite">
+<h2 id="manyh">Across many trials</h2>
+<div id="manyOut" class="empty">Run 300 trials to see how often delegation changes the outcome.</div>
+</section>
+
+<p class="note">Illustrative model, not a prediction. Each voter prefers A or B. A chosen share delegate instead of voting; each picks a delegate who may also be delegating, so chains form. A delegate's vote follows the delegate's own preference, so weight concentrates but expertise is not modeled. When a delegate is already at the cap, further delegators vote directly. Delegation is not issue-specific and does not expire, unlike the paper's proposal (section 4.4.2), so this tests only the cap and the loop rules. Outcome "differs" includes ties. Try the same seed under different settings to compare like with like.</p>
+</main>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+
+var CONTROLS=[
+ ["n","Voters",50,1000,500,50,""],
+ ["d","Share who delegate",0,95,40,1,"%"],
+ ["p","Share who prefer A",30,70,52,1,"%"],
+ ["h","Delegators choosing a delegate who agrees with them",0,100,70,5,"%"],
+ ["a","Popularity pull (0 = random pick, 100 = rich get richer)",0,100,50,5,"%"],
+ ["m","Mutual delegation (two people pick each other)",0,50,5,1,"%"]
+];
+var CAP=["cap","Cap: most voters one delegate may speak for",1,20,1,1,"%"];
+
+function slider(c,host){
+  var w=document.createElement("div"); w.className="ctl";
+  var l=document.createElement("label"); l.htmlFor=c[0]; l.textContent=c[1];
+  var o=document.createElement("output"); o.htmlFor=c[0]; o.id=c[0]+"Out";
+  var i=document.createElement("input"); i.type="range"; i.id=c[0];
+  i.min=c[2]; i.max=c[3]; i.value=c[4]; i.step=c[5];
+  var upd=function(){o.textContent=i.value+c[6]};
+  i.addEventListener("input",upd); upd();
+  w.appendChild(l); w.appendChild(o); w.appendChild(i); host.appendChild(w);
+}
+CONTROLS.forEach(function(c){slider(c,$("sliders"))});
+slider(CAP,$("capCtl"));
+$("capOn").addEventListener("change",function(){$("cap").disabled=!this.checked});
+
+function setSeedOut(){$("seedOut").textContent=""}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+function params(){
+  return {N:+$("n").value,d:+$("d").value/100,p:+$("p").value/100,h:+$("h").value/100,
+    a:+$("a").value/100,m:+$("m").value/100,capOn:$("capOn").checked,cap:+$("cap").value/100,
+    cyc:document.querySelector("input[name=cyc]:checked").value};
+}
+
+function trial(P,seed){
+  var r=mulberry32(seed),N=P.N,i,j,t;
+  var pref=new Uint8Array(N),del=new Int32Array(N).fill(-1),isDel=new Uint8Array(N);
+  var ins=[];for(i=0;i<N;i++)ins.push([]);
+  var targets=[],directA=0;
+  for(i=0;i<N;i++){pref[i]=r()<P.p?1:0;directA+=pref[i]}
+  for(i=0;i<N;i++)isDel[i]=r()<P.d?1:0;
+  for(i=0;i<N;i++){
+    if(!isDel[i])continue;
+    j=-1;
+    if(ins[i].length&&r()<P.m){j=ins[i][(r()*ins[i].length)|0]}
+    else{
+      var want=r()<P.h;
+      for(t=0;t<30;t++){
+        var c=(targets.length&&r()<P.a)?targets[(r()*targets.length)|0]:((r()*N)|0);
+        if(c===i)continue;
+        j=c; if(!want||pref[c]===pref[i])break;
+      }
+    }
+    if(j<0)j=(i+1)%N;
+    del[i]=j;ins[j].push(i);targets.push(j);
+  }
+  /* resolve each voter to the person who finally casts their vote */
+  var term=new Int32Array(N).fill(-1),state=new Uint8Array(N);
+  for(i=0;i<N;i++){
+    if(state[i]===2)continue;
+    var x=i,path=[],end;
+    for(;;){
+      if(state[x]===2){end=term[x];break}
+      if(state[x]===1){
+        var k=path.indexOf(x),cyc=path.slice(k);path.length=k;
+        if(P.cyc==="lost"){cyc.forEach(function(y){term[y]=-2;state[y]=2});end=-2}
+        else{cyc.forEach(function(y){term[y]=y;state[y]=2});end=x}
+        break;
+      }
+      if(del[x]<0){term[x]=x;state[x]=2;end=x;break}
+      state[x]=1;path.push(x);x=del[x];
+    }
+    for(t=0;t<path.length;t++){term[path[t]]=end;state[path[t]]=2}
+  }
+  var capW=P.capOn?Math.max(1,Math.floor(P.cap*N)):Infinity;
+  var w=new Int32Array(N),lost=0,capFall=0;
+  for(i=0;i<N;i++)if(term[i]===i)w[i]=1;
+  var order=[];for(i=0;i<N;i++)order.push(i);
+  for(i=N-1;i>0;i--){j=(r()*(i+1))|0;t=order[i];order[i]=order[j];order[j]=t}
+  order.forEach(function(v){
+    var tt=term[v];
+    if(tt===v)return;
+    if(tt===-2){lost++;return}
+    if(w[tt]<capW)w[tt]++;else{capFall++;w[v]=1}
+  });
+  var A=0,B=0,maxW=0;
+  for(i=0;i<N;i++){if(w[i]>0){if(pref[i])A+=w[i];else B+=w[i];if(w[i]>maxW)maxW=w[i]}}
+  var dw=directA*2>N?1:(directA*2<N?-1:0),lw=A>B?1:(A<B?-1:0);
+  var top=[];for(i=0;i<N;i++)if(w[i]>1)top.push([i,w[i],pref[i]]);
+  top.sort(function(a,b){return b[1]-a[1]});
+  return {N:N,A:A,B:B,directA:directA,directB:N-directA,lost:lost,capFall:capFall,maxW:maxW,
+    capW:capW,top:top.slice(0,10),differs:dw!==lw,
+    shift:Math.abs(A/(A+B||1)-directA/N)};
+}
+
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}
+function clear(n){while(n.firstChild)n.removeChild(n.firstChild)}
+function pct(x,dp){return (x*100).toFixed(dp===undefined?1:dp)+"%"}
+
+function showOne(P,seed){
+  var R=trial(P,seed),out=$("oneOut");clear(out);out.className="";
+  out.appendChild(el("p","","Direct vote (nobody delegates): A "+R.directA+", B "+R.directB+"."));
+  out.appendChild(el("p","","With delegation: A "+R.A+", B "+R.B+(R.lost?" ("+R.lost+" votes lost to loops)":"")+"."));
+  out.appendChild(el("p",R.differs?"flag":"",R.differs?"The outcome differs from the direct vote.":"The outcome matches the direct vote."));
+  out.appendChild(el("p","","Delegators sent back to direct voting because their delegate hit the cap: "+R.capFall+"."));
+  if(R.top.length){
+    out.appendChild(el("p","","Heaviest delegates (votes each one casts"+(isFinite(R.capW)?"; amber line is the cap of "+R.capW:"")+"):"));
+    var bars=el("div","bars"),scale=Math.max(R.top[0][1],isFinite(R.capW)?R.capW:0);
+    R.top.forEach(function(t){
+      var row=el("div","bar"),tr=el("div","track"),f=el("div","fill");
+      f.style.width=(100*t[1]/scale)+"%";tr.appendChild(f);
+      if(isFinite(R.capW)){var cl=el("div","capline");cl.style.left=(100*R.capW/scale)+"%";tr.appendChild(cl)}
+      row.appendChild(el("span","","Voter "+(t[0]+1)));row.appendChild(tr);
+      row.appendChild(el("span","",t[1]+" ("+(t[2]?"A":"B")+")"));
+      bars.appendChild(row);
+    });
+    out.appendChild(bars);
+  }else out.appendChild(el("p","","No delegate ended up holding more than their own vote."));
+}
+
+function showMany(P,seed,T){
+  var diff=0,mw=[],lost=0,fall=0,shift=0,k,R;
+  for(k=0;k<T;k++){R=trial(P,seed+k);if(R.differs)diff++;mw.push(R.maxW/P.N);lost+=R.lost/P.N;fall+=R.capFall/P.N;shift+=R.shift}
+  mw.sort(function(a,b){return a-b});
+  var mean=mw.reduce(function(a,b){return a+b},0)/T,p95=mw[Math.floor(0.95*(T-1))];
+  var rows=[
+    ["Outcome differs from the direct vote",pct(diff/T,0)],
+    ["Heaviest delegate, average share of all voters",pct(mean)],
+    ["Heaviest delegate, 95th percentile",pct(p95)],
+    ["Votes lost to loops, average",pct(lost/T)],
+    ["Delegators sent back to direct voting by the cap, average",pct(fall/T)],
+    ["Average shift in A's share versus direct voting",(shift/T*100).toFixed(1)+" points"]
+  ];
+  var out=$("manyOut");clear(out);out.className="";
+  out.appendChild(el("p","",T+" trials, seeds "+seed+" to "+(seed+T-1)+", "+P.N+" voters, "+Math.round(P.p*100)+"% prefer A."));
+  var sc=el("div","scroll"),tb=el("table"),cap=el("caption","note","Results across trials");cap.style.textAlign="left";cap.style.captionSide="top";
+  var th=el("thead"),trh=el("tr");trh.appendChild(el("th","","Measure"));trh.appendChild(el("th","","Result"));th.appendChild(trh);tb.appendChild(cap);tb.appendChild(th);
+  var tbd=el("tbody");
+  rows.forEach(function(x){var tr=el("tr");tr.appendChild(el("td","",x[0]));tr.appendChild(el("td","",x[1]));tbd.appendChild(tr)});
+  tb.appendChild(tbd);sc.appendChild(tb);out.appendChild(sc);
+}
+
+$("one").addEventListener("click",function(){
+  var s=Math.max(1,parseInt($("seed").value,10)||1);showOne(params(),s);
+});
+$("many").addEventListener("click",function(){
+  var s=Math.max(1,parseInt($("seed").value,10)||1);var P=params();showOne(P,s);showMany(P,s,300);
+});
+
+var PRESETS={
+  paper:{capOn:true,cap:1,cyc:"fallback",n:500,d:40,m:5},
+  nocap:{capOn:false,cap:1,cyc:"fallback",n:500,d:40,m:5},
+  loops:{capOn:false,cap:1,cyc:"lost",n:500,d:60,m:30}
+};
+document.querySelectorAll("[data-preset]").forEach(function(b){
+  b.addEventListener("click",function(){
+    var p=PRESETS[b.getAttribute("data-preset")];
+    $("capOn").checked=p.capOn;$("cap").disabled=!p.capOn;
+    ["cap","n","d","m"].forEach(function(k){$(k).value=p[k];$(k+"Out").textContent=p[k]+(k==="n"?"":"%")});
+    document.querySelector("input[name=cyc][value="+p.cyc+"]").checked=true;
+    $("many").click();
+  });
+});
+setSeedOut();
+})();
+</script>
+</body>
+</html>
