@@ -17,8 +17,8 @@ You do not need to be a developer. Every contribution below matters.
 | Phase | Goal | Status |
 |---|---|---|
 | 0 | Overview page and contributor guide | Done |
-| 1 | Specs: threat model, data model, voting rules in `/docs` | Open |
-| 2 | Simulator: browser demo of direct, liquid and quadratic voting | Open |
+| 1 | Specs: threat model, data model, voting rules in `/docs` | In progress: drafts in `/docs` |
+| 2 | Simulator: browser demo of direct, liquid and quadratic voting | First model live in `/simulator`; more welcome |
 | 3 | Prototype: proposals, signatures, comment periods, tamper-evident log | Open |
 | 4 | Privacy layer: verifiable ballots without revealing votes | Open |
 | 5 | Pilot design: a small advisory vote with a real community | Open |
@@ -28,7 +28,7 @@ Phases 1 and 2 are the best places to start.
 ## How to start
 
 1. Say hello in [Discussions](https://github.com/BetterToBest/portal/discussions).
-2. Pick an open issue, or propose one.
+2. Pick an open issue (starter ideas are in `docs/good-first-issues.md`), or propose one.
 3. Fork, make a small change, open a pull request. Short pull requests get reviewed fastest.
 
 ## Ground rules
@@ -36,4 +36,4 @@ Phases 1 and 2 are the best places to start.
 - Be kind and assume good faith.
 - Claims need sources. Label proposals as proposals.
 - Nothing may collect or monetize user behavior data. This is a core design principle.
-- Contributions are licensed **CC BY 4.0** for docs and research, and an OSI-approved open-source license for code (to be confirmed in the repo).
+- Contributions are licensed **CC BY 4.0** for docs and research, and the [Apache License 2.0](LICENSE) for code.
