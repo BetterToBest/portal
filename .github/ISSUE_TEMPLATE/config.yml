@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question or share an idea
+    url: https://github.com/BetterToBest/portal/discussions
+    about: Discussions are the best place for open-ended conversation.
