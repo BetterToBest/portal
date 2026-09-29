@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>CIP Simulator: mild majority, intense minority</title>
+<meta name="description" content="An illustrative model comparing one-person-one-vote with quadratic voting when a minority cares intensely.">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#eef1f4;--ink:#14213d;--muted:#4a5670;--teal:#0f8b8d;--amber:#d98a1f;--line:#cbd3de;--card:#fff}
+@media(prefers-color-scheme:dark){:root{--paper:#0e1526;--ink:#e8edf7;--muted:#a9b4ca;--teal:#3fc6c8;--amber:#f0a83a;--line:#2b3652;--card:#172036}}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 'Instrument Sans',system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+main{max-width:760px;margin:auto;padding:28px 20px 60px}h1{font:600 clamp(1.8rem,5vw,2.6rem)/1.15 'Newsreader',Georgia,serif;margin:.3em 0}a{color:var(--teal)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;margin:18px 0}label{display:block;margin:10px 0}input{width:100%;max-width:420px}
+.bar{height:22px;background:var(--line);border-radius:6px;overflow:hidden;margin:2px 0 10px}.bar i{display:block;height:100%;background:var(--teal)}.bar i.w{background:var(--amber)}
+.note{font-size:14px;color:var(--muted)}b.win{color:var(--amber)}input:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+</style></head><body><main>
+<a href="../">&larr; Citizens Internet Portal</a>
+<h1>Mild majority, intense minority</h1>
+<p>100 voters decide one issue. A majority mildly prefers Option A. A minority strongly prefers Option B. Compare what one-person-one-vote and quadratic voting would each decide.</p>
+<div class="card">
+<label>Minority size: <b id="kv"></b> voters<input id="k" type="range" min="5" max="49" value="30"></label>
+<label>How strongly the minority cares (majority cares at level 2): <b id="iv"></b><input id="i" type="range" min="2" max="20" value="10"></label>
+</div>
+<div class="card" aria-live="polite"><h2 style="margin-top:0">One person, one vote</h2><div id="o"></div><h2>Quadratic voting</h2><div id="q"></div></div>
+<p class="note">Illustrative model, not a prediction. Each voter has 100 credits shared across four issues of similar stakes and spends them in proportion to how much they care about each. The majority cares equally about all four (level 2). The minority cares at the chosen level about this issue and level 1 about the other three. Votes on this issue = level x sqrt(100 / sum of squared levels). Quadratic voting can protect an intense minority, and critics argue it can also let a passionate minority outweigh a mild majority. The paper proposes it for budgets, and this page exists to test that trade-off.</p>
+</main><script>
+function bar(n,v,max,w){return "<div>"+n+": "+v.toFixed(1)+"</div><div class=\"bar\"><i class=\""+(w?"w":"")+"\" style=\"width:"+(v/max*100)+"%\"></i></div>"}
+function run(){var k=+document.getElementById("k").value,I=+document.getElementById("i").value,m=100-k;
+document.getElementById("kv").textContent=k;document.getElementById("iv").textContent=I;
+var oa=m,ob=k,qa=m*Math.sqrt(100/16),qb=k*I*Math.sqrt(100/(I*I+3)),mx=Math.max(oa,ob,qa,qb);
+document.getElementById("o").innerHTML=bar("Option A (majority)",oa,mx,oa>ob)+bar("Option B (minority)",ob,mx,ob>oa)+"<p><b class=\"win\">"+(oa>ob?"A":"B")+" wins.</b></p>";
+document.getElementById("q").innerHTML=bar("Option A (majority)",qa,mx,qa>qb)+bar("Option B (minority)",qb,mx,qb>qa)+"<p><b class=\"win\">"+(qa>qb?"A":"B")+" wins.</b></p>"}
+document.getElementById("k").oninput=document.getElementById("i").oninput=run;run();
+</script></body></html>
