@@ -1,0 +1,27 @@
+name: Sync labels
+
+# Run by hand: Actions tab > Sync labels > Run workflow.
+# Safe to run again. Existing labels with the same name are updated, not duplicated.
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or update labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh label create "good first issue" --color 7057ff --description "A good place to start" --force
+          gh label create "documentation"    --color 0075ca --description "Docs, guides and explanations" --force
+          gh label create "spec"             --color 1d76db --description "Rules, requirements and design specs" --force
+          gh label create "review"           --color d93f0b --description "Critique or check of existing work" --force
+          gh label create "dev"              --color 0e8a16 --description "Code, simulators and prototypes" --force
+          gh label create "a11y"             --color 5319e7 --description "Accessibility" --force
+          gh label create "outreach"         --color fbca04 --description "Pilots, partners and community" --force
+          gh label create "security"         --color b60205 --description "Threats, attacks and hardening" --force
