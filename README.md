@@ -10,3 +10,4 @@ A proposed open-source platform for transparent democratic participation, design
 CIP is the democratic layer of the Compassionism Framework (CCO, PTF, PTH, SZH). This is a research proposal, not a live voting system.
 
 Docs and research: CC BY 4.0.
+Code: Apache License 2.0.
