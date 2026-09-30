@@ -22,11 +22,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--paper:#eef1f4;--ink:#14213d;--muted:#4a5670;--teal:#0f8b8d;--amber:#d98a1f;--line:#cbd3de;--card:#fff;--btn:#14213d;--btnfg:#fff;--cta:#14213d;--hdr:rgba(238,241,244,.94);--bad:#fbe9e7;--good:#e3f4f4;--serif:'Newsreader',Georgia,serif;--sans:'Instrument Sans',system-ui,sans-serif}
+:root{--paper:#eef1f4;--ink:#14213d;--muted:#4a5670;--teal:#0a7375;--amber:#d98a1f;--line:#cbd3de;--card:#fff;--btn:#14213d;--btnfg:#fff;--cta:#14213d;--hdr:rgba(238,241,244,.94);--bad:#fbe9e7;--good:#e3f4f4;--serif:'Newsreader',Georgia,serif;--sans:'Instrument Sans',system-ui,sans-serif}
 @media(prefers-color-scheme:dark){:root{--paper:#0e1526;--ink:#e8edf7;--muted:#a9b4ca;--teal:#3fc6c8;--amber:#f0a83a;--line:#2b3652;--card:#172036;--btn:#e8edf7;--btnfg:#0e1526;--cta:#1d2b4d;--hdr:rgba(14,21,38,.94);--bad:#3b1a1a;--good:#123236}}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:72px}
 body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 var(--sans);padding-bottom:env(safe-area-inset-bottom)}
-a{color:var(--teal)}a:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+a{color:var(--teal)}a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,.node:focus-visible,#panel:focus-visible{outline:3px solid var(--ink);outline-offset:2px}.cta :focus-visible{outline-color:#fff}[tabindex="-1"]:focus{outline:0}
+.skip{position:absolute;left:12px;top:-64px;z-index:10;background:var(--btn);color:var(--btnfg);padding:10px 16px;border-radius:8px;font-weight:600}.skip:focus{top:calc(8px + env(safe-area-inset-top))}
 header{position:sticky;top:0;z-index:5;background:var(--hdr);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
 nav{max-width:1080px;margin:auto;display:flex;align-items:center;gap:22px;padding:12px 20px;overflow-x:auto;white-space:nowrap}
 nav strong{font-family:var(--serif);font-size:20px;margin-right:auto}nav a{color:var(--ink);text-decoration:none;font-size:15px;font-weight:500}nav a:hover{color:var(--teal)}
@@ -53,25 +54,27 @@ ol.phases li{padding:0 0 22px 24px;position:relative}ol.phases li:before{content
 .note{font-size:14px;color:var(--muted)}
 .cta{background:var(--cta);color:#fff;border-radius:16px;padding:40px 28px;margin-top:20px}.cta h2{color:#fff}.cta p{color:#d5dcea}.cta .btn{background:#fff;color:#14213d}.cta .btn.alt{background:transparent;color:#fff;border-color:#fff}
 details.facts{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0 20px}
-.facts summary{cursor:pointer;font-weight:600;padding:16px 0}.facts summary:focus-visible{outline:3px solid var(--amber);outline-offset:2px}.facts[open] summary{border-bottom:1px solid var(--line)}
+.facts summary{cursor:pointer;font-weight:600;padding:16px 0}.facts[open] summary{border-bottom:1px solid var(--line)}
 .facts dl{margin:0 0 16px}.facts dt{font-weight:600;margin-top:14px}.facts dd{margin:2px 0 0;color:var(--muted);font-size:15.5px}.facts code{font-size:14px;background:var(--paper);padding:2px 6px;border-radius:4px}
 .chips{display:flex;gap:8px;flex-wrap:wrap}.chip{display:block;text-align:left;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:13px/1.4 ui-monospace,Menlo,monospace;background:var(--paper);color:var(--ink)}button.chip{cursor:pointer}.chip.bad{border-color:#b3261e;background:var(--bad)}.chip.good{border-color:var(--teal);background:var(--good)}.chip select{display:block;margin-top:4px;font:14px var(--sans)}
 .lab{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;max-width:900px}.lab h3{margin-bottom:.3em}.lab p{max-width:70ch}
-.bar{position:relative;height:20px;background:var(--line);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--teal)}.mk{position:absolute;top:0;bottom:0;width:3px;background:var(--amber)}
+.bar{position:relative;height:20px;background:var(--line);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--teal)}.mk{position:absolute;top:0;bottom:0;width:3px;background:var(--ink)}
 .res{font-weight:600;margin:12px 0 0}button.mini{border:1.5px solid var(--ink);background:var(--card);border-radius:6px;padding:4px 12px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink)}button.mini:disabled{opacity:.4;cursor:not-allowed}
 footer{max-width:1080px;margin:auto;padding:48px 20px 60px;font-size:14px;color:var(--muted)}
+.node{fill:var(--teal);cursor:pointer}.node.bad{fill:var(--amber);stroke:var(--ink);stroke-width:3}
 @media(max-width:800px){.hero{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://bettertobest.github.io/portal/","url":"https://bettertobest.github.io/portal/","name":"Citizens Internet Portal","description":"A proposed open-source, distributed platform for transparent democratic participation. Read the research, then help build it.","isPartOf":{"@type":"WebSite","name":"Better To Best Research Hub","url":"https://bettertobest.github.io/research-hub/"},"author":{"@type":"Person","name":"Duke Johnson"},"license":"https://creativecommons.org/licenses/by/4.0/","about":{"@type":"ScholarlyArticle","name":"Citizens Internet Portal: Structural Incorruptibility Through Distributed Democratic Architecture","url":"https://bettertobest.github.io/research-hub/citizens-internet-portal.html","datePublished":"2025-12-29"}},{"@type":"SoftwareSourceCode","name":"Citizens Internet Portal (portal)","codeRepository":"https://github.com/BetterToBest/portal","license":"https://www.apache.org/licenses/LICENSE-2.0","description":"Open-source prototype of the Citizens Internet Portal."}]}</script>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 <header><nav aria-label="Sections">
 <strong>Citizens Internet Portal</strong>
 <a href="#problem">Problem</a><a href="#how">How it works</a><a href="#guard">Judicial Guard</a><a href="#system">The full system</a><a href="#roadmap">Roadmap</a><a href="#build">Build it</a><a href="#research">Research</a>
 </nav></header>
 
-<main>
+<main id="main" tabindex="-1">
 <section class="hero" id="top">
 <div>
 <h1>Democracy Infrastructure:<br><em>Aspiring To Achieve Immunity From Capture</em></h1>
@@ -79,7 +82,7 @@ footer{max-width:1080px;margin:auto;padding:48px 20px 60px;font-size:14px;color:
 <div class="row"><a class="btn" href="https://github.com/BetterToBest/portal/blob/main/CONTRIBUTING.md">Help build it</a><a class="btn alt" href="https://bettertobest.github.io/research-hub/citizens-internet-portal.html">Read the research</a></div>
 </div>
 <div class="demo">
-<svg id="net" viewBox="0 0 360 300" role="img" aria-label="Network of 36 nodes. Click a node to compromise it."></svg>
+<svg id="net" viewBox="0 0 360 300" role="group" aria-label="Network of 36 nodes. Select a node to mark it compromised."></svg>
 <p id="status" aria-live="polite"></p>
 <button class="btn sm" id="rand" type="button">Compromise 5 at random</button>
 <button class="btn sm alt" id="reset" type="button">Reset</button>
@@ -132,7 +135,7 @@ A second model tests <a href="simulator/liquid/">liquid delegation with caps and
 <button role="tab" aria-selected="false" data-t="pth">PTH</button>
 <button role="tab" aria-selected="false" data-t="szh">SZH</button>
 </div>
-<div class="panel" id="panel" role="tabpanel"></div>
+<div class="panel" id="panel" role="tabpanel" tabindex="0"></div>
 <p class="note">See the <a href="https://bettertobest.github.io/research-hub/">Better To Best Research Hub</a> for additional details.</p>
 </section>
 
@@ -193,14 +196,15 @@ A second model tests <a href="simulator/liquid/">liquid delegation with caps and
 
 <script>
 (function(){
+function tabKeys(l){l.forEach(function(b,i){b.addEventListener('keydown',function(e){var n=l.length,j=-1,k=e.key;if(k==='ArrowRight'||k==='ArrowDown')j=(i+1)%n;else if(k==='ArrowLeft'||k==='ArrowUp')j=(i+n-1)%n;else if(k==='Home')j=0;else if(k==='End')j=n-1;if(j<0)return;e.preventDefault();l[j].focus();l[j].click()})})}
 var svg=document.getElementById('net'),st=document.getElementById('status'),N=36,nodes=[],bad={},ns='http://www.w3.org/2000/svg';
 function el(n,a){var e=document.createElementNS(ns,n);for(var k in a)e.setAttribute(k,a[k]);return e}
 for(var i=0;i<N;i++){var c=i%6,r=Math.floor(i/6);nodes.push({x:35+c*58+((i*37)%17)-8,y:30+r*48+((i*53)%13)-6})}
 var links=[];nodes.forEach(function(n,i){[1,6,7].forEach(function(d){var j=i+d;if(j<N&&!(d!==6&&(i%6)===5))links.push([i,j])})});
 links.forEach(function(l){svg.appendChild(el('line',{x1:nodes[l[0]].x,y1:nodes[l[0]].y,x2:nodes[l[1]].x,y2:nodes[l[1]].y,stroke:'#94a0b8','stroke-width':1.2}))});
-var dots=nodes.map(function(n,i){var g=el('circle',{cx:n.x,cy:n.y,r:9,tabindex:0,role:'button','aria-label':'Node '+(i+1)});g.style.cursor='pointer';
+var dots=nodes.map(function(n,i){var g=el('circle',{cx:n.x,cy:n.y,r:9,tabindex:0,role:'button','class':'node','aria-pressed':'false','aria-label':'Mark node '+(i+1)+' as compromised'});
 function t(){bad[i]?delete bad[i]:bad[i]=1;draw()}g.addEventListener('click',t);g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();t()}});svg.appendChild(g);return g});
-function draw(){var n=Object.keys(bad).length;dots.forEach(function(d,i){d.setAttribute('fill',bad[i]?'#d98a1f':'#0f8b8d')});
+function draw(){var n=Object.keys(bad).length;dots.forEach(function(d,i){d.setAttribute('class',bad[i]?'node bad':'node');d.setAttribute('aria-pressed',bad[i]?'true':'false')});
 st.textContent=n===0?'All 36 nodes honest. Every ballot verifies.':n<=N/2?n+' of 36 compromised. Honest nodes still hold the majority, so tampering is outvoted and flagged.':n+' of 36 compromised. This is the majority attack that multiple independent chains, geographic caps and the Judicial Guard are meant to make impractical.'}
 document.getElementById('rand').onclick=function(){var k=0;while(k<5&&Object.keys(bad).length<N){var i=Math.floor(Math.random()*N);if(!bad[i]){bad[i]=1;k++}}draw()};
 document.getElementById('reset').onclick=function(){bad={};draw()};draw();
@@ -209,33 +213,34 @@ ptf:['Public Trust Foundations','Essential businesses operating in the system ne
 pth:['Public Trust Housing','Residents govern their own housing collectively. CIP supplies the secure digital voting for resident decisions, equity oversight and budgets.'],
 szh:['Social Zone Harmonization','Zones form when communities agree on shared values. CIP runs the public surveys and votes that let a zone form, and coordinates between zones.']};
 var tabs=document.querySelectorAll('#systabs button'),p=document.getElementById('panel');
-function show(k){tabs.forEach(function(b){b.setAttribute('aria-selected',b.dataset.t===k)});p.innerHTML='<h3>'+T[k][0]+'</h3><p>'+T[k][1]+'</p>'}
-tabs.forEach(function(b){b.onclick=function(){show(b.dataset.t)}});show('cco');
+function show(k){tabs.forEach(function(b){var on=b.dataset.t===k;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1});p.setAttribute('aria-labelledby','tab-'+k);p.innerHTML='<h3>'+T[k][0]+'</h3><p>'+T[k][1]+'</p>'}
+tabs.forEach(function(b){b.id='tab-'+b.dataset.t;b.setAttribute('aria-controls','panel');b.onclick=function(){show(b.dataset.t)}});tabKeys([].slice.call(tabs));show('cco');
 var links2=document.querySelectorAll('nav a'),secs=[].map.call(links2,function(a){return document.querySelector(a.getAttribute('href'))});
-if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links2.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)})}})},{rootMargin:'-40% 0px -55% 0px'});secs.forEach(function(s){if(s)io.observe(s)})}
+if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links2.forEach(function(a){var on=a.getAttribute('href')==='#'+e.target.id;a.classList.toggle('on',on);if(on)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current')})}})},{rootMargin:'-40% 0px -55% 0px'});secs.forEach(function(s){if(s)io.observe(s)})}
 })();
 </script>
 <script>
 (function(){
 function H(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return(h>>>0).toString(16).padStart(8,"0")}
 function Q(c,s){return c.querySelector(s)}
+function tabKeys(l){l.forEach(function(b,i){b.addEventListener("keydown",function(e){var n=l.length,j=-1,k=e.key;if(k==="ArrowRight"||k==="ArrowDown")j=(i+1)%n;else if(k==="ArrowLeft"||k==="ArrowUp")j=(i+n-1)%n;else if(k==="Home")j=0;else if(k==="End")j=n-1;if(j<0)return;e.preventDefault();l[j].focus();l[j].click()})})}
 function ledger(c){var T=["Proposal 12 filed","Signatures verified","Comment period opens","Vote window opens","Result published"],alt=-1;
 c.innerHTML='<div class="chips"></div><p class="res"></p><p class="note">Click a record to edit it. Click again to undo. Uses a simple checksum for illustration, not real cryptography.</p>';
 function calc(a){var p="0";return T.map(function(t,i){p=H(p+(a===i?t+" (edited)":t));return p})}
 var good=calc(-1),ch=Q(c,".chips"),rs=Q(c,".res");
-function draw(){var cur=calc(alt);ch.innerHTML="";cur.forEach(function(h,i){var b=document.createElement("button");b.type="button";b.className="chip"+(h!==good[i]?" bad":"");b.innerHTML=(i+1)+". "+T[i]+"<br>"+h;b.onclick=function(){alt=alt===i?-1:i;draw()};ch.appendChild(b)});
+function draw(fi){var cur=calc(alt);ch.innerHTML="";cur.forEach(function(h,i){var b=document.createElement("button");b.type="button";b.className="chip"+(h!==good[i]?" bad":"");b.innerHTML=(i+1)+". "+T[i]+"<br>"+h+(h!==good[i]?"<br>✗ no match":"");b.setAttribute("aria-pressed",alt===i);b.onclick=function(){alt=alt===i?-1:i;draw(i)};ch.appendChild(b)});if(fi>=0)ch.children[fi].focus();
 rs.textContent=alt<0?"Every record matches the copies held by all nodes.":"Record "+(alt+1)+" was edited, so it and every later record no longer match. Other nodes reject this copy."}
 draw()}
 function priv(c){var L=[],mine=null,y=0,n=0;
 c.innerHTML='<div class="row" style="margin:0 0 12px"><button class="mini" data-v="1" type="button">Cast yes</button><button class="mini" data-v="0" type="button">Cast no</button><button class="mini" id="vfy" type="button">Verify my receipt</button></div><p class="res"></p><div class="chips"></div>';
 var rs=Q(c,".res"),ch=Q(c,".chips");
-function draw(m){rs.textContent=m||"Public tally: "+y+" yes, "+n+" no. Individual ballots appear only as sealed receipts.";ch.innerHTML="";L.forEach(function(r){var s=document.createElement("span");s.className="chip"+(r===mine?" good":"");s.textContent="sealed "+r;ch.appendChild(s)})}
+function draw(m){rs.textContent=m||"Public tally: "+y+" yes, "+n+" no. Individual ballots appear only as sealed receipts.";ch.innerHTML="";L.forEach(function(r){var s=document.createElement("span");s.className="chip"+(r===mine?" good":"");s.textContent="sealed "+r+(r===mine?" (yours)":"");ch.appendChild(s)})}
 c.querySelectorAll("[data-v]").forEach(function(b){b.onclick=function(){if(+b.dataset.v)y++;else n++;mine=H(Math.random()+""+L.length);L.push(mine);draw("Your receipt is "+mine+". Only you know which choice it holds.")}});
 Q(c,"#vfy").onclick=function(){draw(mine?"Found: your ballot is in the public record and counted.":"Cast a ballot first.")};
 draw()}
 function direct(c){c.innerHTML='<p><label>Decision type <select><option value="50">Advisory referendum (simple majority)</option><option value="60">Binding policy (60% supermajority)</option><option value="67">Binding policy (67% supermajority)</option></select></label></p><p><label>Share voting yes: <b class="v"></b> <input type="range" min="0" max="100" value="58" style="width:min(320px,100%)"></label></p><div class="bar"><i></i><span class="mk"></span></div><p class="res"></p>';
 var sel=Q(c,"select"),rg=Q(c,"input");
-function draw(){var t=+sel.value,y=+rg.value,ok=t===50?y>50:y>=t;Q(c,".v").textContent=y+"%";Q(c,".bar i").style.width=y+"%";Q(c,".mk").style.left=t+"%";Q(c,".res").textContent=(ok?"Passes":"Does not pass")+": needs "+(t===50?"more than 50%":t+"% or more")+" (amber marker)."}
+function draw(){var t=+sel.value,y=+rg.value,ok=t===50?y>50:y>=t;Q(c,".v").textContent=y+"%";rg.setAttribute("aria-valuetext",y+" percent");Q(c,".bar i").style.width=y+"%";Q(c,".mk").style.left=t+"%";Q(c,".res").textContent=(ok?"Passes":"Does not pass")+": needs "+(t===50?"more than 50%":t+"% or more")+" (marker on the bar)."}
 sel.onchange=rg.oninput=draw;draw()}
 function liquid(c){var N=["Cam","Dee","Eli","Fay","Gus","Hal"],D=["y","A","A","A","n","B"],O=[["y","Votes yes"],["n","Votes no"],["A","Delegates to Ana (yes)"],["B","Delegates to Ben (no)"]];
 c.innerHTML='<div class="chips"></div><p class="res"></p><p class="note">Ana votes yes and Ben votes no. Change anyone to revoke or reassign at any time. Demo cap: a delegate carries at most 3 votes including their own.</p>';
@@ -256,7 +261,7 @@ if(f){var e=Q(qd,'[data-f="'+f+'"]');if(e&&!e.disabled)e.focus()}}
 draw()}
 function rcv(c){c.innerHTML='<p><label>Of the 25 voters who rank Cy first, how many rank Ann second? <b class="v"></b> <input type="range" min="0" max="25" value="5" style="width:min(300px,100%)"></label></p><div class="rc"></div><p class="res"></p>';
 var rg=Q(c,"input");function bar(n,x){return "<p style=\"margin:8px 0 2px\">"+n+": "+x+" voters</p><div class=\"bar\"><i style=\"width:"+x+"%\"></i></div>"}
-function draw(){var s=+rg.value,a=40+s,b=60-s;Q(c,".v").textContent=s;Q(c,".rc").innerHTML="<b>Round 1</b>"+bar("Ann",40)+bar("Bo",35)+bar("Cy (fewest, eliminated)",25)+"<b style=\"display:block;margin-top:12px\">Round 2, Cy ballots move to next choice</b>"+bar("Ann",a)+bar("Bo",b);
+function draw(){var s=+rg.value,a=40+s,b=60-s;Q(c,".v").textContent=s;rg.setAttribute("aria-valuetext",s+" of 25 voters");Q(c,".rc").innerHTML="<b>Round 1</b>"+bar("Ann",40)+bar("Bo",35)+bar("Cy (fewest, eliminated)",25)+"<b style=\"display:block;margin-top:12px\">Round 2, Cy ballots move to next choice</b>"+bar("Ann",a)+bar("Bo",b);
 Q(c,".res").textContent=(a===b?"Tie between Ann and Bo.":"Ranked choice winner: "+(a>b?"Ann":"Bo")+".")+" Plain plurality would pick Ann."}
 rg.oninput=draw;draw()}
 var LAB=[
@@ -267,9 +272,9 @@ var LAB=[
 ["Quadratic voting","For budgets, each extra vote on the same item costs more: 1 vote costs 1 credit, 2 cost 4, 3 cost 9. People can show how strongly they care without letting one voice dominate.",quad],
 ["Ranked choice","Rank options in order. If none has a majority, the weakest is dropped and its ballots move to their next choice. The Research Hub lists ranked choice among the voting configurations CIP would support.",rcv]];
 var tb=document.getElementById("labtabs"),pn=document.getElementById("lab");
-function show(k){[].forEach.call(tb.children,function(b,i){b.setAttribute("aria-selected",i===k)});pn.innerHTML="<h3>"+LAB[k][0]+"</h3><p>"+LAB[k][1]+"</p><div class=\"demo-ui\"></div>";LAB[k][2](Q(pn,".demo-ui"))}
-LAB.forEach(function(l,i){var b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.textContent=l[0];b.onclick=function(){show(i)};tb.appendChild(b)});show(0);
-document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener("click",function(e){var id=a.getAttribute("href").slice(1),t=id?document.getElementById(id):null;if(t){e.preventDefault();t.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"})}})});
+function show(k){[].forEach.call(tb.children,function(b,i){b.setAttribute("aria-selected",i===k);b.tabIndex=i===k?0:-1});pn.setAttribute("aria-labelledby","labtab-"+k);pn.innerHTML="<h3>"+LAB[k][0]+"</h3><p>"+LAB[k][1]+"</p><div class=\"demo-ui\"></div>";LAB[k][2](Q(pn,".demo-ui"));[].forEach.call(pn.querySelectorAll(".res"),function(r){r.setAttribute("aria-live","polite")})}
+LAB.forEach(function(l,i){var b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.id="labtab-"+i;b.setAttribute("aria-controls","lab");b.textContent=l[0];b.onclick=function(){show(i)};tb.appendChild(b)});tabKeys([].slice.call(tb.children));show(0);
+document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener("click",function(e){var id=a.getAttribute("href").slice(1),t=id?document.getElementById(id):null;if(t){e.preventDefault();t.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});if(!t.hasAttribute("tabindex"))t.setAttribute("tabindex","-1");t.focus({preventScroll:true})}})});
 })();
 </script>
 </body>
