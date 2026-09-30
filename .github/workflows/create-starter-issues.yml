@@ -1,0 +1,177 @@
+name: Create starter issues
+
+# Run by hand: Actions tab > Create starter issues > Run workflow.
+# Creates the starter issues listed in docs/good-first-issues.md, except item 1
+# (the 51% attack summary, already added to the threat model). Item 6 is reworded
+# because the cycle handling is built; what remains is writing the rule down.
+# Safe to run again: an issue is skipped if one with the same title already exists.
+# Tick "Dry run" to list what would be created without creating anything.
+# Needs the labels from the "Sync labels" workflow to exist first.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (list only, create nothing)"
+        type: boolean
+        default: false
+
+permissions:
+  issues: write
+
+jobs:
+  issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          gh issue list --state all --limit 500 --json title --jq '.[].title' > existing.txt
+
+          mk() {
+            title="$1"; labels="$2"; file="$3"
+            if grep -Fxq -- "$title" existing.txt; then
+              echo "Skip (already exists): $title"
+              return
+            fi
+            if [ "$DRY" = "true" ]; then
+              echo "Would create [$labels]: $title"
+              return
+            fi
+            gh issue create --title "$title" --label "$labels" --body-file "$file"
+          }
+
+          cat > s2.md <<'EOF'
+          **Type:** review, security
+
+          Read `docs/threat-model.md` and post threats or mitigations we missed. Everything in it traces to the CIP paper and is a proposal, not a tested design.
+
+          **Good places to start**
+          - The new section on the six proposed 51%-attack safeguards (paper section 4.2.3). It lists open questions: stake requirements may favor wealthy operators, verified identity pulls against privacy, and the delay lengths and quotas are not specified.
+          - The "Out of scope for the first prototype" list. Is anything missing from it, or wrongly left out?
+          - The four open questions at the bottom.
+
+          **Done when**
+          - Your findings are posted here, each with the paper section it relates to, if any.
+          - Anything the group agrees on is added to the threat model in a pull request.
+          EOF
+          mk "Review the threat model for gaps" "review,security" s2.md
+
+          cat > s3.md <<'EOF'
+          **Type:** spec
+
+          Propose a minimal JSON shape for three things: a proposal, a signature, and a sealed ballot. Keep it small. This is a design sketch for the prototype, not a final format.
+
+          **Guidance**
+          - Base it on the paper, section 4.3 (encrypted ballot receipt, proof of validity) and section 4.4 (direct proposals, signatures).
+          - Treat the signature threshold as a setting, not a fixed number. The 1,000-signature figure is an accepted starting point from the companion Medium article and may change.
+          - Do not put anything in the schema that identifies how a person voted.
+          - Say which fields are required and which are optional.
+
+          **Done when**
+          - A draft is posted here, or added as `docs/schema.md` in a pull request.
+          - At least one reviewer has commented on it.
+          EOF
+          mk "Draft a ballot and proposal data schema" "spec" s3.md
+
+          cat > s4.md <<'EOF'
+          **Type:** documentation, good first issue
+
+          Write a plain-language glossary of CIP terms, one or two sentences each, for someone who has never read the paper.
+
+          **Terms**
+          - ledger
+          - zero-knowledge proof
+          - liquid delegation
+          - quadratic voting
+          - Judicial Guard
+
+          **Guidance**
+          - Describe each as the paper proposes it. CIP is a proposal, not a live system, so say "would" or "is proposed to".
+          - Link each term to the paper section where it is explained.
+          - Avoid jargon inside the definitions.
+
+          **Done when**
+          - A `docs/glossary.md` file is added in a pull request, or the draft is posted here.
+          EOF
+          mk "Write a plain-language glossary of CIP terms" "documentation,good first issue" s4.md
+
+          cat > s5.md <<'EOF'
+          **Type:** a11y, good first issue
+
+          Test the landing page (`index.html`) for keyboard navigation, contrast and screen-reader use. Report or fix what you find.
+
+          **Where to look first**
+          The two simulators had a focus outline and a link and button color that were too faint in light mode, and both were fixed. The landing page uses the same colors, so check the focus outline on links and buttons, the teal links in light mode, and the color of text on the dark buttons.
+
+          **Also check**
+          1. Can you reach every link and control with the keyboard alone, in a sensible order?
+          2. With a screen reader (NVDA, JAWS, VoiceOver, TalkBack or ChromeVox), do headings, links and the interactive demo make sense?
+          3. At 200% zoom and a 320px-wide window, does anything overlap or need sideways scrolling?
+          4. Light and dark mode.
+
+          The simulators have their own issue: "Accessibility pass on both simulators".
+
+          **Done when**
+          - Findings are posted here, and each real problem is fixed in a pull request or split into its own issue.
+          EOF
+          mk "Accessibility check of the landing page" "a11y,good first issue" s5.md
+
+          cat > s6.md <<'EOF'
+          **Type:** documentation, spec
+
+          The liquid delegation simulator (`simulator/liquid/`) already detects delegation cycles (A delegates to B and B to A) and applies a rule. The rule is not written down in `docs/voting-rules.md`, where cycles and cap overflow are still listed as open questions (numbers 1 and 2).
+
+          **What the simulator does today**
+          - **Cycles:** the user chooses one of two rules. Either everyone in the loop votes directly and people delegating into the loop follow them, or every vote that reaches the loop is lost.
+          - **Cap overflow:** when a delegate is already at the cap, further delegators vote directly. Delegations are not queued.
+          - These are modeling choices, not rules from the paper. The paper does not settle either question.
+
+          **Task**
+          1. Describe both cycle rules and the cap-overflow rule in `docs/voting-rules.md`, labeled as modeling choices.
+          2. Say which cycle rule you would recommend for a prototype, and why. Consider that a lost vote is silent for the voter.
+          3. Update open questions 1 and 2 in that file to point to the new text.
+
+          **Done when**
+          - A pull request updates `docs/voting-rules.md`.
+          EOF
+          mk "Document the delegation cycle and cap rules in voting-rules.md" "documentation,spec" s6.md
+
+          cat > s7.md <<'EOF'
+          **Type:** spec
+
+          Ranked-choice voting is listed among the voting configurations CIP would support, and the paper proposes it for electing Oversight Board members (Appendix A.3). The paper does not specify elimination or tie-break details.
+
+          **Task**
+          Compare two or three common ways to break a tie for elimination in ranked-choice (instant-runoff) voting, and recommend one for advisory votes. Consider:
+          - Is the rule easy to explain to a voter?
+          - Can it be checked by anyone from public data?
+          - Does it avoid depending on a person or body making a discretionary call?
+          - If it uses chance, how is the draw made verifiable?
+
+          **Done when**
+          - A short comparison and a recommendation are posted here.
+          - If the group agrees, the rule is added to the "Ranked choice" section of `docs/voting-rules.md`.
+
+          The simulator build that follows this issue is "Add ranked-choice tie-break handling to the simulator".
+          EOF
+          mk "Propose ranked-choice tie-break rules" "spec" s7.md
+
+          cat > s8.md <<'EOF'
+          **Type:** outreach, good first issue
+
+          Draft a one-page brief for a community group (a neighborhood association, a library board, a student group) explaining what a small advisory vote on CIP would involve, in plain language.
+
+          **Guidance**
+          - CIP is a proposal. Do not say it is live, and do not promise a date. Say what a pilot would need.
+          - The first prototype targets advisory, low-stakes votes only (see "Out of scope for the first prototype" in `docs/threat-model.md`).
+          - Cover: what people would do, what data is and is not collected, who sees the results, and what happens afterward.
+          - Do not include a contact email. Point people to GitHub Discussions.
+          - Keep it to one page.
+
+          **Done when**
+          - A draft is posted here, or added as `docs/pilot-brief.md` in a pull request.
+          EOF
+          mk "Draft a one-page pilot brief for a community group" "outreach,good first issue" s8.md
