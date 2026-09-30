@@ -11,7 +11,7 @@
 <style>
 :root{
   --paper:#eef1f4; --card:#ffffff; --ink:#14213d; --muted:#4a5a73; --line:#cbd3dd;
-  --teal:#0f8b8d; --amber:#d98a1f; --bar:#0f8b8d; --warn:#9a5b00;
+  --teal:#0a7375; --amber:#d98a1f; --bar:#0a7375; --warn:#9a5b00;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -31,7 +31,7 @@ body{margin:0; min-height:100%; background:var(--paper); color:var(--ink);
   font:16px/1.55 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
 main{max-width:760px; margin:0 auto; padding:20px 18px 56px}
 a{color:var(--teal)}
-a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--amber); outline-offset:2px}
+a:focus-visible,button:focus-visible,input:focus-visible,.scroll:focus-visible{outline:3px solid var(--ink); outline-offset:2px}
 h1{font:600 clamp(1.7rem,4.5vw,2.3rem)/1.15 Newsreader,Georgia,serif; margin:.6em 0 .3em}
 h2{font:600 1.35rem/1.2 Newsreader,Georgia,serif; margin:0 0 .5em}
 p{margin:.5em 0; max-width:68ch}
@@ -103,14 +103,14 @@ tr.key td{font-weight:600}
 <p class="note">A preset loads its settings and runs 300 trials straight away.</p>
 </section>
 
-<section class="card" aria-labelledby="oneh" aria-live="polite">
+<section class="card" aria-labelledby="oneh">
 <h2 id="oneh">One trial</h2>
-<div id="oneOut" class="empty">Run a trial to see the heaviest delegates and the tally.</div>
+<div id="oneOut" class="empty" aria-live="polite">Run a trial to see the heaviest delegates and the tally.</div>
 </section>
 
-<section class="card" aria-labelledby="manyh" aria-live="polite">
+<section class="card" aria-labelledby="manyh">
 <h2 id="manyh">Across many trials</h2>
-<div id="manyOut" class="empty">Run 300 trials to see how often delegation changes the outcome.</div>
+<div id="manyOut" class="empty" aria-live="polite">Run 300 trials to see how often delegation changes the outcome.</div>
 </section>
 
 <p class="note">Illustrative model, not a prediction. Each voter prefers A or B. A chosen share delegate instead of voting; each picks a delegate who may also be delegating, so chains form. A delegate's vote follows the delegate's own preference, so weight concentrates but expertise is not modeled. When a delegate is already at the cap, further delegators vote directly. Delegation is not issue-specific and does not expire, unlike the paper's proposal (section 4.4.2), so this tests only the cap and the loop rules. Outcome "differs" includes ties. Try the same seed under different settings to compare like with like.</p>
@@ -134,10 +134,10 @@ var CAP=["cap","Cap: most voters one delegate may speak for",1,20,1,1,"%"];
 function slider(c,host){
   var w=document.createElement("div"); w.className="ctl";
   var l=document.createElement("label"); l.htmlFor=c[0]; l.textContent=c[1];
-  var o=document.createElement("output"); o.htmlFor=c[0]; o.id=c[0]+"Out";
+  var o=document.createElement("output"); o.htmlFor=c[0]; o.id=c[0]+"Out"; o.setAttribute("aria-live","off");
   var i=document.createElement("input"); i.type="range"; i.id=c[0];
   i.min=c[2]; i.max=c[3]; i.value=c[4]; i.step=c[5];
-  var upd=function(){o.textContent=i.value+c[6]};
+  var upd=function(){o.textContent=i.value+c[6];i.setAttribute("aria-valuetext",i.value+(c[6]==="%"?" percent":""))};
   i.addEventListener("input",upd); upd();
   w.appendChild(l); w.appendChild(o); w.appendChild(i); host.appendChild(w);
 }
@@ -267,7 +267,7 @@ function showMany(P,seed,T){
   var th=el("thead"),trh=el("tr");trh.appendChild(el("th","","Measure"));trh.appendChild(el("th","","Result"));th.appendChild(trh);tb.appendChild(cap);tb.appendChild(th);
   var tbd=el("tbody");
   rows.forEach(function(x,ix){var tr=el("tr",ix===0?"key":"");tr.appendChild(el("td","",x[0]));tr.appendChild(el("td","",x[1]));tbd.appendChild(tr)});
-  tb.appendChild(tbd);sc.appendChild(tb);out.appendChild(sc);
+  tb.appendChild(tbd);sc.tabIndex=0;sc.setAttribute("role","region");sc.setAttribute("aria-label","Results across trials");sc.appendChild(tb);out.appendChild(sc);
 }
 
 $("one").addEventListener("click",function(){
@@ -286,7 +286,7 @@ document.querySelectorAll("[data-preset]").forEach(function(b){
   b.addEventListener("click",function(){
     var p=PRESETS[b.getAttribute("data-preset")];
     $("capOn").checked=p.capOn;$("cap").disabled=!p.capOn;
-    ["cap","n","d","m"].forEach(function(k){$(k).value=p[k];$(k+"Out").textContent=p[k]+(k==="n"?"":"%")});
+    ["cap","n","d","m"].forEach(function(k){$(k).value=p[k];$(k).dispatchEvent(new Event("input"))});
     document.querySelector("input[name=cyc][value="+p.cyc+"]").checked=true;
     $("many").click();
   });
