@@ -1,0 +1,73 @@
+name: Apply update zip
+
+# Run by hand: Actions tab > Apply update zip > Run workflow.
+# For updates that touch more than 3 files. Upload a zip to the repo root
+# (Add file > Upload files), with the files inside it in their repo paths,
+# for example docs/ranked-choice.md. This workflow checks the zip, copies the
+# files into place, deletes the zip, and commits once.
+# Tick "Dry run" first to list what the zip would change without changing anything.
+# Refuses zips containing absolute paths, "..", or anything under .git/ or .github/
+# (workflow files are added by hand with Add file > Create new file).
+# Needs Settings > Actions > General > Workflow permissions set to read and write.
+on:
+  workflow_dispatch:
+    inputs:
+      zip_path:
+        description: "Path of the zip in the repo"
+        type: string
+        default: "update.zip"
+      dry_run:
+        description: "Dry run (list only, change nothing)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Apply the zip
+        env:
+          ZIP: ${{ inputs.zip_path }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [ ! -f "$ZIP" ]; then
+            echo "::error::$ZIP not found. Upload it to the repo root first."
+            exit 1
+          fi
+          unzip -Z1 "$ZIP" | grep -v '/$' > list.txt || true
+          if [ ! -s list.txt ]; then
+            echo "::error::The zip has no files in it."
+            exit 1
+          fi
+          if grep -Eq '(^/|(^|/)\.\.(/|$)|^\.git(/|$)|^\.github(/|$)|^__MACOSX/)' list.txt; then
+            echo "::error::The zip contains a path that is not allowed:"
+            grep -E '(^/|(^|/)\.\.(/|$)|^\.git(/|$)|^\.github(/|$)|^__MACOSX/)' list.txt
+            exit 1
+          fi
+          echo "Files in $ZIP:"
+          while IFS= read -r f; do
+            if [ -e "$f" ]; then echo "  replace  $f"; else echo "  new      $f"; fi
+          done < list.txt
+          if [ "$DRY" = "true" ]; then
+            echo "Dry run: nothing changed. Run again with Dry run unticked to apply."
+            exit 0
+          fi
+          unzip -o -q "$ZIP" -x '__MACOSX/*'
+          git rm -q -f "$ZIP"
+          rm -f list.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -q -m "Apply update zip: $ZIP"
+          git push
