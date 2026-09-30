@@ -1,0 +1,151 @@
+name: Create issues
+
+# Run by hand: Actions tab > Create issues > Run workflow.
+# Creates the six issues from the September 29 review round.
+# Safe to run again: an issue is skipped if one with the same title already exists.
+# Tick "Dry run" to list what would be created without creating anything.
+# Needs the labels from the "Sync labels" workflow to exist first.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (list only, create nothing)"
+        type: boolean
+        default: false
+
+permissions:
+  issues: write
+
+jobs:
+  issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          gh issue list --state all --limit 500 --json title --jq '.[].title' > existing.txt
+
+          mk() {
+            title="$1"; labels="$2"; file="$3"
+            if grep -Fxq -- "$title" existing.txt; then
+              echo "Skip (already exists): $title"
+              return
+            fi
+            if [ "$DRY" = "true" ]; then
+              echo "Would create [$labels]: $title"
+              return
+            fi
+            gh issue create --title "$title" --label "$labels" --body-file "$file"
+          }
+
+          cat > b1.md <<'EOF'
+          **Type:** review, spec
+
+          The paper describes the oversight structure with numbers that do not line up. Everything here is a proposal in the paper, not a built system.
+
+          **What the paper says**
+          - Section 5.4 and Appendix A.3: an Oversight Board of 7 members (1 appointed by the President, 1 by the Chief Justice, 1 elected by Congress, 1 elected by the State Governors, 3 elected by the Guardian Corps). A.3 requires a 5-of-7 supermajority for significant policy changes.
+          - Section 8.3.2: the attack-cost analysis refers to bribing the "Judicial Guard supermajority (6/9 with diverse appointments)" and to "tripartite appointment".
+          - Section 9.6 repeats "tripartite appointment prevents capture".
+          - Appendix A.10 argues against a nine-person leadership council, so the 6/9 figure may be a leftover from that rejected model.
+
+          **Questions to settle**
+          1. Is the 6/9 figure in 8.3.2 meant to describe the 7-member Oversight Board, or something else?
+          2. Is appointment "tripartite" (three sources) or the five-source mix in 5.4 and A.3?
+          3. Do any of the cost estimates in 8.3.2 depend on the 6/9 figure? If so, do they change with 5-of-7?
+
+          **Done when**
+          - One structure is chosen and the sections that need updating are listed here.
+          - The mismatch is noted in the paper errata. Do not edit the paper in this issue; post proposed wording as a comment.
+          EOF
+          mk "Settle the oversight-body numbers in the paper" "review,spec" b1.md
+
+          cat > b2.md <<'EOF'
+          **Type:** review, security
+
+          The project has a core principle: nothing may collect or monetize user behavior data (see CONTRIBUTING.md). The paper's privacy design also says there is no surveillance or tracking beyond necessary verification (section 4.6.2).
+
+          Section 4.5.2 of the paper, on continuous improvement, lists "data collection on system usage patterns", user experience research and A/B testing of interface changes. Those can conflict with the principle above.
+
+          **Questions to settle**
+          1. What data, if any, would the portal collect to improve itself, and can every item be collected without tracking individuals?
+          2. Are there privacy-preserving alternatives (aggregate counts only, opt-in studies, testing with volunteer panels instead of live users)?
+          3. Should A/B testing be dropped, limited, or subject to a community vote?
+
+          **Done when**
+          - A short proposal is posted here, and if the group agrees, added to `docs/threat-model.md`.
+          - The paper wording that needs to change is listed.
+          EOF
+          mk "Reconcile telemetry with the no-behavior-data rule" "review,security" b2.md
+
+          cat > b3.md <<'EOF'
+          **Type:** security, review
+
+          Section 4.2.3 of the paper lists six safeguards against a 51% attack. The sixth is a Judicial Guard override: "detected attacks can be halted pending investigation". The paper does not say what limits that power. A halt power that is easy to trigger is itself an attack: a captured Guard could freeze legitimate votes.
+
+          **Questions to settle**
+          1. Who can trigger a halt, and what evidence is required?
+          2. How long can a halt last before it expires automatically?
+          3. Who can challenge a halt, and how quickly?
+          4. Should every halt be logged publicly, with reasons?
+          5. Can a halt ever block a vote that is already under way?
+
+          **Done when**
+          - A written proposal for limits, expiry, appeal and public logging is posted here.
+          - If the group agrees, it is added to `docs/threat-model.md` as a new row and short section.
+          EOF
+          mk "Assess halt-power abuse by the Judicial Guard" "security,review" b3.md
+
+          cat > b4.md <<'EOF'
+          **Type:** dev, spec
+
+          The paper uses ranked-choice voting to elect the Guardian and Congress-elected members of the Oversight Board (Appendix A.3), but the simulators do not model it. This issue is the simulator work that follows the spec issue "Propose ranked-choice tie-break rules".
+
+          **Scope**
+          - Add a small ranked-choice (instant-runoff) simulator as a single self-contained HTML page, in the same style as the other two (folder `simulator/ranked/index.html`).
+          - Show what happens when candidates tie for elimination, using the rule chosen in the spec issue. If none is chosen yet, implement two and let the user switch.
+          - Say plainly on the page that it is an illustrative model, not a prediction.
+
+          **Done when**
+          - The page runs with keyboard only and passes the same contrast and live-region checks as the other simulators.
+          - `docs/voting-rules.md` records the tie-break rule used.
+          EOF
+          mk "Add ranked-choice tie-break handling to the simulator" "dev,spec" b4.md
+
+          cat > b5.md <<'EOF'
+          **Type:** dev
+
+          The paper proposes several independent ledger implementations with cross-chain verification (section 4.2.1) and node diversity rules (sections 4.2.2 and 4.2.3). It does not show what happens when the network splits into two views of the ledger.
+
+          **Scope**
+          - A single self-contained HTML page (folder `simulator/fork/index.html`) in the same style as the other simulators.
+          - Nodes hold one of two competing ledger views. Controls might include: number of nodes, share on each side, number of independent implementations, region and institution mix, and how long agreement must be sustained.
+          - Show whether and how fast the network settles on one view, and what an attacker would need to control to force a bad result.
+          - Label it as an illustrative model of the paper's proposal.
+
+          **Done when**
+          - The model and its simplifications are described on the page.
+          - A sample result is recorded in `docs/threat-model.md`, labeled illustrative.
+          EOF
+          mk "Ledger fork simulation" "dev" b5.md
+
+          cat > b6.md <<'EOF'
+          **Type:** a11y, good first issue
+
+          A first pass on both simulators was done from the source code: contrast, focus outlines, live-region announcements, slider values and keyboard access to the results table. It has not been tested with real assistive technology, so this issue is for that testing.
+
+          **What to test** (`simulator/` and `simulator/liquid/`)
+          1. Keyboard only: can you reach and use every control, run a trial, and read the results?
+          2. A screen reader (NVDA, JAWS, VoiceOver, TalkBack or ChromeVox): are slider values, results and the "same result / different result" message announced clearly, without being repeated too often?
+          3. Zoom to 200% and a 320px-wide window: does anything overlap, clip or need sideways scrolling?
+          4. Light and dark mode: is all text readable?
+          5. Reduced motion and high-contrast settings, if you use them.
+
+          **Done when**
+          - Your findings are posted here: what you used, what worked, what did not.
+          - Each real problem is fixed in a pull request or split into its own issue.
+          EOF
+          mk "Accessibility pass on both simulators" "a11y,good first issue" b6.md
