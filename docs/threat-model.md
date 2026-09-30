@@ -28,6 +28,8 @@ No single point of failure. Transparent operations. Cryptographic verification i
 | Insecure software | Regular independent audits and transparent disclosure (§4.5.1) | Proposed |
 | Excluding people without devices or skills | Multiple access channels, literacy support, no mandatory participation (§4.6) | Proposed |
 | Blocked accountability | Distributed Judicial Guard with concurrent prosecution paths and a public referral dashboard (§5, A.8) | Proposed |
+| Abuse of the halt power | Checkable triggers, multi-guardian concurrence, automatic expiry, challenge and public log, in [halt-power.md](halt-power.md) (§4.2.3 is silent) | Draft, under review |
+| Usage data becoming tracking | Three-tier data policy: never collected, aggregate only, opt-in only, in [data-collection.md](data-collection.md) (§4.5.2 vs §4.6.2) | Draft, under review |
 
 ## How the paper proposes to prevent a 51% attack (paper §4.2.3)
 
@@ -44,20 +46,20 @@ The paper names the classic risk: if attackers control more than half the nodes,
 
 - **Stake and wealth.** Safeguard 1 makes attacks expensive, but a stake requirement can also favor wealthy operators. How does this fit the 5% funder cap and the "economic independence" goal (§4.1)?
 - **Identity versus privacy.** Safeguard 2 asks for verified, non-anonymous nodes. Open question 1 above asks how to establish one-person-one-identity without a surveillance database. These pull against each other and need an explicit answer.
-- **Halt power.** Safeguard 6 lets the Judicial Guard halt the system on a detected attack. What limits it? Suggested starting points: a stated trigger, automatic expiry, and public logging of every halt. A halt power that is easy to trigger is itself an attack surface.
+- **Halt power.** Safeguard 6 lets the Judicial Guard halt the system on a detected attack. A halt power that is easy to trigger is itself an attack surface. A draft set of limits (checkable triggers, multi-guardian concurrence, automatic expiry, challenge, public log) is in [halt-power.md](halt-power.md) (issue #4).
 - **Unspecified numbers.** The paper does not give the delay lengths in safeguard 5 or the region and institution quotas in safeguards 3 and 4. A simulator could test which values actually hold.
 
 ## Security process (paper §4.5)
 
 - **Audits (§4.5.1):** quarterly independent code audits, annual full system reviews, bug bounties, penetration testing, and publication of findings after mitigation.
-- **Continuous improvement (§4.5.2):** the paper lists data collection on usage patterns and A/B testing of interface changes. This sits uneasily with the goal of no behavior data. Reviewers should settle exactly what, if anything, is collected, and whether it can be done without tracking individuals.
+- **Continuous improvement (§4.5.2):** the paper lists data collection on usage patterns and A/B testing of interface changes. This sits uneasily with the goal of no behavior data. A draft policy with three tiers (never collected, collected without identifiers, opt-in only) is in [data-collection.md](data-collection.md) (issue #3).
 - **Governance of changes (§4.5.2):** technical changes go to a community vote, major architectural changes need a supermajority, and rollouts are gradual with the ability to revert.
 
 ## Inconsistencies in the paper (tracked as issues)
 
 - **Oversight body size.** A 7-member board with a 5-of-7 supermajority appears in §5.4 and Appendix A.3. A "6/9" supermajority and tripartite appointment appear in §8.3.2 and §9.6. These need to be reconciled.
-- **Telemetry versus privacy.** See §4.5.2 above.
-- **Halt-power limits.** The Judicial Guard override (§4.2.3) has no stated limits.
+- **Telemetry versus privacy.** Draft policy in [data-collection.md](data-collection.md).
+- **Halt-power limits.** The Judicial Guard override (§4.2.3) has no stated limits; draft limits in [halt-power.md](halt-power.md).
 
 ## Notes on thresholds
 
