@@ -1,0 +1,30 @@
+name: Tests
+
+# Runs the ranked-choice engine tests on every push and pull request that touches
+# the simulator or the tests. You can also run it by hand: Actions tab > Tests > Run workflow.
+on:
+  push:
+    paths:
+      - "simulator/ranked/**"
+      - "tests/**"
+  pull_request:
+    paths:
+      - "simulator/ranked/**"
+      - "tests/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ranked-choice:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run the ranked-choice tests
+        run: node tests/ranked-choice.test.js simulator/ranked/index.html
