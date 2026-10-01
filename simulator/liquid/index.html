@@ -74,7 +74,7 @@ tr.key td{font-weight:600}
 </head>
 <body>
 <main>
-<p><a href="../../">&larr; Citizens Internet Portal</a> &nbsp;|&nbsp; <a href="../">Simulator: mild majority, intense minority</a></p>
+<p><a href="../../">&larr; Citizens Internet Portal</a> &nbsp;|&nbsp; <a href="../">Simulator: mild majority, intense minority</a> &nbsp;|&nbsp; <a href="../ranked/">Simulator: ranked-choice</a> &nbsp;|&nbsp; <a href="../fork/">Simulator: ledger fork and halt power</a></p>
 <h1>Liquid delegation: caps and cycles</h1>
 <p class="lede">Some voters hand their vote to someone they trust, and that person may hand it on. The paper proposes a cap so no delegate speaks for more than 1% of the population. This model shows what the cap and different cycle rules do to voting weight, and how often they change a close result.</p>
 
@@ -115,7 +115,7 @@ tr.key td{font-weight:600}
 <div id="manyOut" class="empty" aria-live="polite">Run 300 trials to see how often delegation changes the outcome.</div>
 </section>
 
-<p class="note">Illustrative model, not a prediction. Each voter prefers A or B. A chosen share delegate instead of voting; each picks a delegate who may also be delegating, so chains form. A delegate's vote follows the delegate's own preference, so weight concentrates but expertise is not modeled. When a delegate is already at the cap, further delegators vote directly. Delegation is not issue-specific and does not expire, unlike the paper's proposal (section 4.4.2), so this tests only the cap and the loop rules. Outcome "differs" includes ties. Try the same seed under different settings to compare like with like.</p>
+<p class="note">Illustrative model, not a prediction. Each voter prefers A or B. A chosen share delegate instead of voting; each picks a delegate who may also be delegating, so chains form. A delegate's vote follows the delegate's own preference, so weight concentrates but expertise is not modeled. When a delegate is already at the cap, which delegators are turned away is decided by a random draw (a seeded shuffle), and they vote directly. Delegation is not issue-specific and does not expire, unlike the paper's proposal (section 4.4.2), so this tests only the cap and the loop rules. Outcome "differs" includes ties. Try the same seed under different settings to compare like with like.</p>
 </main>
 
 <script>

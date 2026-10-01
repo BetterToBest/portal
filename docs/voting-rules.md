@@ -27,7 +27,7 @@ The paper does not say what happens in these two cases. The simulator models the
 **Delegations above the cap.**
 1. A delegate stops accepting votes at the cap (1% of the population in the paper).
 2. A voter whose delegation would go over the cap is **returned to direct voting**, notified, and given time to vote or choose another delegate before the vote closes.
-3. The simulator picks who is turned away at random in each trial. A real rule is not settled. Options: first come first served by delegation time (predictable, but rewards racing to sign people up); a verifiable random draw; or something else. This is open question 2 below.
+3. When a delegate is full, **which voters are turned away is decided by a random draw**: a seeded shuffle in the simulator, and a verifiable public random draw in a real system. First come first served was considered and set aside because it rewards racing to sign people up. How the draw is made verifiable, and when it runs, is open question 2 below.
 
 Not modeled: topic-specific delegation, expiry, and delegate competence. Whether the delegation graph is public is also open, because public delegations can show how a person's vote was cast.
 
@@ -44,7 +44,7 @@ Listed on the Research Hub among the voting configurations CIP would support. Th
 ## Open questions (not answered by the paper)
 
 1. Delegation cycles (A to B to A): a draft rule is proposed above; needs review.
-2. Delegations that exceed the cap: the draft returns the voter to direct voting; the order in which voters are turned away is still open.
+2. Delegations that exceed the cap: the draft returns the voter to direct voting, chosen by random draw. How the draw is made verifiable, when it runs, and how turned-away voters are told in time are still open.
 3. What quorum, if any, applies to advisory votes?
 4. How is collusion in quadratic voting (splitting identities, coordinating) detected?
 5. How many credits per person, and how often do they refresh?

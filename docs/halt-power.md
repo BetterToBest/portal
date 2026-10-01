@@ -62,7 +62,7 @@ Every flag, hold, pause, extension, and lift is published at once on all chains 
 
 ## Open questions
 
-1. Can a hold be tested against real attack strategies in the ledger fork simulator (issue #6)? The thresholds above are guesses.
+1. Can a hold be tested against real attack strategies? A first model is the [ledger fork and halt-power simulator](https://bettertobest.github.io/portal/simulator/fork/) (issue #6). It tests colluding guardians against these thresholds, but the thresholds above are still guesses.
 2. A community vote on whether to continue past the cap runs on the very system that is partly halted. Is that circular?
 3. How do guardians authenticate evidence without one trusted verifier?
 4. Should a Flag from one guardian carry any cost, to deter spam?
