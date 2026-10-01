@@ -1,0 +1,118 @@
+name: Tidy issue comments
+
+# Run by hand: Actions tab > Tidy issue comments > Run workflow.
+# 1. Finds comments on issues #3, #4, #5, #12 and #13 that are a pasted copy of a
+#    docs/ file (the first line is one of the doc titles) and deletes them.
+#    Other long comments are only listed, never deleted.
+# 2. Posts one short comment on each of those issues linking to the matching doc
+#    or simulator. Safe to run again: a comment is skipped if the same marker
+#    is already on the issue.
+# 3. Optionally removes the stale fonts.zip from the repo root, but only when
+#    assets/fonts/ is already in place.
+# Leave "Dry run" ticked first. It lists everything and changes nothing.
+# Needs Settings > Actions > General > Workflow permissions set to read and write.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (list only, change nothing)"
+        type: boolean
+        default: true
+      delete_misplaced:
+        description: "Delete the pasted doc comments"
+        type: boolean
+        default: true
+      post_links:
+        description: "Post the doc and simulator links"
+        type: boolean
+        default: true
+      remove_fonts_zip:
+        description: "Remove the stale fonts.zip from the repo root"
+        type: boolean
+        default: false
+
+permissions:
+  issues: write
+  contents: write
+
+jobs:
+  tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Delete pasted doc comments
+        if: ${{ inputs.delete_misplaced }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          set -uo pipefail
+          TITLES='^[[:space:]]*# (CIP Data Collection Policy|Judicial Guard Halt Power|Ranked-Choice Tie-Break Rules|CIP Voting Rules)'
+          for n in 3 4 5 12 13; do
+            echo "== Issue #$n"
+            gh api "repos/$GH_REPO/issues/$n/comments" --paginate > "c$n.json" || { echo "Could not read comments on #$n"; continue; }
+            jq -r '.[] | "  seen    \(.id)  \(.user.login)  \(.body|length) chars  " + (.body|gsub("\n";" ")|.[0:60])' "c$n.json"
+            jq -r --arg t "$TITLES" '.[] | select(.user.type != "Bot") | select(.body | contains("cip-link:") | not) | select(.body | test($t)) | [.id, .html_url] | @tsv' "c$n.json" > "del$n.txt"
+            jq -r --arg t "$TITLES" '.[] | select(.user.type != "Bot") | select((.body | length) > 3000) | select(.body | test($t) | not) | .html_url' "c$n.json" | sed 's/^/  long comment, NOT deleted, check by hand: /'
+            while IFS=$'\t' read -r id url; do
+              [ -z "$id" ] && continue
+              if [ "$DRY" = "true" ]; then
+                echo "  Would delete $url"
+              elif gh api -X DELETE "repos/$GH_REPO/issues/comments/$id" >/dev/null; then
+                echo "  Deleted $url"
+              else
+                echo "::warning::Could not delete $url. Delete it by hand (the ... menu on the comment)."
+              fi
+            done < "del$n.txt"
+          done
+
+      - name: Post doc and simulator links
+        if: ${{ inputs.post_links }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          set -uo pipefail
+          REPO="https://github.com/${GH_REPO}/blob/main"
+          SITE="https://bettertobest.github.io/portal"
+          TAIL="This is a proposal for review, not a decision. The issue stays open until the group agrees. Comments and objections are welcome here."
+
+          post() {
+            n="$1"; key="$2"; body="$3"
+            if gh api "repos/$GH_REPO/issues/$n/comments" --paginate | jq -e --arg k "cip-link:$key" 'any(.[]; .body | contains($k))' >/dev/null; then
+              echo "Skip #$n ($key already posted)"
+              return
+            fi
+            if [ "$DRY" = "true" ]; then
+              echo "Would post on #$n ($key)"
+              return
+            fi
+            printf '%s\n\n<!-- cip-link:%s -->\n' "$body" "$key" > body.txt
+            gh issue comment "$n" --body-file body.txt >/dev/null && echo "Posted on #$n ($key)" || echo "::warning::Could not post on #$n"
+          }
+
+          post 3 data-collection "A draft that answers this issue is in [docs/data-collection.md](${REPO}/docs/data-collection.md). $TAIL"
+          post 4 halt-power "A draft that answers this issue is in [docs/halt-power.md](${REPO}/docs/halt-power.md). All the numbers in it are placeholders to be tested in the fork simulation (issue #6). $TAIL"
+          post 5 ranked-sim "The ranked-choice simulator is live: [simulator/ranked](${SITE}/simulator/ranked/). It applies the draft rules in [docs/ranked-choice.md](${REPO}/docs/ranked-choice.md) to ballots you type or choose, with an advisory/election switch and the four worked examples as presets. It is an illustrative model, not a prediction. Tie-break rules are discussed in #13."
+          post 12 voting-rules "A draft of the delegation cycle and cap rules is in [docs/voting-rules.md](${REPO}/docs/voting-rules.md). You can try the proposed loop and cap handling in the [liquid delegation simulator](${SITE}/simulator/liquid/). $TAIL"
+          post 13 ranked-choice "A draft of the tie-break rules is in [docs/ranked-choice.md](${REPO}/docs/ranked-choice.md), and you can try them on your own ballots in the [ranked-choice simulator](${SITE}/simulator/ranked/). $TAIL"
+
+      - name: Remove stale fonts.zip
+        if: ${{ inputs.remove_fonts_zip }}
+        env:
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [ ! -f fonts.zip ]; then echo "No fonts.zip at the repo root. Nothing to do."; exit 0; fi
+          if [ ! -f assets/fonts/newsreader-normal.woff2 ]; then echo "::error::assets/fonts is not in place, so fonts.zip was left alone."; exit 1; fi
+          if [ "$DRY" = "true" ]; then echo "Would delete fonts.zip"; exit 0; fi
+          git rm -q -f fonts.zip
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "Remove stale fonts.zip"
+          git push
+          echo "Deleted fonts.zip"
