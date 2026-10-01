@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CIP Simulator: ranked-choice counting and tie-breaks</title>
+<meta name="description" content="An illustrative model of the draft ranked-choice tie-break rules: batch elimination, a check for whether a tie matters, look-back, head-to-head and a seeded random draw.">
+<link rel="preload" href="../../assets/fonts/newsreader-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../assets/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Newsreader';font-style:normal;font-weight:200 800;font-display:swap;src:url(../../assets/fonts/newsreader-normal.woff2) format('woff2')}
+@font-face{font-family:'Newsreader';font-style:italic;font-weight:200 800;font-display:swap;src:url(../../assets/fonts/newsreader-italic.woff2) format('woff2')}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(../../assets/fonts/instrument-sans.woff2) format('woff2')}
+:root{
+  --paper:#eef1f4; --card:#ffffff; --ink:#14213d; --muted:#4a5a73; --line:#cbd3dd;
+  --teal:#0a7375; --amber:#d98a1f; --bar:#0a7375; --warn:#9a5b00;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0e1522; --card:#16202f; --ink:#e8edf4; --muted:#a3b3c9; --line:#2b394d;
+    --teal:#3cc0c2; --amber:#f0a94a; --bar:#3cc0c2; --warn:#f0a94a;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0e1522; --card:#16202f; --ink:#e8edf4; --muted:#a3b3c9; --line:#2b394d;
+  --teal:#3cc0c2; --amber:#f0a94a; --bar:#3cc0c2; --warn:#f0a94a;
+}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0; min-height:100%; background:var(--paper); color:var(--ink);
+  font:16px/1.55 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:820px; margin:0 auto; padding:20px 18px 56px}
+a{color:var(--teal)}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible,.scroll:focus-visible{outline:3px solid var(--ink); outline-offset:2px}
+h1{font:600 clamp(1.7rem,4.5vw,2.3rem)/1.15 Newsreader,Georgia,serif; margin:.6em 0 .3em}
+h2{font:600 1.35rem/1.2 Newsreader,Georgia,serif; margin:0 0 .5em}
+h3{font:600 1.1rem/1.25 Newsreader,Georgia,serif; margin:1.2em 0 .3em}
+p{margin:.5em 0; max-width:68ch}
+.lede{font-size:1.06rem}
+.card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; margin:18px 0}
+fieldset{border:1px solid var(--line); border-radius:8px; margin:14px 0; padding:8px 12px}
+legend{font-weight:600; padding:0 6px}
+fieldset label{display:block; margin:6px 0}
+label.f{display:block; font-weight:600; margin:14px 0 4px}
+textarea,input[type=number]{font:inherit; padding:8px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink)}
+textarea{width:100%; min-height:9.5rem; font:14px/1.5 ui-monospace,Menlo,Consolas,monospace}
+textarea[aria-invalid="true"]{border:2px solid var(--warn)}
+.row{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px}
+button{font:inherit; font-weight:600; border-radius:8px; padding:9px 14px; cursor:pointer;
+  border:1px solid var(--teal); background:var(--teal); color:#fff}
+button.alt{background:transparent; color:var(--teal)}
+:root[data-theme="dark"] button:not(.alt){color:#0e1522}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button:not(.alt){color:#0e1522}}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%}
+.rounds{min-width:560px}
+caption{text-align:left; font-weight:600; padding:0 0 6px}
+th,td{text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top}
+.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+td.what{min-width:15rem}
+.out{color:var(--muted); font-size:.88rem}
+.bars{margin:10px 0; display:grid; gap:5px}
+.bar{display:grid; grid-template-columns:5.5rem 1fr 7.5rem; gap:8px; align-items:center; font-size:.92rem}
+.bar .track{height:14px; background:var(--paper); border:1px solid var(--line); border-radius:3px}
+.bar .fill{height:100%; background:var(--bar); border-radius:2px}
+.bar span:last-child{text-align:right; font-variant-numeric:tabular-nums}
+.note{color:var(--muted); font-size:.92rem}
+.verdict{margin:12px 0; padding:10px 14px; border-left:6px solid var(--teal); border-radius:6px; background:rgba(15,139,141,.13); max-width:68ch}
+.verdict.diff{border-left-color:var(--amber); background:rgba(217,138,31,.18)}
+.verdict .tag{display:block; font-size:.78rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.verdict strong{font-size:1.06rem}
+.err{margin:10px 0; padding:8px 12px; border-left:6px solid var(--warn); background:rgba(217,138,31,.14); border-radius:6px; max-width:68ch}
+.empty{color:var(--muted)}
+.plain{padding-left:1.1em; max-width:68ch}
+.plain li{margin:.4em 0}
+details{margin:14px 0}
+summary{cursor:pointer; font-weight:600}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+</style>
+</head>
+<body>
+<main>
+<p><a href="../../">&larr; Citizens Internet Portal</a> &nbsp;|&nbsp; <a href="../">Simulator: mild majority, intense minority</a> &nbsp;|&nbsp; <a href="../liquid/">Simulator: liquid delegation</a></p>
+<h1>Ranked-choice counting: when candidates tie</h1>
+<p class="lede">In ranked-choice voting the weakest candidate is dropped each round and their ballots move to the next choice still in the race. Trouble starts when two candidates tie for last place. This page applies the draft rules in <a href="https://github.com/BetterToBest/portal/blob/main/docs/ranked-choice.md">docs/ranked-choice.md</a> to ballots you choose or type, and shows every step. An advisory vote can honestly report a split. An election must produce one winner, so it continues down the tie-break cascade.</p>
+<noscript><p class="err">This page needs JavaScript to count ballots.</p></noscript>
+
+<section class="card" aria-labelledby="setup">
+<h2 id="setup">Choose the ballots</h2>
+<fieldset>
+  <legend>Kind of decision</legend>
+  <label><input type="radio" name="mode" value="advisory" checked> Advisory vote: if a tie matters, publish the result as tied</label>
+  <label><input type="radio" name="mode" value="election"> Election to an office: if a tie matters, settle it with look-back, head-to-head, then a random draw</label>
+</fieldset>
+<div class="row" role="group" aria-label="Worked examples from the proposal">
+  <button type="button" class="alt" data-preset="ex1">Example 1: batch elimination</button>
+  <button type="button" class="alt" data-preset="ex2">Example 2: a tie that matters</button>
+  <button type="button" class="alt" data-preset="ex3">Example 3: a tie that does not matter</button>
+  <button type="button" class="alt" data-preset="ex4">Example 4: exact final tie</button>
+</div>
+<p class="note">A preset loads its ballots and counts them straight away. Examples 2 and 4 are the ones where the two kinds of decision give different answers, so try both.</p>
+<label class="f" for="ballots">Ballot groups, one per line</label>
+<textarea id="ballots" spellcheck="false" aria-describedby="hint err"></textarea>
+<p class="note" id="hint">Write a count, a colon, then the ranking with the first choice first, separated by &gt; signs. For example, <code>20: C &gt; B</code> means 20 ballots rank C first and B second. Partial rankings are fine. Names use up to 12 letters or digits. Up to 8 candidates.</p>
+<div id="err" class="err" hidden></div>
+<label class="f" for="seed">Random seed (used only if an election reaches the random draw)</label>
+<input type="number" id="seed" value="1" min="1" step="1" style="max-width:10rem">
+<div class="row"><button type="button" id="go">Count the ballots</button></div>
+</section>
+
+<section class="card" aria-labelledby="resh">
+<h2 id="resh">Result</h2>
+<p id="status" class="sr" role="status"></p>
+<div id="out" class="empty">Pick an example or type ballots, then count them.</div>
+</section>
+
+<p class="note">Illustrative model, not a prediction. It applies the draft rules in docs/ranked-choice.md (proposal v0.1) to ballot counts that you type or choose; it does not model how people vote. It does not cover multi-seat elections, ballot privacy, or the cryptography that would be needed to publish only aggregate counts (open question 5 in the proposal). The random draw uses a seed so a result can be repeated; the proposal calls for public randomness committed before the count, which is not modeled here. The ballot counts in the examples are illustrative. Every rule on this page is a proposal, and CIP is not live.</p>
+</main>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+
+/*ENGINE-START*/
+var MAXC=8, MAXTOTAL=10000000, MAXLINES=300;
+
+function parse(text){
+  var groups=[], disp=Object.create(null), errs=[], total=0;
+  text.split(/\r?\n/).forEach(function(raw,i){
+    var line=raw.trim(); if(!line) return;
+    var L="Line "+(i+1)+": ", m=/^(\d+)\s*:\s*(.*)$/.exec(line);
+    if(!m){errs.push(L+"start with a count and a colon, for example 20: C > B.");return}
+    var n=parseInt(m[1],10);
+    if(!(n>=1)){errs.push(L+"the count must be at least 1.");return}
+    var toks=m[2].split(/[>,\s]+/).filter(Boolean);
+    if(!toks.length){errs.push(L+"list at least one candidate after the colon.");return}
+    var r=[], bad="";
+    toks.forEach(function(t){
+      if(!/^[A-Za-z0-9]{1,12}$/.test(t)){if(!bad)bad=t;return}
+      var k=t.toLowerCase(); if(!(k in disp))disp[k]=t; if(r.indexOf(k)<0)r.push(k);
+    });
+    if(bad){errs.push(L+"\""+bad+"\" is not a valid name. Use up to 12 letters or digits.");return}
+    groups.push({n:n,r:r}); total+=n;
+  });
+  var cands=Object.keys(disp).sort();
+  if(!errs.length){
+    if(!groups.length) errs.push("Add at least one line of ballots.");
+    else if(groups.length>MAXLINES) errs.push("Keep it to "+MAXLINES+" lines or fewer.");
+    else if(cands.length<2) errs.push("Rank at least two different candidates across the ballots.");
+    else if(cands.length>MAXC) errs.push("This page handles up to "+MAXC+" candidates.");
+    else if(total>MAXTOTAL) errs.push("Keep the total under "+MAXTOTAL.toLocaleString("en-US")+" ballots.");
+  }
+  return {groups:groups,cands:cands,disp:disp,errs:errs,total:total};
+}
+
+function tally(groups,alive){
+  var c=Object.create(null), ex=0;
+  alive.forEach(function(k){c[k]=0});
+  groups.forEach(function(g){
+    var hit=null;
+    for(var i=0;i<g.r.length;i++){ if(g.r[i] in c){hit=g.r[i];break} }
+    if(hit===null) ex+=g.n; else c[hit]+=g.n;
+  });
+  return {counts:c,exhausted:ex};
+}
+
+/* One round: majority, a lowest-candidate or batch elimination (Step 0), or a tie for last place. */
+function step(groups,alive){
+  var t=tally(groups,alive), cont=0;
+  alive.forEach(function(k){cont+=t.counts[k]});
+  var s={counts:t.counts,exhausted:t.exhausted,cont:cont,alive:alive.slice()};
+  if(cont===0){s.kind="none";return s}
+  var sorted=alive.slice().sort(function(a,b){return t.counts[a]-t.counts[b]||(a<b?-1:1)});
+  var top=sorted[sorted.length-1];
+  if(t.counts[top]*2>cont){s.kind="win";s.winner=top;return s}
+  var k=0, sum=0, ksum=0;
+  for(var i=0;i<sorted.length-1;i++){
+    sum+=t.counts[sorted[i]];
+    if(sum<t.counts[sorted[i+1]]){k=i+1;ksum=sum}
+  }
+  if(k>0){
+    s.kind="elim"; s.elim=sorted.slice(0,k); s.rule=k>1?"batch":"lowest";
+    s.batch={sum:ksum,next:t.counts[sorted[k]]};
+    return s;
+  }
+  var low=t.counts[sorted[0]];
+  s.kind="tie"; s.tied=sorted.filter(function(c){return t.counts[c]===low});
+  return s;
+}
+
+/* Every possible winner if each tie is broken each possible way (Step 1). */
+function explore(groups,alive,memo){
+  var key=alive.join("|"); if(memo[key]) return memo[key];
+  var cur=alive, out;
+  for(;;){
+    var s=step(groups,cur);
+    if(s.kind==="win"){out=[{w:s.winner,fin:s}];break}
+    if(s.kind==="none"){out=[{w:null,fin:s}];break}
+    if(s.kind==="elim"){cur=cur.filter(function(c){return s.elim.indexOf(c)<0});continue}
+    out=[];
+    s.tied.forEach(function(x){out=out.concat(explore(groups,cur.filter(function(c){return c!==x}),memo))});
+    break;
+  }
+  memo[key]=out; return out;
+}
+
+function uniq(a){var o=[];a.forEach(function(x){if(o.indexOf(x)<0)o.push(x)});return o}
+
+/* Step 2: the most recent earlier round where the tied totals differ; fewest votes then is out. */
+function lookback(rounds,tied){
+  var T=tied.slice(), trail=[];
+  for(var r=rounds.length-2;r>=0&&T.length>1;r--){
+    var cs=rounds[r].counts, vals=T.map(function(c){return cs[c]});
+    var min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
+    if(min!==max){
+      trail.push({round:r+1,vals:T.map(function(c){return [c,cs[c]]})});
+      T=T.filter(function(c){return cs[c]===min});
+    }
+  }
+  return {left:T,trail:trail};
+}
+
+/* All ballots: how many rank the row candidate above the column candidate. */
+function pairwise(groups,cands){
+  var m=Object.create(null);
+  cands.forEach(function(a){m[a]=Object.create(null);cands.forEach(function(b){m[a][b]=0})});
+  groups.forEach(function(g){
+    cands.forEach(function(a){
+      var ia=g.r.indexOf(a); if(ia<0) return;
+      cands.forEach(function(b){
+        if(a===b) return;
+        var ib=g.r.indexOf(b);
+        if(ib<0||ia<ib) m[a][b]+=g.n;
+      });
+    });
+  });
+  return m;
+}
+
+/* Step 3: among the tied, the candidate with the worst pairwise record is out. */
+function headToHead(m,tied){
+  var sc=Object.create(null), pairs=[];
+  tied.forEach(function(a){sc[a]=0});
+  tied.forEach(function(a,i){tied.forEach(function(b,j){
+    if(a===b) return;
+    if(m[a][b]>m[b][a]) sc[a]+=1; else if(m[a][b]<m[b][a]) sc[a]-=1;
+    if(i<j) pairs.push({a:a,b:b,x:m[a][b],y:m[b][a]});
+  })});
+  var vals=tied.map(function(a){return sc[a]}), min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
+  return {left:min===max?tied.slice():tied.filter(function(a){return sc[a]===min}),pairs:pairs};
+}
+
+function run(groups,cands,mode,rng){
+  var alive=cands.slice(), rounds=[], ties=[], memo={}, res={mode:mode,rounds:rounds,ties:ties};
+  for(;;){
+    var s=step(groups,alive);
+    var R={counts:s.counts,exhausted:s.exhausted,cont:s.cont,alive:alive.slice(),elim:[],rule:null};
+    rounds.push(R);
+    if(s.kind==="win"){R.rule="majority";res.status="winner";res.winner=s.winner;break}
+    if(s.kind==="none"){res.status="none";break}
+    if(s.kind==="elim"){
+      R.elim=s.elim; R.rule=s.rule; R.batch=s.batch;
+      alive=alive.filter(function(c){return s.elim.indexOf(c)<0});
+      continue;
+    }
+    var T={round:rounds.length,tied:s.tied};
+    ties.push(T); R.tie=T;
+    T.branches=s.tied.map(function(x){
+      var o=explore(groups,alive.filter(function(c){return c!==x}),memo), ws=uniq(o.map(function(e){return e.w}));
+      return {elim:x,winners:ws,fin:ws.length===1?o[0].fin:null};
+    });
+    T.possible=uniq([].concat.apply([],T.branches.map(function(b){return b.winners}))).sort();
+    T.matters=T.possible.length>1;
+    var drop=null;
+    if(!T.matters){
+      drop=s.tied[0]; R.rule="tie-harmless"; T.resolved={rule:"harmless",elim:drop};
+    }else if(mode==="advisory"){
+      R.rule="tie-stop"; T.resolved={rule:"stop"}; res.status="tied"; res.tie=T; break;
+    }else{
+      var lb=lookback(rounds,s.tied); T.lookback=lb;
+      if(lb.left.length===1){drop=lb.left[0]; R.rule="lookback"}
+      else{
+        var h=headToHead(pairwise(groups,cands),lb.left); T.h2h=h;
+        if(h.left.length===1){drop=h.left[0]; R.rule="h2h"}
+        else{
+          var pick=h.left[Math.floor(rng()*h.left.length)];
+          T.draw={left:h.left,pick:pick}; drop=pick; R.rule="draw";
+        }
+      }
+      T.resolved={rule:R.rule,elim:drop};
+    }
+    R.elim=[drop];
+    alive=alive.filter(function(c){return c!==drop});
+  }
+  return res;
+}
+
+function mkrng(seed){
+  var a=seed>>>0;
+  return function(){a+=0x6D2B79F5; var t=a; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296};
+}
+/*ENGINE-END*/
+
+/* ---------- interface ---------- */
+var PRESETS={
+ ex1:"30: A\n28: B\n3: C\n3: D",
+ ex2:"34: A\n30: B\n20: C > B\n12: D > C\n2: D > B\n2: D > A",
+ ex3:"40: A\n25: B\n15: C > A\n15: D > A\n5: E > A",
+ ex4:"50: A\n50: B"
+};
+var HAVE=false;
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]})}
+function n(x){return x.toLocaleString("en-US")}
+function pct(a,b){return b?(100*a/b).toFixed(1)+"%":"0.0%"}
+function mode(){return document.querySelector("input[name=mode]:checked").value}
+
+function view(P,res){
+  var D=function(k){return esc(P.disp[k])};
+  var L=function(ks){var a=ks.map(D);return a.length<2?a.join(""):a.slice(0,-1).join(", ")+" and "+a[a.length-1]};
+  var total=P.total, last=res.rounds[res.rounds.length-1], h="", say="";
+
+  /* verdict */
+  var tag=res.mode==="advisory"?"Advisory vote result":"Election result", cls="", strong="", body="";
+  if(res.status==="none"){
+    strong="Nothing to count."; body="No ballot ranks a candidate."; say="No ballots to count.";
+  }else if(res.status==="tied"){
+    var T=res.tie; cls=" diff";
+    strong="Tied.";
+    body=L(T.possible)+" could each win: the result depends on how a tie for last place in round "+T.round+" is broken. An advisory vote publishes this as a split and shows the count for each branch below. Exhausted so far: "+n(last.exhausted)+" of "+n(total)+" ballots ("+pct(last.exhausted,total)+").";
+    say="Counted: tied between "+T.possible.map(function(k){return P.disp[k]}).join(" and ")+".";
+  }else{
+    var w=res.winner, notes=[], drew=false;
+    res.ties.forEach(function(T){
+      if(T.resolved.rule==="harmless") notes.push("A tie in round "+T.round+" did not change the outcome.");
+      else{
+        var nm={lookback:"look-back",h2h:"head-to-head",draw:"a seeded random draw"}[T.resolved.rule];
+        if(T.resolved.rule==="draw") drew=true;
+        notes.push("A tie in round "+T.round+" changed the outcome and was settled by "+nm+".");
+      }
+    });
+    if(drew) cls=" diff";
+    strong=D(w)+" wins";
+    body="with "+n(last.counts[w])+" of "+n(last.cont)+" continuing ballots ("+pct(last.counts[w],last.cont)+"). Exhausted: "+n(last.exhausted)+" of "+n(total)+" ballots ("+pct(last.exhausted,total)+"). "+esc(notes.join(" "));
+    say="Counted: "+P.disp[w]+" wins."+(drew?" A random draw was used.":"");
+  }
+  h+='<div class="verdict'+cls+'"><span class="tag">'+tag+'</span><strong>'+strong+'</strong> '+body+'</div>';
+
+  /* bars for the last round */
+  if(last.cont>0){
+    var al=last.alive.slice().sort(function(a,b){return last.counts[b]-last.counts[a]||(a<b?-1:1)});
+    h+='<h3>Last round counted (round '+res.rounds.length+')</h3><div class="bars" role="list">';
+    al.forEach(function(k){
+      var p=100*last.counts[k]/last.cont;
+      h+='<div class="bar" role="listitem"><span>'+D(k)+'</span><span class="track" aria-hidden="true"><span class="fill" style="display:block;width:'+p.toFixed(1)+'%"></span></span><span>'+n(last.counts[k])+' ('+p.toFixed(1)+'%)</span></div>';
+    });
+    h+='</div>';
+  }
+
+  /* round table */
+  var what=function(R,i){
+    var T=R.tie;
+    switch(R.rule){
+      case "majority": return D(res.winner)+" holds "+n(R.counts[res.winner])+" of "+n(R.cont)+" continuing ballots, which is more than half.";
+      case "lowest": return D(R.elim[0])+" has the fewest votes and is eliminated. Their ballots move to the next choice still in the race.";
+      case "batch": return L(R.elim)+" hold "+n(R.batch.sum)+" votes together, fewer than the next candidate's "+n(R.batch.next)+", so they are eliminated at once (Step 0).";
+      case "tie-harmless": return L(T.tied)+" tie for fewest with "+n(R.counts[T.tied[0]])+" each. Either elimination elects "+D(T.possible[0])+", so the tie does not change the outcome (Step 1). "+D(R.elim[0])+" is dropped to continue.";
+      case "tie-stop": return L(T.tied)+" tie for fewest with "+n(R.counts[T.tied[0]])+" each, and the outcome depends on which goes (Step 1). The count stops here for an advisory vote.";
+      case "lookback": return L(T.tied)+" tie for fewest with "+n(R.counts[T.tied[0]])+" each. Look-back (Step 2) eliminates "+D(R.elim[0])+".";
+      case "h2h": return L(T.tied)+" tie for fewest with "+n(R.counts[T.tied[0]])+" each. Look-back could not separate them; head-to-head (Step 3) eliminates "+D(R.elim[0])+".";
+      case "draw": return L(T.tied)+" tie for fewest with "+n(R.counts[T.tied[0]])+" each. Nothing earlier separates them, so a seeded random draw (Step 4) eliminates "+D(R.elim[0])+".";
+    }
+    return "No continuing ballots.";
+  };
+  h+='<h3>Round by round</h3><div class="scroll" tabindex="0" role="region" aria-label="Round by round counts"><table class="rounds"><caption>Votes per candidate in each round</caption><thead><tr><th scope="col">Round</th>';
+  P.cands.forEach(function(k){h+='<th scope="col" class="num">'+D(k)+'</th>'});
+  h+='<th scope="col" class="num">Exhausted</th><th scope="col">What happened</th></tr></thead><tbody>';
+  res.rounds.forEach(function(R,i){
+    h+='<tr><th scope="row">'+(i+1)+'</th>';
+    P.cands.forEach(function(k){
+      if(R.alive.indexOf(k)<0) h+='<td class="num"><span aria-hidden="true">&ndash;</span><span class="sr">out of the race</span></td>';
+      else{
+        var tagx=R.elim.indexOf(k)>=0?' <span class="out">(out)</span>':(R.rule==="majority"&&res.winner===k?' <span class="out">(wins)</span>':'');
+        h+='<td class="num">'+n(R.counts[k])+tagx+'</td>';
+      }
+    });
+    h+='<td class="num">'+n(R.exhausted)+'</td><td class="what">'+what(R,i)+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+
+  /* tie sections */
+  res.ties.forEach(function(T){
+    h+='<h3>Tie in round '+T.round+': '+L(T.tied)+' tie for fewest</h3>';
+    h+='<div class="scroll" tabindex="0" role="region" aria-label="Tie check for round '+T.round+'"><table style="min-width:420px"><caption>Step 1: does the tie matter? Re-run the count with each tied candidate eliminated.</caption><thead><tr><th scope="col">If eliminated</th><th scope="col">Result</th><th scope="col" class="num">Last round of that run</th></tr></thead><tbody>';
+    T.branches.forEach(function(b){
+      var res1=b.winners.length===1?D(b.winners[0])+" wins":"Further ties: "+L(b.winners)+" could win";
+      var fin="";
+      if(b.fin){
+        var f=b.fin; fin=f.alive.slice().sort(function(a,c){return f.counts[c]-f.counts[a]||(a<c?-1:1)}).map(function(k){return D(k)+" "+n(f.counts[k])}).join(", ");
+      }
+      h+='<tr><th scope="row">'+D(b.elim)+'</th><td>'+res1+'</td><td class="num">'+(fin||"&ndash;")+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+    if(!T.matters){
+      h+='<p>Every run elects '+D(T.possible[0])+', so the tie does not change the outcome. The count above continued by dropping '+D(T.resolved.elim)+'; dropping any other tied candidate gives the same winner.</p>';
+    }else if(res.mode==="advisory"){
+      h+='<p>The runs elect different winners, so the tie matters. For an advisory vote the proposal says to publish the result as <strong>tied</strong>, with the count for each branch, and not to pick a random winner.</p>';
+    }else{
+      h+='<p>The runs elect different winners, so the tie matters. An election continues down the cascade:</p><ul class="plain">';
+      var lb=T.lookback;
+      if(!lb.trail.length) h+='<li><strong>Step 2, look-back.</strong> No earlier round separates them.</li>';
+      else{
+        h+='<li><strong>Step 2, look-back.</strong> ';
+        lb.trail.forEach(function(t){h+='Round '+t.round+': '+t.vals.map(function(v){return D(v[0])+" "+n(v[1])}).join(", ")+'. '});
+        h+=lb.left.length===1?D(lb.left[0])+' had the fewest in the most recent round that differs, so '+D(lb.left[0])+' is eliminated.':'Still tied between '+L(lb.left)+'.';
+        h+='</li>';
+      }
+      if(T.h2h){
+        h+='<li><strong>Step 3, head-to-head.</strong> Across all ballots: '+T.h2h.pairs.map(function(p){return D(p.a)+" over "+D(p.b)+", "+n(p.x)+" to "+n(p.y)}).join("; ")+'. ';
+        h+=T.h2h.left.length===1?D(T.h2h.left[0])+' has the worst pairwise record and is eliminated.':'No pairwise result separates '+L(T.h2h.left)+'.';
+        h+='</li>';
+      }
+      if(T.draw) h+='<li><strong>Step 4, verifiable random draw.</strong> Between '+L(T.draw.left)+', the seeded draw eliminates '+D(T.draw.pick)+'. Here a seed makes the result repeatable. The proposal calls for public randomness committed before the count.</li>';
+      h+='</ul>';
+    }
+  });
+
+  /* pairwise table, aggregates only */
+  var m=pairwise(P.groups,P.cands);
+  h+='<details><summary>Pairwise comparison table (aggregate counts only)</summary><div class="scroll" tabindex="0" role="region" aria-label="Pairwise comparison table"><table style="min-width:360px"><caption>Ballots that rank the row candidate above the column candidate</caption><thead><tr><th scope="col"><span class="sr">Row candidate</span></th>';
+  P.cands.forEach(function(k){h+='<th scope="col" class="num">'+D(k)+'</th>'});
+  h+='</tr></thead><tbody>';
+  P.cands.forEach(function(a){
+    h+='<tr><th scope="row">'+D(a)+'</th>';
+    P.cands.forEach(function(b){
+      if(a===b) h+='<td class="num"><span aria-hidden="true">&ndash;</span><span class="sr">same candidate</span></td>';
+      else if(m[a][b]>m[b][a]) h+='<td class="num"><strong>'+n(m[a][b])+'</strong><span class="sr"> (ahead)</span></td>';
+      else h+='<td class="num">'+n(m[a][b])+'</td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table></div><p class="note">Bold means more ballots prefer the row candidate than the column candidate. A ballot that ranks only the row candidate counts as ranking it above everyone it leaves off. The table shows counts only, not individual rankings. Whether it can be published without exposing rankings is open question 5 in the proposal.</p></details>';
+
+  $("out").className=""; $("out").innerHTML=h;
+  $("status").textContent=say;
+}
+
+function count(){
+  var P=parse($("ballots").value), er=$("err"), ta=$("ballots");
+  if(P.errs.length){
+    er.hidden=false; er.setAttribute("role","alert");
+    er.innerHTML="<strong>Check the ballots.</strong> "+P.errs.slice(0,4).map(esc).join(" ");
+    ta.setAttribute("aria-invalid","true"); HAVE=false;
+    $("out").className="empty"; $("out").textContent="Fix the ballots above, then count again.";
+    $("status").textContent="Could not count: "+P.errs[0];
+    return;
+  }
+  er.hidden=true; er.removeAttribute("role"); ta.removeAttribute("aria-invalid");
+  var seed=parseInt($("seed").value,10); if(!(seed>=1)) seed=1;
+  view(P,run(P.groups,P.cands,mode(),mkrng(seed)));
+  HAVE=true;
+}
+
+$("go").addEventListener("click",count);
+Array.prototype.forEach.call(document.querySelectorAll("[data-preset]"),function(b){
+  b.addEventListener("click",function(){$("ballots").value=PRESETS[b.getAttribute("data-preset")];count()});
+});
+Array.prototype.forEach.call(document.querySelectorAll("input[name=mode]"),function(r){
+  r.addEventListener("change",function(){if(HAVE)count()});
+});
+$("seed").addEventListener("change",function(){if(HAVE)count()});
+$("ballots").value=PRESETS.ex2;
+count();
+})();
+</script>
+</body>
+</html>

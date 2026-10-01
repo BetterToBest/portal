@@ -3,8 +3,12 @@
 <meta name="color-scheme" content="light dark">
 <title>CIP Simulator: mild majority, intense minority</title>
 <meta name="description" content="An illustrative model comparing one-person-one-vote with quadratic voting when a minority cares intensely.">
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="preload" href="../assets/fonts/newsreader-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+@font-face{font-family:'Newsreader';font-style:normal;font-weight:200 800;font-display:swap;src:url(../assets/fonts/newsreader-normal.woff2) format('woff2')}
+@font-face{font-family:'Newsreader';font-style:italic;font-weight:200 800;font-display:swap;src:url(../assets/fonts/newsreader-italic.woff2) format('woff2')}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(../assets/fonts/instrument-sans.woff2) format('woff2')}
 :root{--paper:#eef1f4;--ink:#14213d;--muted:#4a5670;--teal:#0a7375;--amber:#d98a1f;--win:#8a5200;--line:#cbd3de;--card:#fff}
 @media(prefers-color-scheme:dark){:root{--paper:#0e1526;--ink:#e8edf7;--muted:#a9b4ca;--teal:#3fc6c8;--amber:#f0a83a;--win:#f0a83a;--line:#2b3652;--card:#172036}}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 'Instrument Sans',system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}

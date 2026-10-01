@@ -18,10 +18,12 @@
 <meta name="twitter:image" content="https://bettertobest.github.io/portal/assets/og-image.png">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2314213d'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%230f8b8d'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/newsreader-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+@font-face{font-family:'Newsreader';font-style:normal;font-weight:200 800;font-display:swap;src:url(assets/fonts/newsreader-normal.woff2) format('woff2')}
+@font-face{font-family:'Newsreader';font-style:italic;font-weight:200 800;font-display:swap;src:url(assets/fonts/newsreader-italic.woff2) format('woff2')}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(assets/fonts/instrument-sans.woff2) format('woff2')}
 :root{--paper:#eef1f4;--ink:#14213d;--muted:#4a5670;--teal:#0a7375;--amber:#d98a1f;--line:#cbd3de;--card:#fff;--btn:#14213d;--btnfg:#fff;--cta:#14213d;--hdr:rgba(238,241,244,.94);--bad:#fbe9e7;--good:#e3f4f4;--serif:'Newsreader',Georgia,serif;--sans:'Instrument Sans',system-ui,sans-serif}
 @media(prefers-color-scheme:dark){:root{--paper:#0e1526;--ink:#e8edf7;--muted:#a9b4ca;--teal:#3fc6c8;--amber:#f0a83a;--line:#2b3652;--card:#172036;--btn:#e8edf7;--btnfg:#0e1526;--cta:#1d2b4d;--hdr:rgba(14,21,38,.94);--bad:#3b1a1a;--good:#123236}}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:72px}
@@ -104,7 +106,7 @@ footer{max-width:1080px;margin:auto;padding:48px 20px 60px;font-size:14px;color:
 <div class="lab" id="lab" role="tabpanel"></div>
 <p style="margin-top:20px"><strong>This is a starting point, not a closed list.</strong> New voting and deliberation systems, such as approval voting or new ways to structure debate, can be proposed, prototyped and added as the community builds. <a href="https://github.com/BetterToBest/portal/discussions">Suggest one in Discussions</a>.</p>
 <p>Want a bigger model? Try the <a href="simulator/">mild-majority, intense-minority simulator</a>, which compares one-person-one-vote with quadratic voting.</p>
-A second model tests <a href="simulator/liquid/">liquid delegation with caps and cycles</a>.
+<p>A second model tests <a href="simulator/liquid/">liquid delegation with caps and cycles</a>. A third shows <a href="simulator/ranked/">ranked-choice counting and tie-breaks</a>.</p>
 <p class="note">The demos are simplified illustrations of the proposed designs, not working election software.</p>
 </section>
 

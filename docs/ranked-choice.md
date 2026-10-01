@@ -1,6 +1,6 @@
 # Ranked-Choice Tie-Break Rules (proposal v0.1)
 
-Status: **draft proposal for review.** It answers issue #13. The paper uses ranked-choice voting to elect Oversight Board members (Appendix A.3) and the Research Hub lists it among the voting configurations CIP would support, but neither gives counting or tie-break rules. Everything below is a proposal. The simulator work (issue #5) follows once this is agreed.
+Status: **draft proposal for review.** It answers issue #13. The paper uses ranked-choice voting to elect Oversight Board members (Appendix A.3) and the Research Hub lists it among the voting configurations CIP would support, but neither gives counting or tie-break rules. Everything below is a proposal. A [simulator](../simulator/ranked/) applies these rules to ballots you type or choose (issue #5).
 
 ## Scope
 

@@ -73,4 +73,4 @@ Splitting live users into groups and measuring behavior is tracking by another n
 2. Who audits the Tier 1 promise, and how often?
 3. Is a preview channel a fair sample, or does it bias what gets fixed?
 4. Are ballot timestamps and batching compatible with the verifiable-receipt design (§4.3)?
-5. The project's own pages currently load fonts from a third-party font service, which sends each visitor's address to that service. Should the pages self-host fonts before the prototype phase, so the site follows its own rule?
+5. Fonts: resolved. The project's own pages now serve their fonts from `assets/fonts/` (see the README there), so visiting them sends nothing to a font service. Open for reviewers: should the repository check in Enforcement ideas also cover fonts and images?
