@@ -29,7 +29,9 @@ The paper does not say what happens in these two cases. The simulator models the
 2. A voter whose delegation would go over the cap is **returned to direct voting**, notified, and given time to vote or choose another delegate before the vote closes.
 3. When a delegate is full, **which voters are turned away is decided by a random draw**: a seeded shuffle in the simulator, and a verifiable public random draw in a real system. First come first served was considered and set aside because it rewards racing to sign people up. How the draw is made verifiable, and when it runs, is open question 2 below.
 
-Not modeled: topic-specific delegation, expiry, and delegate competence. Whether the delegation graph is public is also open, because public delegations can show how a person's vote was cast.
+**Topics and yearly renewal (approximated in the simulator).** Paper section 4.4.2 proposes delegation limited to topics and renewed every year. The simulator has two optional sliders for this: the share of delegations that do not cover the topic being voted on (those delegators vote directly), and the share that lapsed without renewal (those people either vote directly or sit this vote out, and a vote that reaches someone who sat out is not cast). At the default settings both are off. These are simplifications: delegates are not chosen differently per topic, and renewal is not tied to a date. Illustrative result (500 voters, 40% delegating, 52% preferring A, 300 trials, seed 1, cap on): with half of all delegations lapsed and half of those people sitting out, about 12% of votes were not cast, and the outcome differed from the direct vote in about 16% of trials, against about 12% with no lapses. This is a toy model, not a prediction; it only shows why renewal needs a reminder step (open question 7).
+
+Not modeled: delegate competence (the paper's "expertise verification" for delegates, section 4.4.2). Whether the delegation graph is public is also open, because public delegations can show how a person's vote was cast.
 
 ## Quadratic voting (budgets)
 
@@ -49,5 +51,6 @@ Listed on the Research Hub among the voting configurations CIP would support. Th
 4. How is collusion in quadratic voting (splitting identities, coordinating) detected?
 5. How many credits per person, and how often do they refresh?
 6. Which system fits which decision type?
+7. Yearly renewal of delegations: how are people reminded before a delegation lapses, and whose vote counts, if anyone's, in the meantime?
 
 New systems can be proposed too. Open a Discussion.

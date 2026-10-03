@@ -91,6 +91,11 @@ tr.key td{font-weight:600}
   <label><input type="radio" name="cyc" value="fallback" checked> Everyone in the loop votes directly; people delegating into it follow them</label>
   <label><input type="radio" name="cyc" value="lost"> Every vote that reaches the loop is lost</label>
 </fieldset>
+<fieldset>
+  <legend>Extensions from the paper (off at their default settings)</legend>
+  <p class="note">Section 4.4.2 of the paper proposes delegation limited to topics and renewed every year. The defaults below leave both out, so the model tests only the cap and the loop rules unless you move them.</p>
+  <div id="extCtl"></div>
+</fieldset>
 <div class="ctl">
   <label for="seed">Random seed</label><output id="seedOut"></output>
   <input type="number" id="seed" value="1" min="1" step="1" style="grid-column:1/-1;max-width:10rem;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)">
@@ -101,6 +106,8 @@ tr.key td{font-weight:600}
   <button type="button" class="alt" data-preset="paper">Preset: paper proposal</button>
   <button type="button" class="alt" data-preset="nocap">Preset: no cap</button>
   <button type="button" class="alt" data-preset="loops">Preset: many loops, votes lost</button>
+  <button type="button" class="alt" data-preset="topic">Preset: half the delegations cover this topic</button>
+  <button type="button" class="alt" data-preset="expiry">Preset: half the delegations lapse</button>
 </div>
 <p class="note">A preset loads its settings and runs 300 trials straight away.</p>
 </section>
@@ -115,7 +122,7 @@ tr.key td{font-weight:600}
 <div id="manyOut" class="empty" aria-live="polite">Run 300 trials to see how often delegation changes the outcome.</div>
 </section>
 
-<p class="note">Illustrative model, not a prediction. Each voter prefers A or B. A chosen share delegate instead of voting; each picks a delegate who may also be delegating, so chains form. A delegate's vote follows the delegate's own preference, so weight concentrates but expertise is not modeled. When a delegate is already at the cap, which delegators are turned away is decided by a random draw (a seeded shuffle), and they vote directly. Delegation is not issue-specific and does not expire, unlike the paper's proposal (section 4.4.2), so this tests only the cap and the loop rules. Outcome "differs" includes ties. Try the same seed under different settings to compare like with like.</p>
+<p class="note">Illustrative model, not a prediction. Each voter prefers A or B. A chosen share delegate instead of voting; each picks a delegate who may also be delegating, so chains form. A delegate's vote follows the delegate's own preference, so weight concentrates but expertise is not modeled. When a delegate is already at the cap, which delegators are turned away is decided by a random draw (a seeded shuffle), and they vote directly. The paper (section 4.4.2) proposes delegation limited to topics and renewed every year. Two optional sliders approximate that: a share of delegations that do not cover this vote's topic (those delegators vote directly), and a share that have lapsed without renewal (those people either vote directly or sit this vote out, and any vote that reaches someone who sat out is not cast). With both at their defaults, delegation covers every topic and never expires, so only the cap and the loop rules are tested. The paper's expertise verification for delegates (delegate competence) is not modeled. Outcome "differs" includes ties, and uncast votes count against the delegated tally. Try the same seed under different settings to compare like with like.</p>
 </main>
 
 <script>
@@ -132,6 +139,11 @@ var CONTROLS=[
  ["m","Mutual delegation (two people pick each other)",0,50,5,1,"%"]
 ];
 var CAP=["cap","Cap: most voters one delegate may speak for",1,20,1,1,"%"];
+var EXT=[
+ ["t","Delegations that cover this vote's topic",0,100,100,5,"%"],
+ ["e","Delegations that lapsed (not renewed this year)",0,100,0,5,"%"],
+ ["q","Of those lapsed, share who vote directly instead of sitting out",0,100,50,5,"%"]
+];
 
 function slider(c,host){
   var w=document.createElement("div"); w.className="ctl";
@@ -145,6 +157,7 @@ function slider(c,host){
 }
 CONTROLS.forEach(function(c){slider(c,$("sliders"))});
 slider(CAP,$("capCtl"));
+EXT.forEach(function(c){slider(c,$("extCtl"))});
 $("capOn").addEventListener("change",function(){$("cap").disabled=!this.checked});
 
 function setSeedOut(){$("seedOut").textContent=""}
@@ -153,6 +166,7 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a
 function params(){
   return {N:+$("n").value,d:+$("d").value/100,p:+$("p").value/100,h:+$("h").value/100,
     a:+$("a").value/100,m:+$("m").value/100,capOn:$("capOn").checked,cap:+$("cap").value/100,
+    t:+$("t").value/100,e:+$("e").value/100,q:+$("q").value/100,
     cyc:document.querySelector("input[name=cyc]:checked").value};
 }
 
@@ -163,6 +177,15 @@ function trial(P,seed){
   var targets=[],directA=0;
   for(i=0;i<N;i++){pref[i]=r()<P.p?1:0;directA+=pref[i]}
   for(i=0;i<N;i++)isDel[i]=r()<P.d?1:0;
+  /* optional extensions; no random numbers are drawn at the defaults, so default runs are unchanged */
+  var abst=new Uint8Array(N),uncov=0,lapsed=0;
+  if(P.t<1||P.e>0){
+    for(i=0;i<N;i++){
+      if(!isDel[i])continue;
+      if(P.t<1&&r()>=P.t){isDel[i]=0;uncov++;continue}
+      if(P.e>0&&r()<P.e){isDel[i]=0;lapsed++;if(r()>=P.q)abst[i]=1}
+    }
+  }
   for(i=0;i<N;i++){
     if(!isDel[i])continue;
     j=-1;
@@ -197,14 +220,15 @@ function trial(P,seed){
     for(t=0;t<path.length;t++){term[path[t]]=end;state[path[t]]=2}
   }
   var capW=P.capOn?Math.max(1,Math.floor(P.cap*N)):Infinity;
-  var w=new Int32Array(N),lost=0,capFall=0;
-  for(i=0;i<N;i++)if(term[i]===i)w[i]=1;
+  var w=new Int32Array(N),lost=0,capFall=0,notCast=0;
+  for(i=0;i<N;i++)if(term[i]===i&&!abst[i])w[i]=1;
   var order=[];for(i=0;i<N;i++)order.push(i);
   for(i=N-1;i>0;i--){j=(r()*(i+1))|0;t=order[i];order[i]=order[j];order[j]=t}
   order.forEach(function(v){
     var tt=term[v];
-    if(tt===v)return;
+    if(tt===v){if(abst[v])notCast++;return}
     if(tt===-2){lost++;return}
+    if(abst[tt]){notCast++;return}
     if(w[tt]<capW)w[tt]++;else{capFall++;w[v]=1}
   });
   var A=0,B=0,maxW=0;
@@ -212,7 +236,7 @@ function trial(P,seed){
   var dw=directA*2>N?1:(directA*2<N?-1:0),lw=A>B?1:(A<B?-1:0);
   var top=[];for(i=0;i<N;i++)if(w[i]>1)top.push([i,w[i],pref[i]]);
   top.sort(function(a,b){return b[1]-a[1]});
-  return {N:N,A:A,B:B,directA:directA,directB:N-directA,lost:lost,capFall:capFall,maxW:maxW,
+  return {N:N,A:A,B:B,directA:directA,directB:N-directA,lost:lost,capFall:capFall,maxW:maxW,uncov:uncov,lapsed:lapsed,notCast:notCast,
     capW:capW,top:top.slice(0,10),differs:dw!==lw,dw:dw,lw:lw,
     shift:Math.abs(A/(A+B||1)-directA/N)};
 }
@@ -235,6 +259,8 @@ function showOne(P,seed){
   out.appendChild(line("With delegation: ","A "+R.A+", B "+R.B+(R.lost?" ("+R.lost+" votes lost to loops)":"")+"."));
   out.appendChild(verdict(R));
   if(isFinite(R.capW))out.appendChild(el("p","","Delegators sent back to direct voting because their delegate hit the cap: "+R.capFall+"."));
+  if(P.t<1)out.appendChild(el("p","","Delegators whose delegation did not cover this topic, so they voted directly: "+R.uncov+"."));
+  if(P.e>0)out.appendChild(el("p","","Delegations that lapsed: "+R.lapsed+". Votes not cast because a person sat out or a delegation ended with someone who sat out: "+R.notCast+"."));
   if(R.top.length){
     out.appendChild(el("p","","Heaviest delegates (votes each one casts"+(isFinite(R.capW)?"; amber line is the cap of "+R.capW:"")+"):"));
     var bars=el("div","bars"),scale=Math.max(R.top[0][1],isFinite(R.capW)?R.capW:0);
@@ -251,8 +277,8 @@ function showOne(P,seed){
 }
 
 function showMany(P,seed,T){
-  var diff=0,mw=[],lost=0,fall=0,shift=0,k,R;
-  for(k=0;k<T;k++){R=trial(P,seed+k);if(R.differs)diff++;mw.push(R.maxW/P.N);lost+=R.lost/P.N;fall+=R.capFall/P.N;shift+=R.shift}
+  var diff=0,mw=[],lost=0,fall=0,shift=0,unc=0,nc=0,k,R;
+  for(k=0;k<T;k++){R=trial(P,seed+k);if(R.differs)diff++;mw.push(R.maxW/P.N);lost+=R.lost/P.N;fall+=R.capFall/P.N;shift+=R.shift;unc+=R.uncov/P.N;nc+=R.notCast/P.N}
   mw.sort(function(a,b){return a-b});
   var mean=mw.reduce(function(a,b){return a+b},0)/T,p95=mw[Math.floor(0.95*(T-1))];
   var rows=[
@@ -263,6 +289,8 @@ function showMany(P,seed,T){
     ["Delegators sent back to direct voting by the cap, average",pct(fall/T)],
     ["Average shift in A's share versus direct voting",(shift/T*100).toFixed(1)+" points"]
   ];
+  if(P.t<1)rows.push(["Delegators voting directly because their delegation did not cover the topic, average",pct(unc/T)]);
+  if(P.e>0)rows.push(["Votes not cast because delegations lapsed, average",pct(nc/T)]);
   var out=$("manyOut");clear(out);out.className="";
   out.appendChild(el("p","",T+" trials, seeds "+seed+" to "+(seed+T-1)+", "+P.N+" voters, "+Math.round(P.p*100)+"% prefer A."));
   var sc=el("div","scroll"),tb=el("table"),cap=el("caption","note","Results across trials");cap.style.textAlign="left";cap.style.captionSide="top";
@@ -280,15 +308,17 @@ $("many").addEventListener("click",function(){
 });
 
 var PRESETS={
-  paper:{capOn:true,cap:1,cyc:"fallback",n:500,d:40,m:5},
-  nocap:{capOn:false,cap:1,cyc:"fallback",n:500,d:40,m:5},
-  loops:{capOn:false,cap:1,cyc:"lost",n:500,d:60,m:30}
+  paper:{capOn:true,cap:1,cyc:"fallback",n:500,d:40,m:5,t:100,e:0,q:50},
+  nocap:{capOn:false,cap:1,cyc:"fallback",n:500,d:40,m:5,t:100,e:0,q:50},
+  loops:{capOn:false,cap:1,cyc:"lost",n:500,d:60,m:30,t:100,e:0,q:50},
+  topic:{capOn:true,cap:1,cyc:"fallback",n:500,d:40,m:5,t:50,e:0,q:50},
+  expiry:{capOn:true,cap:1,cyc:"fallback",n:500,d:40,m:5,t:100,e:50,q:50}
 };
 document.querySelectorAll("[data-preset]").forEach(function(b){
   b.addEventListener("click",function(){
     var p=PRESETS[b.getAttribute("data-preset")];
     $("capOn").checked=p.capOn;$("cap").disabled=!p.capOn;
-    ["cap","n","d","m"].forEach(function(k){$(k).value=p[k];$(k).dispatchEvent(new Event("input"))});
+    ["cap","n","d","m","t","e","q"].forEach(function(k){$(k).value=p[k];$(k).dispatchEvent(new Event("input"))});
     document.querySelector("input[name=cyc][value="+p.cyc+"]").checked=true;
     $("many").click();
   });
