@@ -37,7 +37,7 @@ The smallest useful result. A reader can see exactly what CIP would do and chall
 
 ## Large outcome: a prototype that can be inspected
 
-Phase 3 of the roadmap. Open source, under Apache-2.0 for code.
+Phase 3 of the roadmap, planned in [phase-3-plan.md](phase-3-plan.md). Open source, under Apache-2.0 for code.
 
 - A prototype of proposals, signatures, comment periods and a tamper-evident log, runnable from the repository by someone who did not write it.
 - A published test plan, with the checks that must pass before any real vote is run.

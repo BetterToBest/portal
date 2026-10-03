@@ -19,7 +19,7 @@ You do not need to be a developer. Every contribution below matters.
 | 0 | Overview page and contributor guide | Done |
 | 1 | Specs: threat model, data model, voting rules in `/docs` | In progress: drafts in `/docs` |
 | 2 | Simulator: browser demo of direct, liquid and quadratic voting | Four models live in `/simulator` (voting, liquid delegation, ranked-choice, ledger fork); more welcome |
-| 3 | Prototype: proposals, signatures, comment periods, tamper-evident log | Open |
+| 3 | Prototype: proposals, signatures, comment periods, tamper-evident log | Open: draft plan in [docs/phase-3-plan.md](docs/phase-3-plan.md) |
 | 4 | Privacy layer: verifiable ballots without revealing votes | Open |
 | 5 | Pilot design: a small advisory vote with a real community | Open |
 
