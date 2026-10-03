@@ -1,0 +1,37 @@
+name: Prototype tests
+
+# Runs the Phase 3 prototype tests (tests/prototype.test.js) on every push and pull request
+# that touches the prototype or that test. You can also run it by hand:
+# Actions tab > Prototype tests > Run workflow.
+on:
+  push:
+    paths:
+      - "prototype/**"
+      - "tests/prototype.test.js"
+  pull_request:
+    paths:
+      - "prototype/**"
+      - "tests/prototype.test.js"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prototype:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the one Python dependency
+        run: pip install cryptography
+      - name: Run the prototype tests
+        run: node tests/prototype.test.js
