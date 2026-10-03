@@ -6,6 +6,7 @@ A proposed open-source platform for transparent democratic participation, design
 - Research paper: https://bettertobest.github.io/research-hub/citizens-internet-portal.html
 - Try it: simulators for [one person one vote vs quadratic voting](https://bettertobest.github.io/portal/simulator/), [liquid delegation](https://bettertobest.github.io/portal/simulator/liquid/), [ranked-choice tie-breaks](https://bettertobest.github.io/portal/simulator/ranked/), and [ledger fork and halt power](https://bettertobest.github.io/portal/simulator/fork/)
 - Draft rules: [docs](docs/) (voting rules, ranked choice, halt power, data collection, threat model, milestone plan, Phase 3 prototype plan)
+- Prototype (early, test data only): [prototype](prototype/) has a tamper-evident log for proposals and signatures, with two verifiers and deliberately corrupted test logs
 - Contribute: see [CONTRIBUTING.md](CONTRIBUTING.md)
 - Talk to us: [Discussions](https://github.com/BetterToBest/portal/discussions)
 

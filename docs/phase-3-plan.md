@@ -50,6 +50,19 @@ Each step is small enough for one pull request and can be reviewed alone.
 6. **A plain interface (C7).** Static pages where possible, so it can be hosted without a server.
 7. **Test plan.** A published list of the checks that must pass before any real vote is run, even an advisory one.
 
+## Progress
+
+Started in [`prototype/`](../prototype/). It is early, it runs on test data only, and nothing in it is a voting system.
+
+- **Log and verifier core (C4, C5): built.** A hash-chained log with signed Merkle checkpoints, a Node verifier and a Python verifier, both written from the written rules in [prototype/SPEC.md](../prototype/SPEC.md). A log that was rewritten and re-signed by its operator passes every check except one against a checkpoint someone saved earlier, which is the point of publishing checkpoints.
+- **Signatures (C2): built for test keys.** Ed25519, with test identities that anyone can recompute from their label, so nobody can mistake them for real ones.
+- **State rules (C3): built.** Thresholds, comment periods, amendments, duplicate and stale signatures.
+- **Behavior-data tripwire (C6): started.** A test that fails if the prototype code contains network calls, outside addresses or tracking code. It is a coarse check, not a proof.
+- **Record format (C1): partly done.** The format is defined in the spec and checked by the verifiers. A formal JSON Schema is not written; that waits on #9.
+- **Interface (C7) and the test plan: not started.**
+
+A caveat on C5: both verifiers were written by the same person from the same spec. That catches slips but not a shared misreading. A third verifier written by someone else from the spec alone would be the real test.
+
 ## Threats the prototype should be tried against
 
 From the [threat model](threat-model.md), and only the ones a prototype this small can honestly test:
@@ -75,5 +88,8 @@ Threats it cannot test, such as capture of the operators, a 51% attack and vote 
 3. How should test identities be shown so nobody mistakes the prototype for a live system?
 4. Is a hash-chained log with signed checkpoints enough for Phase 3, or should it wait for the privacy layer design?
 5. Who reviews the cryptography, and when? Phase 4 plans an outside review. Should Phase 3 get a lighter one?
+6. Amendments: the prototype clears all signatures when a proposal is amended, so nobody ends up signed to text they did not see, at the cost of restarting the count. Is that the right rule?
+7. Who checks the `time` the operator puts on each entry, given that comment periods depend on it?
+8. Should a signer be able to withdraw a signature, and what would that do to a proposal already in its comment period?
 
 Comments and corrections are welcome in [Discussions](https://github.com/BetterToBest/portal/discussions).

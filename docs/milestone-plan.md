@@ -11,6 +11,7 @@ Nothing in this plan may collect or monetize user behavior data. That is a core 
 | Overview and contributor guide | Live (Phase 0) |
 | Draft specs | Threat model, voting rules, ranked-choice rules, halt-power limits, data-collection policy in `/docs` (Phase 1, in progress) |
 | Simulators | Four browser models: one person one vote versus quadratic voting, liquid delegation, ranked-choice tie-breaks, ledger fork and halt power (Phase 2) |
+| Prototype | Phase 3 has started: a tamper-evident test log for proposals, signatures and comment periods, with two verifiers and corrupted test logs, in `/prototype` (test data only, no interface yet) |
 | Quality checks | Engine tests for the ranked-choice counter run automatically when that page or the tests change; accessibility checks with automated tools |
 | Starter issues | Seven starter issues open for newcomers (#8 to #14), none claimed yet |
 

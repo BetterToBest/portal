@@ -1,0 +1,359 @@
+{
+ "format": "cip-test-log/0",
+ "entries": [
+  {
+   "index": 0,
+   "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+   "time": 1790900000,
+   "record": {
+    "type": "genesis",
+    "author": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c",
+    "body": {
+     "threshold": 3,
+     "comment_seconds": 1000
+    },
+    "sig": "8a76972cc623c6fd5baacf7e82ca2e23cd2963fd6c1e3b879675f4a5053e9be76b6a379c07b88e24a18def713bbcfa6eaa160f13d60035f86482c7c7f06e9e08"
+   },
+   "hash": "bf082f071ec254c503f58ebb2c4ef34dbaf4b493159e8f3a6a395dd97c69940d"
+  },
+  {
+   "index": 1,
+   "prev": "bf082f071ec254c503f58ebb2c4ef34dbaf4b493159e8f3a6a395dd97c69940d",
+   "time": 1790900010,
+   "record": {
+    "type": "register_key",
+    "author": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+    "body": {
+     "public_key": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+     "label": "test-alice"
+    },
+    "sig": "52ef6cb150dc97a3bfdf97944eeb8d7078b2bd5629905cfd37aa2a7762ac7b75f5357b3b663537a510cd506a536efac0a5e9855b94cfa251bc17ad8632115900"
+   },
+   "hash": "5f1a58c80bac8074f54ee6b32887f071a71321db1880d4b799057114a585241b"
+  },
+  {
+   "index": 2,
+   "prev": "5f1a58c80bac8074f54ee6b32887f071a71321db1880d4b799057114a585241b",
+   "time": 1790900011,
+   "record": {
+    "type": "register_key",
+    "author": "ff6aeca7ebe2026930ad105f3f3c5d3d10a0cd71ab9813d2ffade77e6059bb6d",
+    "body": {
+     "public_key": "ff6aeca7ebe2026930ad105f3f3c5d3d10a0cd71ab9813d2ffade77e6059bb6d",
+     "label": "test-bob"
+    },
+    "sig": "e47dcf82747db8ea1a975227a5889740d644c9685f43bc8224e9cc9d08117322fba19c5b4665cc5c5495e9bc3a7ef20236de2a9bcf31f2e42f2ef07278367708"
+   },
+   "hash": "d57823837dfb372de804e7aa26ff9c88e2d134399ad765c10d6839db9ef836a2"
+  },
+  {
+   "index": 3,
+   "prev": "d57823837dfb372de804e7aa26ff9c88e2d134399ad765c10d6839db9ef836a2",
+   "time": 1790900012,
+   "record": {
+    "type": "register_key",
+    "author": "750e0b89008ad5962435d7cfbfbb43e608a7f18d434d937ae260fa0439af9d29",
+    "body": {
+     "public_key": "750e0b89008ad5962435d7cfbfbb43e608a7f18d434d937ae260fa0439af9d29",
+     "label": "test-carol"
+    },
+    "sig": "2432b2d9efcdb9d6f48c4282b91dddbc62efd4574959cf5ccd45ce08a7c3c0fe2b87281837a31c6e6e2da7878721ef5d5f3db977203a4c20e8e3678480938800"
+   },
+   "hash": "0651361420d97d34cab7bf12a9a46c29588cac44ec9a54d9d4d3e959a943e2c2"
+  },
+  {
+   "index": 4,
+   "prev": "0651361420d97d34cab7bf12a9a46c29588cac44ec9a54d9d4d3e959a943e2c2",
+   "time": 1790900013,
+   "record": {
+    "type": "register_key",
+    "author": "554ec195d60e605a100eb829b7ab1120157a3a22993982c4f6794f933fa997ae",
+    "body": {
+     "public_key": "554ec195d60e605a100eb829b7ab1120157a3a22993982c4f6794f933fa997ae",
+     "label": "test-dave"
+    },
+    "sig": "45422c6fa8b5d2d828d0308583b08940086f1d9f5144cf092cab9360f1b424ea14f443f329d657b26d7013cf53d53e568aed1ed80b225f8e9230387ee45d8402"
+   },
+   "hash": "3942d131bd3a8fd1ac6c4159e63cfdd40b0715bfefcbcf227d5af498a9d46a9b"
+  },
+  {
+   "index": 5,
+   "prev": "3942d131bd3a8fd1ac6c4159e63cfdd40b0715bfefcbcf227d5af498a9d46a9b",
+   "time": 1790900100,
+   "record": {
+    "type": "propose",
+    "author": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+    "body": {
+     "title": "Open the budget meetings",
+     "text": "All budget meetings are open to the public and the minutes are posted within 7 days."
+    },
+    "sig": "42ecabaac6555cf4270e0bee32e6f8bdcc308fed11ef97ba1cb3f5debf5a9c1070d78f08e2ff61638154b4f1dd6272d5ab8d4be549c45c94dfc28702880b850b"
+   },
+   "hash": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6"
+  },
+  {
+   "index": 6,
+   "prev": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+   "time": 1790900110,
+   "record": {
+    "type": "sign",
+    "author": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+    "body": {
+     "proposal": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+     "version": "5e8eeb8056d4953588a8a5ebe67228385932dd64aea3a41826354455faf1d0b5"
+    },
+    "sig": "c7c8415ffdf162dbc1fd2f1b7a45cf1b4c2e3f9a057f59c4961359b2d30201c5e8985ca738b4d1e489daf3a1bd10932f21a1a6e680c3016384559d8f54e97b0f"
+   },
+   "hash": "7779de342feefbf611f0f45c04400519f7452f42c8bad35153ed50cef9631d77"
+  },
+  {
+   "index": 7,
+   "prev": "7779de342feefbf611f0f45c04400519f7452f42c8bad35153ed50cef9631d77",
+   "time": 1790900111,
+   "record": {
+    "type": "sign",
+    "author": "ff6aeca7ebe2026930ad105f3f3c5d3d10a0cd71ab9813d2ffade77e6059bb6d",
+    "body": {
+     "proposal": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+     "version": "5e8eeb8056d4953588a8a5ebe67228385932dd64aea3a41826354455faf1d0b5"
+    },
+    "sig": "cd4aa5ed22fc3abbac9e906c27104aa757546e31faa701eff601e114e95ae204a632d43937b944f856ffa5ddd7c4f9bdbde885e9ccd2e7ed38e7535cb9ee7606"
+   },
+   "hash": "c99ff8f42cf2cd6f5c18a43f04f17e36bc58f488c897cfbe37fb669f2cddc44f"
+  },
+  {
+   "index": 8,
+   "prev": "c99ff8f42cf2cd6f5c18a43f04f17e36bc58f488c897cfbe37fb669f2cddc44f",
+   "time": 1790900112,
+   "record": {
+    "type": "sign",
+    "author": "750e0b89008ad5962435d7cfbfbb43e608a7f18d434d937ae260fa0439af9d29",
+    "body": {
+     "proposal": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+     "version": "5e8eeb8056d4953588a8a5ebe67228385932dd64aea3a41826354455faf1d0b5"
+    },
+    "sig": "e85c1734b3f1c39ba6954e7c0b0f62650f3f994d34d4131e2da88027b4ba782ad9b4179a4f0f65b29a2176562ed9a5afbbbc81367842cb20eab8d3456ae20a01"
+   },
+   "hash": "13f2a8be5707ac2856841eeb54168700d4d020c0fd5be88e8c942ebfc7c391d9"
+  },
+  {
+   "index": 9,
+   "prev": "13f2a8be5707ac2856841eeb54168700d4d020c0fd5be88e8c942ebfc7c391d9",
+   "time": 1790900200,
+   "record": {
+    "type": "comment",
+    "author": "554ec195d60e605a100eb829b7ab1120157a3a22993982c4f6794f933fa997ae",
+    "body": {
+     "proposal": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+     "text": "Seven days is too slow for urgent items."
+    },
+    "sig": "5820f03e7ffa73b92e79032406b510055929febff3b40d4f06704e70ccf8d0cfb7de5ec50222a604f4a36a45ef34bec570a3835b594b7bfde8af39c00d835504"
+   },
+   "hash": "1496b830f8860c7178b8d2837584e0e21d7fcba3bb2aae667ac5c6804bf56c7f"
+  },
+  {
+   "index": 10,
+   "prev": "1496b830f8860c7178b8d2837584e0e21d7fcba3bb2aae667ac5c6804bf56c7f",
+   "time": 1790900300,
+   "record": {
+    "type": "amend",
+    "author": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+    "body": {
+     "proposal": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+     "title": "Open the budget meetings",
+     "text": "All budget meetings are open to the public and the minutes are posted within 5 days."
+    },
+    "sig": "c1de980d43307b2f4f31153affbd2cd11bb3bdf56a9e9f496a449e82c91bc6bff3577ae094a78721ceeb537db831e4e07158a3d7ed620b3613170ba9897ce202"
+   },
+   "hash": "ceda14d8d32c6fbf122c268155d64769809b955346771674e01555e6a66448a3"
+  },
+  {
+   "index": 11,
+   "prev": "ceda14d8d32c6fbf122c268155d64769809b955346771674e01555e6a66448a3",
+   "time": 1790900310,
+   "record": {
+    "type": "sign",
+    "author": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+    "body": {
+     "proposal": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+     "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456"
+    },
+    "sig": "6c9fb3ae243fae7a725ccca4e6995235010b21945e0a0bf366a37254de41a1460a3e5ea9bd02f1a0803918f1c1544d016ce4021e32bf096851d853166f09c40e"
+   },
+   "hash": "96dd125b15078f85117c033688e87ceb73c01980971f826734693d39673bba34"
+  },
+  {
+   "index": 12,
+   "prev": "96dd125b15078f85117c033688e87ceb73c01980971f826734693d39673bba34",
+   "time": 1790900311,
+   "record": {
+    "type": "sign",
+    "author": "ff6aeca7ebe2026930ad105f3f3c5d3d10a0cd71ab9813d2ffade77e6059bb6d",
+    "body": {
+     "proposal": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+     "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456"
+    },
+    "sig": "6e44186561b3eebb0d54e1a2a1863197b91386a5c5a7d2781e4149c420b7bf18c97ca9bf4dd5aeefbcaf188c0c565a79a219770ac9a868f5e88c191a46141b08"
+   },
+   "hash": "120ff1d1c1bbd5b4b00c266715a1c3520462d96fc09c836ffe6eb7eac246eb29"
+  },
+  {
+   "index": 13,
+   "prev": "120ff1d1c1bbd5b4b00c266715a1c3520462d96fc09c836ffe6eb7eac246eb29",
+   "time": 1790900312,
+   "record": {
+    "type": "sign",
+    "author": "750e0b89008ad5962435d7cfbfbb43e608a7f18d434d937ae260fa0439af9d29",
+    "body": {
+     "proposal": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+     "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456"
+    },
+    "sig": "7fd3d368dbe645f39ecf8a8ba3a6876dbe3d554d5523a3cdf99e8df723ebd5ead1d99a80c5c16ee3e6c5e7dbf986616b88281494210143397a73979112859c06"
+   },
+   "hash": "6287637f5910199a31ff86b11ba863780503f55529f56af92e37a95cf7dc56bf"
+  },
+  {
+   "index": 14,
+   "prev": "6287637f5910199a31ff86b11ba863780503f55529f56af92e37a95cf7dc56bf",
+   "time": 1790900400,
+   "record": {
+    "type": "comment",
+    "author": "554ec195d60e605a100eb829b7ab1120157a3a22993982c4f6794f933fa997ae",
+    "body": {
+     "proposal": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+     "text": "Five days works for me."
+    },
+    "sig": "15f8726b436769959def6d220808e80a9709fb5759a10f6647f1ade07b03e511b1633debda4c308ca8eeac36f95e7b94d2af9ab7270a6109f56fc7d76b0fa706"
+   },
+   "hash": "b72e3d5e2cb168dfd3b2e20983eb6e74870a4015781976ec58261c4ee78e22a8"
+  },
+  {
+   "index": 15,
+   "prev": "b72e3d5e2cb168dfd3b2e20983eb6e74870a4015781976ec58261c4ee78e22a8",
+   "time": 1790900500,
+   "record": {
+    "type": "propose",
+    "author": "ff6aeca7ebe2026930ad105f3f3c5d3d10a0cd71ab9813d2ffade77e6059bb6d",
+    "body": {
+     "title": "Publish the road repair list",
+     "text": "The city posts its road repair list every quarter."
+    },
+    "sig": "040e4c83337edfd2bc603ea232e18184b87c390912ab9162b53f4bea127c970be1c74f005c40c35d61a08dc5967e1302fe2f3a752404aa3af1f601fdab35e601"
+   },
+   "hash": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45"
+  },
+  {
+   "index": 16,
+   "prev": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+   "time": 1790900510,
+   "record": {
+    "type": "sign",
+    "author": "750e0b89008ad5962435d7cfbfbb43e608a7f18d434d937ae260fa0439af9d29",
+    "body": {
+     "proposal": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+     "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b"
+    },
+    "sig": "23cdab4cd664d27d3a9bbb07795b848693808ca2639b0411759e3e438461eadbd81aa583981110d20d4b4f93fc7b6f8d77c203cf84638fabed7ada8e384de808"
+   },
+   "hash": "842eea8deec033c6977221dde839ea9f2faca18990833bc72c0f3722d798693a"
+  },
+  {
+   "index": 17,
+   "prev": "842eea8deec033c6977221dde839ea9f2faca18990833bc72c0f3722d798693a",
+   "time": 1790901400,
+   "record": {
+    "type": "propose",
+    "author": "750e0b89008ad5962435d7cfbfbb43e608a7f18d434d937ae260fa0439af9d29",
+    "body": {
+     "title": "Free bus passes for students",
+     "text": "Students ride the city bus for free during the school year."
+    },
+    "sig": "a010f705945c3ca79b9c21f568ff0f0ded157c91a32de31feea44785065d7c089ebbfae5ed83ab5a4cd482538cc2b096d303b6390935ff930c6e7aa2b11c1705"
+   },
+   "hash": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850"
+  },
+  {
+   "index": 18,
+   "prev": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+   "time": 1790901410,
+   "record": {
+    "type": "sign",
+    "author": "750e0b89008ad5962435d7cfbfbb43e608a7f18d434d937ae260fa0439af9d29",
+    "body": {
+     "proposal": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+     "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36"
+    },
+    "sig": "52c43f0d77602e45f7b2e1d7c8e857efe33cdd998f1ac3c4374f296c663ed6318a4dab76ee56e8f53c5b4c0e02dfc54508e19335a8252782bb9db2421d995b02"
+   },
+   "hash": "bef24cca2543e5a3f95429369a6aade68b0b49424d61bee1fca5e2e69d266a7f"
+  },
+  {
+   "index": 19,
+   "prev": "bef24cca2543e5a3f95429369a6aade68b0b49424d61bee1fca5e2e69d266a7f",
+   "time": 1790901411,
+   "record": {
+    "type": "sign",
+    "author": "554ec195d60e605a100eb829b7ab1120157a3a22993982c4f6794f933fa997ae",
+    "body": {
+     "proposal": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+     "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36"
+    },
+    "sig": "bdbbb66e2ef0c5df5a00d6ef5e0240026deee0f0042ee05d1ba5a0ea22fc4ed66e5df8b4140425332127ca55d2d55c78bbe79caf361411872d5c838d5136af0d"
+   },
+   "hash": "b1b765a949fe6a4078ce3caa15215d05c565c35df6ee1bcf7744af73f2247690"
+  },
+  {
+   "index": 20,
+   "prev": "b1b765a949fe6a4078ce3caa15215d05c565c35df6ee1bcf7744af73f2247690",
+   "time": 1790901412,
+   "record": {
+    "type": "sign",
+    "author": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+    "body": {
+     "proposal": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+     "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36"
+    },
+    "sig": "fa8b799f68c50d66ac65f1c8e7691c460db84cb7180810e6348d456c43b48fcaebb8e7298cf58bc08239b7e2cc227645d3c06c00025b428bb7cafa8e7bfa3a0b"
+   },
+   "hash": "4ee347afe5f41a2f0133826c28822fccfea6fd8bb55c0c5416fea5f112f8f80f"
+  },
+  {
+   "index": 21,
+   "prev": "4ee347afe5f41a2f0133826c28822fccfea6fd8bb55c0c5416fea5f112f8f80f",
+   "time": 1790901500,
+   "record": {
+    "type": "register_key",
+    "author": "2c03b6f65c0ffa405c17d7098527c2823c8de63a5b6d6ec9a57862709a14d24d",
+    "body": {
+     "public_key": "2c03b6f65c0ffa405c17d7098527c2823c8de63a5b6d6ec9a57862709a14d24d",
+     "label": "test-erin"
+    },
+    "sig": "fc13df269b2161643c860bda81338ffcf744709ff5ad3dfff20b1872ec7768321d51fbfa0f5197a530dde7a28044c047eed675ae259874636946e7992796e403"
+   },
+   "hash": "0ab301938b69162b0c77d35030609f297e524dbb4642d8428c0ea163709975df"
+  }
+ ],
+ "checkpoints": [
+  {
+   "operator": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c",
+   "root": "43a759e9674226d0b38d6b048868cb28236e0c525c4b6ddddb7a49f9f70d8651",
+   "size": 10,
+   "time": 1790900200,
+   "sig": "eb32163bffaab2204740ecfbad52875a0d426289d6718e0cab800bfcc2f6c37a68261db13b71d43353a94cff62297d801c8af4a512f6f6f9885d5830a4229a09"
+  },
+  {
+   "operator": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c",
+   "root": "c77c781a24a27be6c1bb0cafe538267ddc4a6836b887ebdea759287270d0349c",
+   "size": 12,
+   "time": 1790900310,
+   "sig": "b4ee6b83e092cdd66e9d3a01cb26273b0d22303cc4ea9032926a0efb592adca86b51b05c1f784afef445d9e741c57591e37e31d66c06f0039a48727dc1878a00"
+  },
+  {
+   "operator": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c",
+   "root": "0712c8fd087a32ee530128f138676b2bb8f5b2c134722412f8c059bf0b68763f",
+   "size": 22,
+   "time": 1790901500,
+   "sig": "d6b6c227793e4d3f892dc9bf49769e6570451052f50fa06d71895fe24cc882035d38777de71d4db9c6d65a493f1eec94e8fb0f1d70e8a3f2729269e0632be70e"
+  }
+ ]
+}
