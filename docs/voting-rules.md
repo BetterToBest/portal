@@ -31,7 +31,9 @@ The paper does not say what happens in these two cases. The simulator models the
 
 **Topics and yearly renewal (approximated in the simulator).** Paper section 4.4.2 proposes delegation limited to topics and renewed every year. The simulator has two optional sliders for this: the share of delegations that do not cover the topic being voted on (those delegators vote directly), and the share that lapsed without renewal (those people either vote directly or sit this vote out, and a vote that reaches someone who sat out is not cast). At the default settings both are off. These are simplifications: delegates are not chosen differently per topic, and renewal is not tied to a date. Illustrative result (500 voters, 40% delegating, 52% preferring A, 300 trials, seed 1, cap on): with half of all delegations lapsed and half of those people sitting out, about 12% of votes were not cast, and the outcome differed from the direct vote in about 16% of trials, against about 12% with no lapses. This is a toy model, not a prediction; it only shows why renewal needs a reminder step (open question 7).
 
-Not modeled: delegate competence (the paper's "expertise verification" for delegates, section 4.4.2). Whether the delegation graph is public is also open, because public delegations can show how a person's vote was cast.
+**Delegate competence (approximated in the simulator).** Paper section 4.4.2 also proposes expertise verification for delegates. The simulator has an optional accuracy model for it: option A is the correct one, an ordinary voter picks it with the "share who prefer A" chance, and anyone holding delegations picks it with a separate, usually higher, chance. The results then show how often the direct vote and the delegated tally each pick the correct option. At the default settings it is off. This is a simplification: it does not model how expertise would be verified or kept up to date, delegators still choose delegates as before rather than by skill, and a real question rarely has one knowable right answer. Illustrative result (500 voters, 40% delegating, ordinary voters picking A 52% of the time, 300 trials, seed 1, cap on): the direct vote picked A in 236 of 300 trials. With delegates picking A 70% of the time, the delegated tally picked it in all 300. With delegates at 52%, the same as everyone else, it picked it in 232. With delegates at 40%, it picked it in only 50. Delegation passes on the quality of whoever holds the votes, good or bad, and the cap changed little at these settings. This is a toy model, not a prediction (open question 8).
+
+Not modeled: whether the delegation graph is public. It is open, because public delegations can show how a person's vote was cast.
 
 ## Quadratic voting (budgets)
 
@@ -52,5 +54,6 @@ Listed on the Research Hub among the voting configurations CIP would support. Th
 5. How many credits per person, and how often do they refresh?
 6. Which system fits which decision type?
 7. Yearly renewal of delegations: how are people reminded before a delegation lapses, and whose vote counts, if anyone's, in the meantime?
+8. Expertise verification for delegates (paper section 4.4.2): who verifies it, for which topics, and how is it kept from becoming a gate that stops ordinary people from being delegates?
 
 New systems can be proposed too. Open a Discussion.
