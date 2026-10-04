@@ -21,7 +21,7 @@ You do not need to be a developer. Every contribution below matters.
 | 2 | Simulator: browser demo of direct, liquid and quadratic voting | Four models live in `/simulator` (voting, liquid delegation, ranked-choice, ledger fork); more welcome |
 | 3 | Prototype: proposals, signatures, comment periods, tamper-evident log | Started: [plan](docs/phase-3-plan.md); first pieces (test log and two verifiers, test data only) in [prototype/](prototype/) |
 | 4 | Privacy layer: verifiable ballots without revealing votes | Open |
-| 5 | Pilot design: a small advisory vote with a real community | Open |
+| 5 | Pilot design: a small advisory vote with a real community | Started: first draft in [docs/pilot-design.md](docs/pilot-design.md); no community approached |
 
 Phases 1 and 2 are the best places to start.
 

@@ -43,7 +43,7 @@ Phase 3 of the roadmap, planned in [phase-3-plan.md](phase-3-plan.md). Open sour
 - A prototype of proposals, signatures, comment periods and a tamper-evident log, runnable from the repository by someone who did not write it.
 - A published test plan, with the checks that must pass before any real vote is run.
 - A design for the privacy layer (Phase 4) with an outside cryptography review scheduled or completed.
-- A pilot design (Phase 5): a small advisory vote with a willing community, with its consent, data and accessibility plans written down first.
+- A pilot design (Phase 5): a small advisory vote with a willing community, with its consent, data and accessibility plans written down first. A first draft is in [pilot-design.md](pilot-design.md); it names no community.
 
 **Check:** an independent reviewer can build the prototype, run its tests, and confirm it stores no behavior data beyond what verification needs.
 

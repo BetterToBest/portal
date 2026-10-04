@@ -63,6 +63,7 @@ Started in [`prototype/`](../prototype/). It is early, it runs on test data only
 - **Test plan: drafted.** [phase-3-test-plan.md](phase-3-test-plan.md) lists ten gates that must pass before any real vote, and says honestly which are not met.
 - **Checkpoint keeping (gate G2): drafted and partly built.** [checkpoints.md](checkpoints.md) proposes who saves checkpoints, where, and what comparing them proves. Both programs can now save a checkpoint from a log and compare two saved checkpoints, and tests cover both.
 - **Key handling (gate G4): drafted.** [key-handling.md](key-handling.md) sets out rules any design must meet, storage choices, two ways to build social recovery, and what would count as meeting the gate. It is a written proposal only: the prototype still uses test keys that anyone can recompute, and nothing about real keys is built or reviewed.
+- **Pilot design (gate G9): drafted.** [pilot-design.md](pilot-design.md) sets out consent, what data exists and for how long, an access plan, how a result is reported and who can stop a pilot. It is a written proposal only: it names no community, no group has been approached, and it has not been reviewed.
 
 A caveat on C5: both verifiers were written by the same person from the same spec. That catches slips but not a shared misreading. A third verifier written by someone else from the spec alone would be the real test.
 

@@ -17,6 +17,6 @@ Each is small and self-contained. Suggested labels are in brackets. These are no
 7. **[Propose ranked-choice tie-break rules](https://github.com/BetterToBest/portal/issues/13)** [spec] (#13)
    A draft is in [ranked-choice.md](ranked-choice.md). It needs review before anything is built on it.
 8. **[Draft a one-page pilot brief for a community group](https://github.com/BetterToBest/portal/issues/14)** [outreach, good first issue] (#14)
-   Explain what a small advisory vote on CIP would involve, in plain language.
+   Explain what a small advisory vote on CIP would involve, in plain language. Write it from the [pilot design](pilot-design.md) once that has been reviewed, and say only what the design says.
 
 Larger open items are in the [issue list](https://github.com/BetterToBest/portal/issues) too, for example the oversight-body numbers (#2), telemetry (#3), the halt power (#4), the ranked-choice simulator (#5), the ledger fork simulation (#6) and the accessibility pass on both simulators (#7).

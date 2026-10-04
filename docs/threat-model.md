@@ -74,5 +74,5 @@ Real elections, legal authority, and the Judicial Guard institution. The prototy
 
 1. How is one-person-one-identity established without creating a surveillance database?
 2. How does the design behave when connectivity or nodes partially fail?
-3. What is the incident-response process when a flaw is found in a live pilot?
+3. What is the incident-response process when a flaw is found in a live pilot? A first draft of who can pause or stop a pilot, and why, is in [pilot-design.md](pilot-design.md).
 4. Which threats above can be tested in a simulator before any real deployment?
