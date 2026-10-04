@@ -14,8 +14,10 @@ Nothing here collects or monetizes user behavior data. The programs read the fil
 | `node/cip-log.js` | Reference implementation: builds records, entries and checkpoints, and verifies a log. Built-in Node modules only. |
 | `node/make-test-logs.js` | Builds every test log from fixed test identities and fixed times, so the files never change between runs. |
 | `python/verify.py` | A second verifier, written from the spec. Needs the `cryptography` package. |
+| `viewer/index.html` | A single page that checks a log in your browser and shows proposals, signatures and anything that failed, in plain words. It makes no network requests and stores nothing, and the browser is told to block them. Its example logs are copied in by `node/build-viewer.js`. |
+| `node/build-viewer.js` | Copies the example logs from `testdata/` into the viewer page, or with `--check` tells you if the page is out of date. |
 | `testdata/` | One good log, one saved checkpoint, two more valid logs, and 17 logs that are corrupted or break a rule on purpose. |
-| [`../tests/prototype.test.js`](../tests/prototype.test.js) | Runs every test log through both verifiers and checks they agree. Also tries 400 random single edits, which must all be rejected. |
+| [`../tests/prototype.test.js`](../tests/prototype.test.js) | Runs every test log through both verifiers and checks they agree. Also tries 600 random single edits (changed values, wrong types, removed, swapped or repeated entries), which must all be rejected. The same logs and edits are run through the viewer page's logic. |
 
 ## Try it
 
@@ -30,6 +32,8 @@ node prototype/node/cip-log.js verify prototype/testdata/rewritten-history.json 
 
 node tests/prototype.test.js
 ```
+
+Or open the [log viewer](https://bettertobest.github.io/portal/prototype/viewer/), pick an example or choose a log file, and read the result. It needs a recent Chrome, Firefox or Safari, because it uses the browser's own Ed25519 support.
 
 Each command prints the result as JSON and exits with 0 if the log passes, 1 if not.
 

@@ -59,7 +59,8 @@ Started in [`prototype/`](../prototype/). It is early, it runs on test data only
 - **State rules (C3): built.** Thresholds, comment periods, amendments, duplicate and stale signatures.
 - **Behavior-data tripwire (C6): started.** A test that fails if the prototype code contains network calls, outside addresses or tracking code. It is a coarse check, not a proof.
 - **Record format (C1): partly done.** The format is defined in the spec and checked by the verifiers. A formal JSON Schema is not written; that waits on #9.
-- **Interface (C7) and the test plan: not started.**
+- **Interface (C7): started.** A [log viewer page](../prototype/viewer/index.html) checks a log in the browser with no network and no storage, and says in plain words what failed. Automated accessibility and scripted keyboard checks pass; testing with a screen reader has not happened. It is a viewer only: it cannot file a proposal or sign.
+- **Test plan: drafted.** [phase-3-test-plan.md](phase-3-test-plan.md) lists ten gates that must pass before any real vote, and says honestly which are not met.
 
 A caveat on C5: both verifiers were written by the same person from the same spec. That catches slips but not a shared misreading. A third verifier written by someone else from the spec alone would be the real test.
 

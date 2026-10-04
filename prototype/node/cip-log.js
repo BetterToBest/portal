@@ -11,6 +11,8 @@ const fs = require('fs');
 
 const HEX64 = /^[0-9a-f]{64}$/;
 const HEX128 = /^[0-9a-f]{128}$/;
+const isHex64 = v => typeof v === 'string' && HEX64.test(v); // strict: a regex test alone would accept an array holding one hex string
+const isHex128 = v => typeof v === 'string' && HEX128.test(v);
 const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
 
 // ---------- canonical JSON (the subset of RFC 8785 we need: strings, integers, arrays, objects) ----------
@@ -39,7 +41,7 @@ const SPKI = Buffer.from('302a300506032b6570032100', 'hex');
 const PKCS8 = Buffer.from('302e020100300506032b657004220420', 'hex');
 function verifySig(pubHex, msg, sigHex) {
   try {
-    if (!HEX64.test(pubHex) || !HEX128.test(sigHex)) return false;
+    if (!isHex64(pubHex) || !isHex128(sigHex)) return false;
     const key = crypto.createPublicKey({ key: Buffer.concat([SPKI, Buffer.from(pubHex, 'hex')]), format: 'der', type: 'spki' });
     return crypto.verify(null, Buffer.from(msg, 'utf8'), key, Buffer.from(sigHex, 'hex'));
   } catch (e) { return false; }
@@ -96,20 +98,20 @@ const isStr = (v, lo, hi) => typeof v === 'string' && [...v].length >= lo && [..
 const keysAre = (o, ks) => o && typeof o === 'object' && !Array.isArray(o) && Object.keys(o).sort().join() === ks.slice().sort().join();
 
 function entryFormatOk(e) {
-  return keysAre(e, ['index', 'prev', 'time', 'record', 'hash']) && isInt(e.index) && HEX64.test(e.prev) &&
-    isInt(e.time) && e.time >= 0 && HEX64.test(e.hash) &&
+  return keysAre(e, ['index', 'prev', 'time', 'record', 'hash']) && isInt(e.index) && isHex64(e.prev) &&
+    isInt(e.time) && e.time >= 0 && isHex64(e.hash) &&
     keysAre(e.record, ['type', 'author', 'body', 'sig']) && typeof e.record.type === 'string' &&
-    HEX64.test(e.record.author) && HEX128.test(e.record.sig) &&
+    isHex64(e.record.author) && isHex128(e.record.sig) &&
     e.record.body && typeof e.record.body === 'object' && !Array.isArray(e.record.body) && canonOk(e.record.body);
 }
 function bodyOk(type, b) {
   switch (type) {
     case 'genesis': return keysAre(b, ['threshold', 'comment_seconds']) && isInt(b.threshold) && b.threshold >= 1 && isInt(b.comment_seconds) && b.comment_seconds >= 0;
-    case 'register_key': return keysAre(b, ['public_key', 'label']) && HEX64.test(b.public_key) && isStr(b.label, 1, 40);
+    case 'register_key': return keysAre(b, ['public_key', 'label']) && isHex64(b.public_key) && isStr(b.label, 1, 40);
     case 'propose': return keysAre(b, ['title', 'text']) && isStr(b.title, 1, 120) && isStr(b.text, 1, 20000);
-    case 'amend': return keysAre(b, ['proposal', 'title', 'text']) && HEX64.test(b.proposal) && isStr(b.title, 1, 120) && isStr(b.text, 1, 20000);
-    case 'sign': return keysAre(b, ['proposal', 'version']) && HEX64.test(b.proposal) && HEX64.test(b.version);
-    case 'comment': return keysAre(b, ['proposal', 'text']) && HEX64.test(b.proposal) && isStr(b.text, 1, 2000);
+    case 'amend': return keysAre(b, ['proposal', 'title', 'text']) && isHex64(b.proposal) && isStr(b.title, 1, 120) && isStr(b.text, 1, 20000);
+    case 'sign': return keysAre(b, ['proposal', 'version']) && isHex64(b.proposal) && isHex64(b.version);
+    case 'comment': return keysAre(b, ['proposal', 'text']) && isHex64(b.proposal) && isStr(b.text, 1, 2000);
     default: return false;
   }
 }
@@ -120,7 +122,7 @@ const stateOf = (p, settings, now) => {
 
 function cpChecks(prefix, c, operator, entries, hashes, out, where, index) {
   const err = code => out.push({ code: prefix + code, where, index });
-  if (!keysAre(c, ['operator', 'root', 'size', 'time', 'sig']) || !HEX64.test(c.operator) || !HEX64.test(c.root) || !isInt(c.size) || !isInt(c.time) || !HEX128.test(c.sig)) return err('BAD_FORMAT');
+  if (!keysAre(c, ['operator', 'root', 'size', 'time', 'sig']) || !isHex64(c.operator) || !isHex64(c.root) || !isInt(c.size) || !isInt(c.time) || !isHex128(c.sig)) return err('BAD_FORMAT');
   if (c.operator !== operator) err('WRONG_OPERATOR');
   if (!verifySig(c.operator, checkpointPayload(c), c.sig)) err('BAD_SIG');
   if (prefix === 'CP_') {
@@ -153,7 +155,7 @@ function verifyLog(log, trusted) {
       if (!verifySig(e.record.author, recordPayload(e.record), e.record.sig)) flag('BAD_SIG');
     }
   });
-  const g = E[0] && E[0].record && E[0].record.type === 'genesis' && HEX64.test(E[0].record.author || '') ? E[0].record.author : null;
+  const g = E[0] && E[0].record && E[0].record.type === 'genesis' && isHex64(E[0].record.author || '') ? E[0].record.author : null;
   log.checkpoints.forEach((c, j) => cpChecks('CP_', c, g, E, hashes, IE, 'checkpoint', j));
   if (trusted !== undefined) cpChecks('TRUSTED_', trusted, g, E, hashes, IE, 'trusted', 0);
 

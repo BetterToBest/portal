@@ -1,6 +1,6 @@
 // Tests for the Phase 3 prototype in prototype/ (test log, Node verifier, Python verifier).
 // Checks: the test logs are reproducible; every shared test log gives the expected result in
-// BOTH verifiers and the two outputs are identical; 400 random single edits to the good log are
+// BOTH verifiers and the two outputs are identical; 600 random single edits to the good log are
 // all rejected by both with the same result; the canonical form and Merkle tree match
 // independent reference values; and a coarse scan finds no network code in prototype/.
 // Needs Node 18 or later and Python 3 with the `cryptography` package (pip install cryptography).
@@ -120,8 +120,8 @@ const paths = []; // every string, integer and key position in the log
 const get = (o, p) => p.reduce((a, k) => a[k], o);
 const pick = a => a[Math.floor(rnd() * a.length)];
 const mutations = [];
-while (mutations.length < 400) {
-  const m = JSON.parse(goodText), kind = Math.floor(rnd() * 8), p = pick(paths), par = get(m, p.slice(0, -1)), k = p[p.length - 1];
+while (mutations.length < 600) {
+  const m = JSON.parse(goodText), kind = Math.floor(rnd() * 10), p = pick(paths), par = get(m, p.slice(0, -1)), k = p[p.length - 1];
   const v = par[k];
   if (kind === 0 && typeof v === 'string' && v.length) { const i = Math.floor(rnd() * v.length); par[k] = v.slice(0, i) + (v[i] === 'x' ? 'y' : 'x') + v.slice(i + 1); }
   else if (kind === 1 && typeof v === 'number') par[k] = v + (rnd() < 0.5 ? 1 : -1);
@@ -131,26 +131,54 @@ while (mutations.length < 400) {
   else if (kind === 5) m.entries.splice(Math.floor(rnd() * m.entries.length), 1);
   else if (kind === 6) { const i = Math.floor(rnd() * m.entries.length); m.entries.splice(i, 0, JSON.parse(JSON.stringify(m.entries[i]))); }
   else if (kind === 7 && typeof v === 'string') par[k] = v.toUpperCase() === v ? v.toLowerCase() : v.toUpperCase();
+  else if (kind === 8) par[k] = [v];                                       // right value, wrong type: wrapped in an array
+  else if (kind === 9) par[k] = pick([null, true, 0, 'x', {}, [], 1.5, -1]); // a value of a different type
   else continue;
   if (JSON.stringify(m) === goodText) continue;
   mutations.push(m);
 }
 const mjobs = mutations.map((m, i) => { const f = path.join(tmp, 'm' + i + '.json'); fs.writeFileSync(f, JSON.stringify(m)); return { log: f }; });
 const mNode = mjobs.map(nodeVerify), mPy = pythonVerify(mjobs, tmp);
-ok(mNode.every(r => r.ok === false), '400 random single edits to the good log are all rejected by the Node verifier (' + mNode.filter(r => r.ok).length + ' accepted)');
-ok(mPy.every(r => r.ok === false), '400 random single edits to the good log are all rejected by the Python verifier (' + mPy.filter(r => r.ok).length + ' accepted)');
+ok(mNode.every(r => r.ok === false), '600 random single edits to the good log are all rejected by the Node verifier (' + mNode.filter(r => r.ok).length + ' accepted)');
+ok(mPy.every(r => r.ok === false), '600 random single edits to the good log are all rejected by the Python verifier (' + mPy.filter(r => r.ok).length + ' accepted)');
 const disagree = mNode.map((r, i) => deepEq(r, mPy[i]) ? -1 : i).filter(i => i >= 0);
-ok(disagree.length === 0, 'Node and Python give identical output on all 400 edited logs' + (disagree.length ? ' (first difference: m' + disagree[0] + ')' : ''));
+ok(disagree.length === 0, 'Node and Python give identical output on all 600 edited logs' + (disagree.length ? ' (first difference: m' + disagree[0] + ')' : ''));
 
+// ---- 4b. the viewer page: its checking logic must agree with the Node verifier ----
+{
+  const html = fs.readFileSync(path.join(root, 'viewer', 'index.html'), 'utf8');
+  const core = html.split('/*CORE-START*/')[1].split('/*CORE-END*/')[0];
+  const V = new Function(core + ';return {verifyLogAsync}')();
+  const SPKI = Buffer.from('302a300506032b6570032100', 'hex');
+  const prims = {
+    sha256: async b => new Uint8Array(crypto.createHash('sha256').update(b).digest()),
+    verify: async (pub, msg, sig) => crypto.verify(null, Buffer.from(msg), crypto.createPublicKey({ key: Buffer.concat([SPKI, Buffer.from(pub, 'hex')]), format: 'der', type: 'spki' }), Buffer.from(sig, 'hex'))
+  };
+  const same = async (log, trusted) => deepEq(await V.verifyLogAsync(JSON.parse(JSON.stringify(log)), trusted, prims), L.verifyLog(JSON.parse(JSON.stringify(log)), trusted));
+  (async () => {
+    let bad = [];
+    for (const [f, t] of table) { const log = readJson(td(f)); if (!await same(log, t ? readJson(t) : undefined)) bad.push(f); }
+    ok(bad.length === 0, 'viewer page logic gives identical output to the Node verifier on all ' + table.length + ' shared test logs' + (bad.length ? ' (differs: ' + bad.join(', ') + ')' : ''));
+    bad = [];
+    for (let i = 0; i < mutations.length; i++) if (!await same(mutations[i], undefined)) bad.push('m' + i);
+    ok(bad.length === 0, 'viewer page logic gives identical output on all ' + mutations.length + ' edited logs' + (bad.length ? ' (first difference: ' + bad[0] + ')' : ''));
+    const b = cp.spawnSync('node', [path.join(root, 'node', 'build-viewer.js'), '--check'], { encoding: 'utf8' });
+    ok(b.status === 0, 'example logs inside the viewer page match prototype/testdata' + (b.status ? ' (' + b.stdout.trim() + ')' : ''));
+    finish();
+  })();
+}
+
+function finish() {
 // ---- 5. coarse tripwire for the no-behavior-data rule ----
 const bannedJs = /\b(fetch|XMLHttpRequest|WebSocket|sendBeacon)\b|require\(\s*['"](node:)?(http|https|http2|net|tls|dgram|dns|child_process)['"]\s*\)/;
 const bannedPy = /^\s*(import|from)\s+(urllib|http|socket|requests|ssl|ftplib|smtplib|subprocess)\b/m;
 const urlRe = /https?:\/\//;
 const codeFiles = [];
 (function scan(d) { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) { if (f !== 'testdata') scan(p); } else if (/\.(js|py|html)$/.test(f)) codeFiles.push(p); } })(root);
-const offenders = codeFiles.filter(f => { const s = fs.readFileSync(f, 'utf8'); return (f.endsWith('.py') ? bannedPy.test(s) : bannedJs.test(s)) || urlRe.test(s); });
-ok(codeFiles.length >= 3 && offenders.length === 0, 'no network calls, outside addresses or tracking code in prototype/ (' + codeFiles.length + ' code files scanned)' + (offenders.length ? ': ' + offenders.join(', ') : ''));
+const offenders = codeFiles.filter(f => { const s = fs.readFileSync(f, 'utf8'); const noLinks = f.endsWith('.html') ? s.replace(/href="[^"]*"/g, '') : s; return (f.endsWith('.py') ? bannedPy.test(s) : bannedJs.test(s)) || urlRe.test(noLinks); });
+ok(codeFiles.length >= 4 && offenders.length === 0, 'no network calls, outside addresses or tracking code in prototype/ (' + codeFiles.length + ' code files scanned)' + (offenders.length ? ': ' + offenders.join(', ') : ''));
 
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log(fail ? '\n' + fail + ' check(s) failed' : '\nall checks passed');
 process.exit(fail ? 1 : 0);
+}
