@@ -1,0 +1,170 @@
+{
+ "record-unknown-type.json": {
+  "path": "/type",
+  "keyword": "enum"
+ },
+ "record-extra-key.json": {
+  "path": "/extra",
+  "keyword": "additionalProperties"
+ },
+ "record-missing-sig.json": {
+  "path": "",
+  "keyword": "required"
+ },
+ "record-sig-127-hex.json": {
+  "path": "/sig",
+  "keyword": "pattern"
+ },
+ "record-author-uppercase.json": {
+  "path": "/author",
+  "keyword": "pattern"
+ },
+ "record-author-trailing-newline.json": {
+  "path": "/author",
+  "keyword": "pattern"
+ },
+ "record-body-is-array.json": {
+  "path": "/body",
+  "keyword": "type"
+ },
+ "record-body-wrong-shape.json": {
+  "path": "/body",
+  "keyword": "required"
+ },
+ "record-genesis-threshold-zero.json": {
+  "path": "/body/threshold",
+  "keyword": "minimum"
+ },
+ "record-genesis-threshold-fraction.json": {
+  "path": "/body/threshold",
+  "keyword": "type"
+ },
+ "record-genesis-threshold-true.json": {
+  "path": "/body/threshold",
+  "keyword": "type"
+ },
+ "record-genesis-threshold-string.json": {
+  "path": "/body/threshold",
+  "keyword": "type"
+ },
+ "record-genesis-threshold-null.json": {
+  "path": "/body/threshold",
+  "keyword": "type"
+ },
+ "record-genesis-threshold-too-large.json": {
+  "path": "/body/threshold",
+  "keyword": "maximum"
+ },
+ "record-genesis-comment-seconds-negative.json": {
+  "path": "/body/comment_seconds",
+  "keyword": "minimum"
+ },
+ "record-register-key-label-empty.json": {
+  "path": "/body/label",
+  "keyword": "minLength"
+ },
+ "record-register-key-label-41-chars.json": {
+  "path": "/body/label",
+  "keyword": "maxLength"
+ },
+ "record-propose-title-empty.json": {
+  "path": "/body/title",
+  "keyword": "minLength"
+ },
+ "record-propose-title-121-astral-chars.json": {
+  "path": "/body/title",
+  "keyword": "maxLength"
+ },
+ "record-propose-text-20001.json": {
+  "path": "/body/text",
+  "keyword": "maxLength"
+ },
+ "record-propose-text-lone-surrogate.json": {
+  "path": "/body/text",
+  "keyword": "pattern"
+ },
+ "record-amend-proposal-short.json": {
+  "path": "/body/proposal",
+  "keyword": "pattern"
+ },
+ "record-sign-version-uppercase.json": {
+  "path": "/body/version",
+  "keyword": "pattern"
+ },
+ "record-comment-text-2001.json": {
+  "path": "/body/text",
+  "keyword": "maxLength"
+ },
+ "entry-time-negative.json": {
+  "path": "/time",
+  "keyword": "minimum"
+ },
+ "entry-time-too-large.json": {
+  "path": "/time",
+  "keyword": "maximum"
+ },
+ "entry-index-string.json": {
+  "path": "/index",
+  "keyword": "type"
+ },
+ "entry-extra-key.json": {
+  "path": "/note",
+  "keyword": "additionalProperties"
+ },
+ "entry-missing-hash.json": {
+  "path": "",
+  "keyword": "required"
+ },
+ "entry-prev-short.json": {
+  "path": "/prev",
+  "keyword": "pattern"
+ },
+ "entry-record-bad-sig.json": {
+  "path": "/record/sig",
+  "keyword": "pattern"
+ },
+ "checkpoint-size-fraction.json": {
+  "path": "/size",
+  "keyword": "type"
+ },
+ "checkpoint-time-string.json": {
+  "path": "/time",
+  "keyword": "type"
+ },
+ "checkpoint-missing-sig.json": {
+  "path": "",
+  "keyword": "required"
+ },
+ "checkpoint-extra-key.json": {
+  "path": "/extra",
+  "keyword": "additionalProperties"
+ },
+ "checkpoint-root-short.json": {
+  "path": "/root",
+  "keyword": "pattern"
+ },
+ "log-format-wrong.json": {
+  "path": "/format",
+  "keyword": "const"
+ },
+ "log-extra-key.json": {
+  "path": "/notes",
+  "keyword": "additionalProperties"
+ },
+ "log-missing-checkpoints.json": {
+  "path": "",
+  "keyword": "required"
+ },
+ "log-entries-not-array.json": {
+  "path": "/entries",
+  "keyword": "type"
+ },
+ "log-entry-bad-hash.json": {
+  "path": "/entries/0/hash",
+  "keyword": "pattern"
+ },
+ "log-checkpoint-bad-size.json": {
+  "path": "/checkpoints/0/size",
+  "keyword": "type"
+ }
+}

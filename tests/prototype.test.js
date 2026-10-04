@@ -1,7 +1,10 @@
 // Tests for the Phase 3 prototype in prototype/ (test log, Node verifier, Python verifier).
 // Checks: the test logs are reproducible; every shared test log gives the expected result in
 // BOTH verifiers and the two outputs are identical; 600 random single edits to the good log are
-// all rejected by both with the same result; the canonical form and Merkle tree match
+// all rejected by both with the same result; so are 750 logs with whitespace around one hex value
+// (the Python verifier once accepted a trailing newline);
+// the JSON Schema (prototype/schema/) accepts every valid example and rejects every invalid one for the stated
+// reason, and agrees with the verifiers' own format checks on every test log and every edited log; the canonical form and Merkle tree match
 // independent reference values; saving and comparing checkpoints (SPEC 5.1) behave the same in
 // both verifiers, in code and on the command line; and a coarse scan finds no network code in prototype/.
 // Needs Node 18 or later and Python 3 with the `cryptography` package (pip install cryptography).
@@ -226,12 +229,35 @@ while (mutations.length < 600) {
   if (JSON.stringify(m) === goodText) continue;
   mutations.push(m);
 }
+// Hex values with extra characters around them must be rejected, never cleaned up. A trailing newline once
+// slipped past the Python verifier (regex '$' allows it, and bytes.fromhex skips whitespace), so every hex
+// string in the good log gets whitespace added before or after it, one at a time.
+const hexEdits = [];
+(function walkHex(v, p) {
+  if (v && typeof v === 'object') for (const k of Object.keys(v)) {
+    const x = v[k];
+    if (typeof x === 'string' && /^[0-9a-f]{64}$|^[0-9a-f]{128}$/.test(x)) {
+      for (const [pre, post] of [['', '\n'], ['', '\r\n'], ['', ' '], ['', '\t'], ['\n', ''], [' ', '']]) {
+        const m = JSON.parse(goodText), par = get(m, p); par[k] = pre + x + post; hexEdits.push(m);
+      }
+    } else walkHex(x, p.concat(k));
+  }
+})(good, []);
 const mjobs = mutations.map((m, i) => { const f = path.join(tmp, 'm' + i + '.json'); fs.writeFileSync(f, JSON.stringify(m)); return { log: f }; });
 const mNode = mjobs.map(nodeVerify), mPy = pythonVerify(mjobs, tmp);
 ok(mNode.every(r => r.ok === false), '600 random single edits to the good log are all rejected by the Node verifier (' + mNode.filter(r => r.ok).length + ' accepted)');
 ok(mPy.every(r => r.ok === false), '600 random single edits to the good log are all rejected by the Python verifier (' + mPy.filter(r => r.ok).length + ' accepted)');
 const disagree = mNode.map((r, i) => deepEq(r, mPy[i]) ? -1 : i).filter(i => i >= 0);
 ok(disagree.length === 0, 'Node and Python give identical output on all 600 edited logs' + (disagree.length ? ' (first difference: m' + disagree[0] + ')' : ''));
+{
+  const hj = hexEdits.map((m, i) => { const f = path.join(tmp, 'h' + i + '.json'); fs.writeFileSync(f, JSON.stringify(m)); return { log: f }; });
+  const hN = hj.map(nodeVerify), hP = pythonVerify(hj, tmp);
+  ok(hexEdits.length > 500, hexEdits.length + ' logs made by adding whitespace around one hex value at a time');
+  ok(hN.every(r => r.ok === false), 'Node rejects every log with whitespace around a hex value (' + hN.filter(r => r.ok).length + ' accepted)');
+  ok(hP.every(r => r.ok === false), 'Python rejects every log with whitespace around a hex value (' + hP.filter(r => r.ok).length + ' accepted)');
+  const hd = hN.map((r, i) => deepEq(r, hP[i]) ? -1 : i).filter(i => i >= 0);
+  ok(hd.length === 0, 'Node and Python give identical output on all of them' + (hd.length ? ' (first difference: h' + hd[0] + ')' : ''));
+}
 { // saving a checkpoint from each of the 600 edited logs: refused exactly when integrity errors exist, and both programs agree
   const ej2 = mjobs.map(j => ({ op: 'extract', log: j.log })), pe = pythonCheckpoints(ej2, tmp);
   const ne = mjobs.map(j => L.extractCheckpoint(readJson(j.log)));
@@ -239,6 +265,70 @@ ok(disagree.length === 0, 'Node and Python give identical output on all 600 edit
   const split = ne.map((r, i) => deepEq(shapeEx(r), shapeEx(pe[i])) ? -1 : i).filter(i => i >= 0);
   ok(wrong.length === 0, 'saving a checkpoint from each of the 600 edited logs is refused exactly when the log has integrity errors' + (wrong.length ? ' (first mismatch: m' + wrong[0] + ')' : ''));
   ok(split.length === 0, 'Node and Python agree on saving a checkpoint from all 600 edited logs' + (split.length ? ' (first difference: m' + split[0] + ')' : ''));
+}
+
+// ---- 4a. the JSON Schema: shape only (prototype/schema/) ----
+{
+  const S = require('../prototype/node/schema-check.js');
+  const schemaFile = path.join(root, 'schema', 'cip-test-log.schema.json');
+  const schema = readJson(schemaFile);
+  const exDir = path.join(root, 'schema', 'examples');
+  const defOf = f => f.split('-')[0]; // record-..., entry-..., checkpoint-..., log-...
+  const sg = cp.spawnSync('node', [path.join(root, 'node', 'make-schema-examples.js'), '--check'], { encoding: 'utf8' });
+  ok(sg.status === 0, 'committed schema examples match what make-schema-examples.js produces' + (sg.status ? ' (' + sg.stdout.trim() + ')' : ''));
+  const validFiles = fs.readdirSync(path.join(exDir, 'valid')).sort(), invalidFiles = fs.readdirSync(path.join(exDir, 'invalid')).sort();
+  const expectedErr = readJson(path.join(exDir, 'expected-errors.json'));
+  ok(validFiles.length >= 10 && invalidFiles.length >= 30 && invalidFiles.every(f => expectedErr[f]) && Object.keys(expectedErr).length === invalidFiles.length, 'schema examples: ' + validFiles.length + ' valid, ' + invalidFiles.length + ' invalid, every invalid one has an expected error');
+  const badValid = validFiles.filter(f => !S.validate(schema, defOf(f), readJson(path.join(exDir, 'valid', f))).ok);
+  ok(badValid.length === 0, 'the schema accepts every valid example' + (badValid.length ? ' (rejected: ' + badValid.join(', ') + ')' : ''));
+  const badInvalid = invalidFiles.filter(f => { const r = S.validate(schema, defOf(f), readJson(path.join(exDir, 'invalid', f))); return r.ok || !r.errors.some(e => e.path === expectedErr[f].path && e.keyword === expectedErr[f].keyword); });
+  ok(badInvalid.length === 0, 'the schema rejects every invalid example, for the stated reason (path and keyword)' + (badInvalid.length ? ' (wrong: ' + badInvalid.join(', ') + ')' : ''));
+  // Shape agrees with the verifier's own format checks, on every test log and every edited log.
+  const logFiles = fs.readdirSync(path.join(root, 'testdata')).filter(f => !/\.checkpoint-\d+\.json$/.test(f)).map(f => td(f));
+  const sets = { 'test logs': logFiles.map(readJson), 'random single edits': mutations, 'hex values with whitespace': hexEdits };
+  for (const [name, logs] of Object.entries(sets)) {
+    const diff = logs.map((l, i) => S.validate(schema, 'log', l).ok === L.shapeOk(l) ? -1 : i).filter(i => i >= 0);
+    ok(diff.length === 0, 'schema and the verifier\'s format checks agree on all ' + logs.length + ' ' + name + (diff.length ? ' (first difference: #' + diff[0] + ')' : ''));
+    const shapeBad = logs.filter(l => !S.validate(schema, 'log', l).ok);
+    ok(shapeBad.every(l => L.verifyLog(l).ok === false), name + ': every log the schema rejects is also rejected by the verifier (' + shapeBad.length + ' of ' + logs.length + ' fail the schema)');
+  }
+  ok(sets['test logs'].filter(l => !S.validate(schema, 'log', l).ok).length === 1 && !S.validate(schema, 'log', readJson(td('bad-format.json'))).ok, 'of the test logs only bad-format.json fails the schema (the other broken ones have the right shape and fail on hashes, signatures or rules)');
+  ok(['good.checkpoint-21.json', 'split-view.checkpoint-21.json'].every(f => S.validate(schema, 'checkpoint', readJson(td(f))).ok), 'the saved checkpoint files in testdata/ pass the checkpoint shape');
+  // The checker refuses what it does not implement, and has clean exit codes.
+  const sc = a => cp.spawnSync('node', [path.join(root, 'node', 'schema-check.js')].concat(a), { encoding: 'utf8' });
+  const odd = path.join(tmp, 'odd.schema.json'); fs.writeFileSync(odd, JSON.stringify({ type: 'object', format: 'email' }));
+  ok(sc([td('good.json')]).status === 0 && sc([td('bad-format.json')]).status === 1 && sc([td('good.checkpoint-21.json'), '--def', 'checkpoint']).status === 0 &&
+     sc([td('good.json'), '--def', 'record']).status === 1, 'schema-check command: exit 0 when the shape is right, 1 when not');
+  ok(sc([]).status === 2 && sc([td('good.json'), '--def', 'nonsense']).status === 2 && sc([td('good.json'), '--def']).status === 2 && sc([path.join(tmp, 'missing.json')]).status === 2 &&
+     sc([td('good.json'), '--schema', odd]).status === 2 && /unsupported schema keyword: format/.test(sc([td('good.json'), '--schema', odd]).stderr), 'schema-check command: usage errors, an unreadable file and an unsupported schema keyword all exit 2 with a plain message');
+  ok(S.validate(schema, 'record', JSON.parse('{"__proto__":1,"toString":2,"constructor":3}')).ok === false, 'names such as toString and constructor are treated as ordinary unknown keys, not as schema entries');
+  // A full, independent JSON Schema validator, when one is installed (pip install jsonschema): same answers on everything above.
+  const PY3 = `
+import sys, json
+try:
+    import jsonschema
+except ImportError:
+    sys.exit(3)
+schema = json.load(open(sys.argv[1])); jobs = json.load(open(sys.argv[2])); cache = {}; out = []
+for j in jobs:
+    d = j['def']
+    if d not in cache:
+        s = {'$schema': schema['$schema'], '$ref': '#/$defs/' + d, '$defs': schema['$defs']}
+        cache[d] = jsonschema.Draft202012Validator(s)
+    out.append(cache[d].is_valid(j['value']))
+print(json.dumps(out))`;
+  const jjobs = [];
+  validFiles.forEach(f => jjobs.push({ def: defOf(f), value: readJson(path.join(exDir, 'valid', f)), want: true, label: 'valid/' + f }));
+  invalidFiles.forEach(f => jjobs.push({ def: defOf(f), value: readJson(path.join(exDir, 'invalid', f)), want: false, label: 'invalid/' + f }));
+  Object.entries(sets).forEach(([name, logs]) => logs.forEach((l, i) => jjobs.push({ def: 'log', value: l, want: S.validate(schema, 'log', l).ok, label: name + ' #' + i })));
+  const jf = path.join(tmp, 'jsjobs.json'); fs.writeFileSync(jf, JSON.stringify(jjobs.map(j => ({ def: j.def, value: j.value }))));
+  const jr = cp.spawnSync('python3', ['-c', PY3, schemaFile, jf], { encoding: 'utf8', maxBuffer: 1 << 28 });
+  if (jr.status === 3) console.log('skip  independent check with Python jsonschema (not installed: pip install jsonschema)');
+  else {
+    if (jr.status !== 0) { console.log(jr.stderr); throw new Error('python jsonschema helper failed to run'); }
+    const got = JSON.parse(jr.stdout), wrong = jjobs.filter((j, i) => got[i] !== j.want).map(j => j.label);
+    ok(wrong.length === 0, 'Python jsonschema (a full validator) gives the same answer as expected on all ' + jjobs.length + ' documents' + (wrong.length ? ' (differs: ' + wrong.slice(0, 3).join(', ') + ')' : ''));
+  }
 }
 
 // ---- 4b. the viewer page: its checking logic must agree with the Node verifier ----
@@ -259,6 +349,9 @@ ok(disagree.length === 0, 'Node and Python give identical output on all 600 edit
     bad = [];
     for (let i = 0; i < mutations.length; i++) if (!await same(mutations[i], undefined)) bad.push('m' + i);
     ok(bad.length === 0, 'viewer page logic gives identical output on all ' + mutations.length + ' edited logs' + (bad.length ? ' (first difference: ' + bad[0] + ')' : ''));
+    bad = [];
+    for (let i = 0; i < hexEdits.length; i++) if (!await same(hexEdits[i], undefined)) bad.push('h' + i);
+    ok(bad.length === 0, 'viewer page logic gives identical output on all ' + hexEdits.length + ' logs with whitespace around a hex value' + (bad.length ? ' (first difference: ' + bad[0] + ')' : ''));
     const b = cp.spawnSync('node', [path.join(root, 'node', 'build-viewer.js'), '--check'], { encoding: 'utf8' });
     ok(b.status === 0, 'example logs inside the viewer page match prototype/testdata' + (b.status ? ' (' + b.stdout.trim() + ')' : ''));
     finish();

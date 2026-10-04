@@ -1,0 +1,30 @@
+{
+ "format": "cip-test-log/0",
+ "entries": [
+  {
+   "index": 0,
+   "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+   "time": 1790900000,
+   "record": {
+    "type": "genesis",
+    "author": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c",
+    "body": {
+     "threshold": 3,
+     "comment_seconds": 1000
+    },
+    "sig": "8a76972cc623c6fd5baacf7e82ca2e23cd2963fd6c1e3b879675f4a5053e9be76b6a379c07b88e24a18def713bbcfa6eaa160f13d60035f86482c7c7f06e9e08"
+   },
+   "hash": "bf082f071ec254c503f58ebb2c4ef34dbaf4b493159e8f3a6a395dd97c69940d"
+  }
+ ],
+ "checkpoints": [
+  {
+   "operator": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c",
+   "root": "43a759e9674226d0b38d6b048868cb28236e0c525c4b6ddddb7a49f9f70d8651",
+   "size": 10,
+   "time": 1790900200,
+   "sig": "eb32163bffaab2204740ecfbad52875a0d426289d6718e0cab800bfcc2f6c37a68261db13b71d43353a94cff62297d801c8af4a512f6f6f9885d5830a4229a09"
+  }
+ ],
+ "notes": []
+}

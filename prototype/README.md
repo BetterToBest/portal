@@ -18,7 +18,10 @@ Nothing here collects or monetizes user behavior data. The programs read the fil
 | `viewer/index.html` | A single page that checks a log in your browser and shows proposals, signatures and anything that failed, in plain words. It makes no network requests and stores nothing, and the browser is told to block them. Its example logs are copied in by `node/build-viewer.js`. |
 | `node/build-viewer.js` | Copies the example logs from `testdata/` into the viewer page, or with `--check` tells you if the page is out of date. |
 | `testdata/` | One good log, two saved checkpoints (one from a different history of the same length), two more valid logs, and 17 logs that are corrupted or break a rule on purpose. |
-| [`../tests/prototype.test.js`](../tests/prototype.test.js) | Runs every test log through both verifiers and checks they agree. Also tries 600 random single edits (changed values, wrong types, removed, swapped or repeated entries), which must all be rejected. The same logs and edits are run through the viewer page's logic. |
+| `schema/cip-test-log.schema.json` | The format of the log, its entries, records and checkpoints as a JSON Schema (draft 2020-12). Shape only: it cannot check hashes, signatures or rules. See SPEC section 4.1. |
+| `schema/examples/` | 15 examples that pass and 42 that fail the schema, each failing for one stated reason (`expected-errors.json`). Built by `node/make-schema-examples.js`. |
+| `node/schema-check.js` | A small checker for the schema: `node prototype/node/schema-check.js <file.json> [--def record]`. It implements only the parts of JSON Schema the schema uses and refuses the rest. |
+| [`../tests/prototype.test.js`](../tests/prototype.test.js) | Runs every test log through both verifiers and checks they agree. Also tries 600 random single edits (changed values, wrong types, removed, swapped or repeated entries) and 750 logs with whitespace around one hex value, which must all be rejected. The same logs and edits are run through the viewer page's logic, and through the schema, which must agree with the verifiers' format checks (and with Python's `jsonschema` package, when installed). |
 
 ## Try it
 
@@ -30,6 +33,9 @@ python3 prototype/python/verify.py prototype/testdata/good.json
 
 node prototype/node/cip-log.js verify prototype/testdata/tamper-text.json
 node prototype/node/cip-log.js verify prototype/testdata/rewritten-history.json --trusted prototype/testdata/good.checkpoint-21.json
+
+node prototype/node/schema-check.js prototype/testdata/good.json
+node prototype/node/schema-check.js prototype/schema/examples/invalid/record-genesis-threshold-zero.json --def record
 
 node prototype/node/cip-log.js checkpoint prototype/testdata/good.json --out my-checkpoint.json
 node prototype/node/cip-log.js compare prototype/testdata/good.checkpoint-21.json prototype/testdata/split-view.checkpoint-21.json
@@ -61,6 +67,7 @@ Each command prints the result as JSON and exits with 0 if the log passes, 1 if 
 
 ## Ways to help
 
+- Check the schema with a validator you trust (for example Ajv, or Python's `jsonschema`) against the examples in `schema/examples/`, and tell us if one disagrees. It was checked with both of those here, but a second pair of eyes is the point.
 - Write a third verifier from `SPEC.md` in a language you like, and check that it agrees with the test logs.
 - Find a case where the two verifiers disagree, or where the spec is unclear.
 - Review the rules in `SPEC.md` and the open questions at the end of it and in the [plan](../docs/phase-3-plan.md).

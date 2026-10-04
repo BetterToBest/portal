@@ -1,0 +1,9 @@
+{
+ "type": "propose",
+ "author": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+ "body": {
+  "title": "",
+  "text": "All budget meetings are open to the public and the minutes are posted within 7 days."
+ },
+ "sig": "42ecabaac6555cf4270e0bee32e6f8bdcc308fed11ef97ba1cb3f5debf5a9c1070d78f08e2ff61638154b4f1dd6272d5ab8d4be549c45c94dfc28702880b850b"
+}

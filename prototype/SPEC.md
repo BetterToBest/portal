@@ -52,6 +52,10 @@ Derived values:
 - **Proposal id**: the recomputed entry hash of the `propose` entry.
 - **Version hash** of a proposal text: SHA-256 hex of the canonical form of `{"title", "text"}`. A proposal has one version when proposed and a new one for each `amend`.
 
+### 4.1 The format as a JSON Schema
+
+[`schema/cip-test-log.schema.json`](schema/cip-test-log.schema.json) (JSON Schema draft 2020-12) describes the **shape** of everything in sections 1 to 5: which keys, which types, which lengths, which hex strings. A log passes the schema exactly when every entry, record body and checkpoint has the right shape under sections 1 to 5, which is what the verifiers' `BAD_FORMAT`, `BAD_BODY` and `CP_BAD_FORMAT` checks look at (the tests compare the two on every test log and every edited log). The schema cannot check anything that needs computing or comparing: hashes, signatures, the chain, canonical form beyond the number rule, the `test-` label rule, or any rule of section 6. If the schema and the text of this spec ever disagree, the spec wins and the schema has a bug. Examples that pass and fail, each with the reason, are in [`schema/examples/`](schema/examples/).
+
 ## 5. Checkpoints
 
 ```json

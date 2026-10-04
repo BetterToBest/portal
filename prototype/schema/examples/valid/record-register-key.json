@@ -1,0 +1,9 @@
+{
+ "type": "register_key",
+ "author": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+ "body": {
+  "public_key": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+  "label": "test-alice"
+ },
+ "sig": "52ef6cb150dc97a3bfdf97944eeb8d7078b2bd5629905cfd37aa2a7762ac7b75f5357b3b663537a510cd506a536efac0a5e9855b94cfa251bc17ad8632115900"
+}

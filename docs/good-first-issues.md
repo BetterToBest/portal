@@ -7,7 +7,7 @@ Each is small and self-contained. Suggested labels are in brackets. These are no
 2. **[Review the threat model for gaps](https://github.com/BetterToBest/portal/issues/8)** [review, security] (#8)
    Read `docs/threat-model.md` and post threats or mitigations we missed.
 3. **[Draft a ballot and proposal data schema](https://github.com/BetterToBest/portal/issues/9)** [spec] (#9)
-   Propose a JSON shape for a proposal, a signature, and a sealed ballot. Keep it minimal.
+   Propose a JSON shape for a proposal, a signature, and a sealed ballot. Keep it minimal. Partly done: the proposal, signature, comment and amendment shapes for the Phase 3 test log are a [JSON Schema](../prototype/schema/cip-test-log.schema.json) with examples. Still open: the sealed ballot, and any change you think the existing shapes need.
 4. **[Write a plain-language glossary of CIP terms](https://github.com/BetterToBest/portal/issues/10)** [documentation, good first issue] (#10)
    One or two sentences each for ledger, zero-knowledge proof, liquid delegation, quadratic voting, Judicial Guard.
 5. **[Accessibility check of the landing page](https://github.com/BetterToBest/portal/issues/11)** [a11y, good first issue] (#11)

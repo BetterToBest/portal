@@ -161,6 +161,13 @@ function compareCheckpoints(a, b) {
   return res;
 }
 
+// True when a whole log has the right SHAPE (SPEC sections 1 to 5): keys, types, lengths. The reference
+// that prototype/schema/cip-test-log.schema.json is tested against. It says nothing about hashes,
+// signatures, the chain or the rules of section 6.
+const shapeOk = log => keysAre(log, ['format', 'entries', 'checkpoints']) && log.format === 'cip-test-log/0' &&
+  Array.isArray(log.entries) && Array.isArray(log.checkpoints) &&
+  log.entries.every(e => entryFormatOk(e) && bodyOk(e.record.type, e.record.body)) && log.checkpoints.every(cpShapeOk);
+
 function verifyLog(log, trusted) {
   const res = { ok: false, integrity_errors: [], rule_errors: [], summary: null };
   if (!keysAre(log, ['format', 'entries', 'checkpoints']) || log.format !== 'cip-test-log/0' || !Array.isArray(log.entries) || !Array.isArray(log.checkpoints)) {
@@ -279,4 +286,4 @@ if (require.main === module) {
     process.exit(result.ok ? 0 : 1);
   } else usage();
 }
-module.exports = { canon, sha256hex, testIdentity, makeRecord, makeEntries, makeCheckpoint, entryHash, versionHash, merkleRoot, verifyLog, compareCheckpoints, extractCheckpoint, formatCheckpoint };
+module.exports = { canon, sha256hex, testIdentity, makeRecord, makeEntries, makeCheckpoint, entryHash, versionHash, merkleRoot, verifyLog, compareCheckpoints, extractCheckpoint, formatCheckpoint, shapeOk };

@@ -1,0 +1,375 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "CIP test log (cip-test-log/0)",
+ "$comment": "Draft v0.1, for review. Describes the SHAPE of the test log in prototype/SPEC.md (sections 1 to 5): which keys, which types, which lengths. It cannot check hashes, signatures, the chain, canonical form or any rule of SPEC section 6; the verifiers do that. Whole numbers written as 3.0 or 1e3 count as integers, as in the spec. A pattern ends with (?![\\s\\S]) instead of $ because in some regex engines $ also matches before a final newline. The pattern on text strings rejects unpaired surrogates (SPEC section 2). Test data only: CIP is a research proposal, not a live voting system.",
+ "$ref": "#/$defs/log",
+ "$defs": {
+  "hex64": {
+   "type": "string",
+   "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+  },
+  "hex128": {
+   "type": "string",
+   "pattern": "^[0-9a-f]{128}(?![\\s\\S])"
+  },
+  "int": {
+   "type": "integer",
+   "minimum": -9007199254740991,
+   "maximum": 9007199254740991
+  },
+  "uint": {
+   "type": "integer",
+   "minimum": 0,
+   "maximum": 9007199254740991
+  },
+  "log": {
+   "type": "object",
+   "properties": {
+    "format": {
+     "const": "cip-test-log/0"
+    },
+    "entries": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/entry"
+     }
+    },
+    "checkpoints": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/checkpoint"
+     }
+    }
+   },
+   "required": [
+    "format",
+    "entries",
+    "checkpoints"
+   ],
+   "additionalProperties": false
+  },
+  "entry": {
+   "type": "object",
+   "properties": {
+    "index": {
+     "$ref": "#/$defs/int"
+    },
+    "prev": {
+     "$ref": "#/$defs/hex64"
+    },
+    "time": {
+     "$ref": "#/$defs/uint"
+    },
+    "record": {
+     "$ref": "#/$defs/record"
+    },
+    "hash": {
+     "$ref": "#/$defs/hex64"
+    }
+   },
+   "required": [
+    "index",
+    "prev",
+    "time",
+    "record",
+    "hash"
+   ],
+   "additionalProperties": false
+  },
+  "record": {
+   "type": "object",
+   "properties": {
+    "type": {
+     "enum": [
+      "genesis",
+      "register_key",
+      "propose",
+      "amend",
+      "sign",
+      "comment"
+     ]
+    },
+    "author": {
+     "$ref": "#/$defs/hex64"
+    },
+    "body": {
+     "type": "object"
+    },
+    "sig": {
+     "$ref": "#/$defs/hex128"
+    }
+   },
+   "required": [
+    "type",
+    "author",
+    "body",
+    "sig"
+   ],
+   "additionalProperties": false,
+   "allOf": [
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "genesis"
+       }
+      },
+      "required": [
+       "type"
+      ]
+     },
+     "then": {
+      "properties": {
+       "body": {
+        "$ref": "#/$defs/body_genesis"
+       }
+      }
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "register_key"
+       }
+      },
+      "required": [
+       "type"
+      ]
+     },
+     "then": {
+      "properties": {
+       "body": {
+        "$ref": "#/$defs/body_register_key"
+       }
+      }
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "propose"
+       }
+      },
+      "required": [
+       "type"
+      ]
+     },
+     "then": {
+      "properties": {
+       "body": {
+        "$ref": "#/$defs/body_propose"
+       }
+      }
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "amend"
+       }
+      },
+      "required": [
+       "type"
+      ]
+     },
+     "then": {
+      "properties": {
+       "body": {
+        "$ref": "#/$defs/body_amend"
+       }
+      }
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "sign"
+       }
+      },
+      "required": [
+       "type"
+      ]
+     },
+     "then": {
+      "properties": {
+       "body": {
+        "$ref": "#/$defs/body_sign"
+       }
+      }
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "comment"
+       }
+      },
+      "required": [
+       "type"
+      ]
+     },
+     "then": {
+      "properties": {
+       "body": {
+        "$ref": "#/$defs/body_comment"
+       }
+      }
+     }
+    }
+   ]
+  },
+  "body_genesis": {
+   "type": "object",
+   "properties": {
+    "threshold": {
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 9007199254740991
+    },
+    "comment_seconds": {
+     "$ref": "#/$defs/uint"
+    }
+   },
+   "required": [
+    "threshold",
+    "comment_seconds"
+   ],
+   "additionalProperties": false
+  },
+  "body_register_key": {
+   "type": "object",
+   "properties": {
+    "public_key": {
+     "$ref": "#/$defs/hex64"
+    },
+    "label": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 40,
+     "pattern": "^[^\\ud800-\\udfff]*$"
+    }
+   },
+   "required": [
+    "public_key",
+    "label"
+   ],
+   "additionalProperties": false
+  },
+  "body_propose": {
+   "type": "object",
+   "properties": {
+    "title": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 120,
+     "pattern": "^[^\\ud800-\\udfff]*$"
+    },
+    "text": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 20000,
+     "pattern": "^[^\\ud800-\\udfff]*$"
+    }
+   },
+   "required": [
+    "title",
+    "text"
+   ],
+   "additionalProperties": false
+  },
+  "body_amend": {
+   "type": "object",
+   "properties": {
+    "proposal": {
+     "$ref": "#/$defs/hex64"
+    },
+    "title": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 120,
+     "pattern": "^[^\\ud800-\\udfff]*$"
+    },
+    "text": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 20000,
+     "pattern": "^[^\\ud800-\\udfff]*$"
+    }
+   },
+   "required": [
+    "proposal",
+    "title",
+    "text"
+   ],
+   "additionalProperties": false
+  },
+  "body_sign": {
+   "type": "object",
+   "properties": {
+    "proposal": {
+     "$ref": "#/$defs/hex64"
+    },
+    "version": {
+     "$ref": "#/$defs/hex64"
+    }
+   },
+   "required": [
+    "proposal",
+    "version"
+   ],
+   "additionalProperties": false
+  },
+  "body_comment": {
+   "type": "object",
+   "properties": {
+    "proposal": {
+     "$ref": "#/$defs/hex64"
+    },
+    "text": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 2000,
+     "pattern": "^[^\\ud800-\\udfff]*$"
+    }
+   },
+   "required": [
+    "proposal",
+    "text"
+   ],
+   "additionalProperties": false
+  },
+  "checkpoint": {
+   "type": "object",
+   "properties": {
+    "operator": {
+     "$ref": "#/$defs/hex64"
+    },
+    "root": {
+     "$ref": "#/$defs/hex64"
+    },
+    "size": {
+     "$ref": "#/$defs/int"
+    },
+    "time": {
+     "$ref": "#/$defs/int"
+    },
+    "sig": {
+     "$ref": "#/$defs/hex128"
+    }
+   },
+   "required": [
+    "operator",
+    "root",
+    "size",
+    "time",
+    "sig"
+   ],
+   "additionalProperties": false
+  }
+ }
+}

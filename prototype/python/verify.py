@@ -22,8 +22,10 @@ import sys
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
 SAFE = 2 ** 53 - 1
-HEX64 = re.compile(r'^[0-9a-f]{64}$')
-HEX128 = re.compile(r'^[0-9a-f]{128}$')
+# fullmatch, not match: with '$', Python's match also accepts a trailing newline, and bytes.fromhex skips
+# whitespace, so 'sig + newline' would verify. The spec says lowercase 0-9a-f only.
+HEX64 = re.compile(r'[0-9a-f]{64}')
+HEX128 = re.compile(r'[0-9a-f]{128}')
 
 
 def normalize(v):
@@ -75,7 +77,7 @@ def sha_hex(s):
 
 def verify_sig(pub, msg, sig):
     try:
-        if not (isinstance(pub, str) and isinstance(sig, str) and HEX64.match(pub) and HEX128.match(sig)):
+        if not (isinstance(pub, str) and isinstance(sig, str) and HEX64.fullmatch(pub) and HEX128.fullmatch(sig)):
             return False
         Ed25519PublicKey.from_public_bytes(bytes.fromhex(pub)).verify(bytes.fromhex(sig), msg.encode('utf-8'))
         return True
@@ -88,11 +90,11 @@ def is_int(v):
 
 
 def is_hex64(v):
-    return isinstance(v, str) and HEX64.match(v) is not None
+    return isinstance(v, str) and HEX64.fullmatch(v) is not None
 
 
 def is_hex128(v):
-    return isinstance(v, str) and HEX128.match(v) is not None
+    return isinstance(v, str) and HEX128.fullmatch(v) is not None
 
 
 def is_str(v, lo, hi):

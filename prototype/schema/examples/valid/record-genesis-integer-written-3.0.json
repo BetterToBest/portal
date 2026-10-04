@@ -1,0 +1,9 @@
+{
+ "type": "genesis",
+ "author": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c",
+ "body": {
+  "threshold": 3.0,
+  "comment_seconds": 1000
+ },
+ "sig": "8a76972cc623c6fd5baacf7e82ca2e23cd2963fd6c1e3b879675f4a5053e9be76b6a379c07b88e24a18def713bbcfa6eaa160f13d60035f86482c7c7f06e9e08"
+}
