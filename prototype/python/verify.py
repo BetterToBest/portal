@@ -5,8 +5,14 @@ a result; it makes no network connections and stores nothing. The only dependenc
 `cryptography` package (for Ed25519).
 
     python3 prototype/python/verify.py <log.json> [--trusted <checkpoint.json>]
+    python3 prototype/python/verify.py checkpoint <log.json> [--index N] [--out <file>]
+    python3 prototype/python/verify.py compare <checkpoint-a.json> <checkpoint-b.json>
 
-Exit code 0 when the log passes every check, 1 otherwise. The result is printed as JSON.
+verify (the default): exit code 0 when the log passes every check, 1 otherwise; the result is
+printed as JSON. checkpoint: checks the log's integrity, then prints (or saves) one of its
+checkpoints as a standalone file, the last one unless --index says otherwise; exit 1 if the log
+fails. compare: checks two checkpoints against each other (SPEC section 5.1); exit 0 unless it
+reports errors. It writes a file only when you pass --out to checkpoint.
 """
 import hashlib
 import json
@@ -322,14 +328,104 @@ def verify_log(log, trusted=None, have_trusted=False):
     return res
 
 
+def compare_checkpoints(a, b):
+    """Compare two saved checkpoints with no log (SPEC section 5.1)."""
+    res = {'ok': False, 'errors': [], 'relation': None, 'operator': None}
+
+    def err(code, where):
+        res['errors'].append({'code': code, 'where': where})
+
+    usable = []
+    for where, c in (('a', a), ('b', b)):
+        if cp_shape_ok(c):
+            usable.append((where, c))
+        else:
+            err('CMP_BAD_FORMAT', where)
+    if len(usable) == 2 and a['operator'] != b['operator']:
+        err('CMP_DIFFERENT_OPERATOR', 'both')
+    for where, c in usable:
+        if not verify_sig(c['operator'], checkpoint_payload(c), c['sig']):
+            err('CMP_BAD_SIG', where)
+    if not res['errors']:
+        res['operator'] = a['operator']
+        if a['size'] != b['size']:
+            res['relation'] = 'different-size'
+        elif a['root'] == b['root']:
+            res['relation'] = 'identical'
+        else:
+            res['relation'] = 'conflict'
+            err('CMP_CONFLICT', 'both')
+    res['ok'] = not res['errors']
+    return res
+
+
+def cp_shape_ok(c):
+    return (keys_are(c, ['operator', 'root', 'size', 'time', 'sig']) and is_hex64(c['operator'])
+            and is_hex64(c['root']) and is_int(c['size']) and is_int(c['time']) and is_hex128(c['sig']))
+
+
+def extract_checkpoint(log, index=None):
+    """Pick one checkpoint out of a log with no integrity errors. Returns a dict with either
+    'checkpoint' (and 'index', 'rule_errors') or 'error' (and maybe 'details')."""
+    r = verify_log(log)
+    if r['integrity_errors']:
+        return {'error': 'the log has integrity errors, so no checkpoint was taken from it',
+                'details': r['integrity_errors']}
+    cps = log['checkpoints']
+    if not cps:
+        return {'error': 'the log holds no checkpoints'}
+    i = len(cps) - 1 if index is None else index
+    if not isinstance(i, int) or i < 0 or i >= len(cps):
+        return {'error': 'there is no checkpoint at position %s (the log holds %d, numbered from 0)' % (index, len(cps))}
+    return {'checkpoint': cps[i], 'index': i, 'rule_errors': len(r['rule_errors'])}
+
+
+def format_checkpoint(c):
+    return json.dumps(c, indent=1) + '\n'  # same layout as the files in testdata/
+
+
 def main(argv):
+    usage = ('usage:\n  verify.py <log.json> [--trusted <checkpoint.json>]\n'
+             '  verify.py checkpoint <log.json> [--index N] [--out <file>]\n'
+             '  verify.py compare <checkpoint-a.json> <checkpoint-b.json>\n')
     if not argv or argv[0] in ('-h', '--help'):
-        sys.stderr.write('usage: verify.py <log.json> [--trusted <checkpoint.json>]\n')
+        sys.stderr.write(usage)
         return 2
 
     def read(path):
         with open(path, encoding='utf-8') as f:
             return normalize(json.load(f))
+
+    def opt(name):
+        return argv[argv.index(name) + 1] if name in argv and argv.index(name) > 0 and argv.index(name) + 1 < len(argv) else None
+
+    if argv[0] == 'checkpoint' and len(argv) > 1:
+        ix, out = opt('--index'), opt('--out')
+        if ('--index' in argv and not (ix and ix.isdigit() and ix.isascii())) or ('--out' in argv and not out):
+            sys.stderr.write(usage)
+            return 2
+        r = extract_checkpoint(read(argv[1]), None if ix is None else int(ix))
+        if 'error' in r:
+            sys.stderr.write('not saved: ' + r['error'] + '\n')
+            if 'details' in r:
+                sys.stderr.write(json.dumps(r['details'], separators=(',', ':')) + '\n')
+            return 1
+        if r['rule_errors']:
+            sys.stderr.write('note: the log breaks %d rule(s); run verify to see them. The checkpoint itself is intact.\n' % r['rule_errors'])
+        if out:
+            with open(out, 'w', encoding='utf-8') as f:
+                f.write(format_checkpoint(r['checkpoint']))
+            sys.stderr.write('saved checkpoint %d (size %d) to %s\n' % (r['index'], r['checkpoint']['size'], out))
+        else:
+            sys.stdout.write(format_checkpoint(r['checkpoint']))
+        return 0
+    if argv[0] == 'compare' and len(argv) > 2:
+        result = compare_checkpoints(read(argv[1]), read(argv[2]))
+        print(json.dumps(result, indent=2))
+        return 0 if result['ok'] else 1
+    if argv[0] in ('checkpoint', 'compare'):
+        sys.stderr.write(usage)
+        return 2
     log = read(argv[0])
     if '--trusted' in argv:
         result = verify_log(log, read(argv[argv.index('--trusted') + 1]), True)

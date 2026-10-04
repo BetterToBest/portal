@@ -4,7 +4,7 @@ A small, runnable piece of the [Phase 3 plan](../docs/phase-3-plan.md): a tamper
 
 **This is a research prototype on test data. It is not a voting system, and CIP is not live.** There are no real identities, no ballots, no network and no operator other than the one in the test files. Every rule and number is a proposal for review.
 
-Nothing here collects or monetizes user behavior data. The programs read the file you give them and print a result. They make no network connections and store nothing, and a test fails the build if network code or tracking code appears in this folder.
+Nothing here collects or monetizes user behavior data. The programs read the files you give them and print a result. They make no network connections and store nothing (the one exception is the checkpoint command, which writes a file only when you pass `--out`), and a test fails the build if network code or tracking code appears in this folder.
 
 ## What is here
 
@@ -14,9 +14,10 @@ Nothing here collects or monetizes user behavior data. The programs read the fil
 | `node/cip-log.js` | Reference implementation: builds records, entries and checkpoints, and verifies a log. Built-in Node modules only. |
 | `node/make-test-logs.js` | Builds every test log from fixed test identities and fixed times, so the files never change between runs. |
 | `python/verify.py` | A second verifier, written from the spec. Needs the `cryptography` package. |
+| `checkpoint` and `compare` commands | In both programs: save one checkpoint from a log as its own file, and compare two saved checkpoints with no log. See [checkpoints.md](../docs/checkpoints.md) and SPEC section 5.1. |
 | `viewer/index.html` | A single page that checks a log in your browser and shows proposals, signatures and anything that failed, in plain words. It makes no network requests and stores nothing, and the browser is told to block them. Its example logs are copied in by `node/build-viewer.js`. |
 | `node/build-viewer.js` | Copies the example logs from `testdata/` into the viewer page, or with `--check` tells you if the page is out of date. |
-| `testdata/` | One good log, one saved checkpoint, two more valid logs, and 17 logs that are corrupted or break a rule on purpose. |
+| `testdata/` | One good log, two saved checkpoints (one from a different history of the same length), two more valid logs, and 17 logs that are corrupted or break a rule on purpose. |
 | [`../tests/prototype.test.js`](../tests/prototype.test.js) | Runs every test log through both verifiers and checks they agree. Also tries 600 random single edits (changed values, wrong types, removed, swapped or repeated entries), which must all be rejected. The same logs and edits are run through the viewer page's logic. |
 
 ## Try it
@@ -29,6 +30,9 @@ python3 prototype/python/verify.py prototype/testdata/good.json
 
 node prototype/node/cip-log.js verify prototype/testdata/tamper-text.json
 node prototype/node/cip-log.js verify prototype/testdata/rewritten-history.json --trusted prototype/testdata/good.checkpoint-21.json
+
+node prototype/node/cip-log.js checkpoint prototype/testdata/good.json --out my-checkpoint.json
+node prototype/node/cip-log.js compare prototype/testdata/good.checkpoint-21.json prototype/testdata/split-view.checkpoint-21.json
 
 node tests/prototype.test.js
 ```
@@ -43,6 +47,7 @@ Each command prints the result as JSON and exits with 0 if the log passes, 1 if 
 - **`tamper-text.json`, `delete-entry.json`, `reorder.json`, `forged-sig.json`, `tamper-time.json`, `bad-format.json`, `bad-checkpoint.json`**: edits made without the operator's help. Each is caught.
 - **`rewritten-history.json` and `truncated.json`**: the operator rebuilds the log from the start and signs new checkpoints. The log passes every check on its own. It fails only against `good.checkpoint-21.json`, a checkpoint saved before the change. This is why checkpoints are meant to be copied and kept by other people.
 - **`rule-*.json`**: every record is signed and chained correctly, but a rule is broken: a signature after the comment period, an unregistered author, a duplicate or stale signature, an amendment by someone who did not propose, a label without `test-`, time running backwards, a comment on a proposal that does not exist. (`rule-ok-new-signer.json` is the one valid log among them: a new person signs a proposal.)
+- **`split-view.checkpoint-21.json`**: a checkpoint of the same size as `good.checkpoint-21.json` but from a log where one comment differs. Both are validly signed, so comparing them proves the operator signed two histories.
 - **`unicode.json`**: odd characters (control characters, line separators, emoji) that both verifiers must write in the same canonical form.
 
 ## Limits you should know about
@@ -51,7 +56,7 @@ Each command prints the result as JSON and exits with 0 if the log passes, 1 if 
 - **A signature here does not show that a real, unique person signed.** Checking identity is outside this prototype.
 - **Same author, same spec.** Both verifiers were written by the same person from the same document. That catches slips, not a shared misreading. A third verifier written by someone else from [`SPEC.md`](SPEC.md) alone would be the real test, and is welcome.
 - **One operator.** The log has one operator who adds entries and signs checkpoints. There is no network and no consensus. The questions about colluding operators and guardians are in the [fork simulator](https://bettertobest.github.io/portal/simulator/fork/) and [halt-power.md](../docs/halt-power.md).
-- **A watcher who saved a checkpoint can only detect changes inside the part of the log it covered.**
+- **A watcher who saved a checkpoint can only detect changes inside the part of the log it covered.** Who should keep checkpoints, and how many, is a proposal in [checkpoints.md](../docs/checkpoints.md), not something the software enforces.
 - **The no-network test is a coarse tripwire.** It looks for obvious network and tracking code. It does not prove the absence of anything.
 
 ## Ways to help

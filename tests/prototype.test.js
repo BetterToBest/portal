@@ -2,7 +2,8 @@
 // Checks: the test logs are reproducible; every shared test log gives the expected result in
 // BOTH verifiers and the two outputs are identical; 600 random single edits to the good log are
 // all rejected by both with the same result; the canonical form and Merkle tree match
-// independent reference values; and a coarse scan finds no network code in prototype/.
+// independent reference values; saving and comparing checkpoints (SPEC 5.1) behave the same in
+// both verifiers, in code and on the command line; and a coarse scan finds no network code in prototype/.
 // Needs Node 18 or later and Python 3 with the `cryptography` package (pip install cryptography).
 // Run from the repo root: node tests/prototype.test.js
 'use strict';
@@ -37,6 +38,24 @@ function pythonVerify(jobs, tmp) {
   if (r.status !== 0) { console.log(r.stderr); throw new Error('python verifier failed to run'); }
   return JSON.parse(r.stdout);
 }
+const PY2 = `
+import sys, json, importlib.util
+spec = importlib.util.spec_from_file_location('v', sys.argv[1]); v = importlib.util.module_from_spec(spec); spec.loader.exec_module(v)
+jobs = json.load(open(sys.argv[2])); out = []
+for j in jobs:
+    if j['op'] == 'compare':
+        out.append(v.compare_checkpoints(v.normalize(json.load(open(j['a']))), v.normalize(json.load(open(j['b'])))))
+    else:
+        out.append(v.extract_checkpoint(v.normalize(json.load(open(j['log']))), j.get('index')))
+print(json.dumps(out))`;
+function pythonCheckpoints(jobs, tmp) {
+  const jf = path.join(tmp, 'cpjobs.json'); fs.writeFileSync(jf, JSON.stringify(jobs));
+  const r = cp.spawnSync('python3', ['-c', PY2, path.join(root, 'python', 'verify.py'), jf], { encoding: 'utf8', maxBuffer: 1 << 28 });
+  if (r.status !== 0) { console.log(r.stderr); throw new Error('python checkpoint helper failed to run'); }
+  return JSON.parse(r.stdout);
+}
+// Node's extractCheckpoint says ruleErrors and Python's says rule_errors; put both in one shape.
+const shapeEx = r => r.error ? { error: r.error, details: r.details || null } : { checkpoint: r.checkpoint, index: r.index, rules: r.ruleErrors !== undefined ? r.ruleErrors : r.rule_errors };
 const nodeVerify = j => L.verifyLog(readJson(j.log), j.trusted ? readJson(j.trusted) : undefined);
 
 // ---- 1. reproducible test data ----
@@ -110,6 +129,76 @@ ok(states(nodeVerify({ log: td('rewritten-history.json') })) === 'closed,collect
   ok(a.ok === true && deepEq(a, b), 'whole numbers written as 3.0 or 1.7909e9 verify the same in both verifiers');
 }
 
+// ---- 3b. saving and comparing checkpoints (SPEC 5.1) ----
+{
+  const goodLog = readJson(td('good.json')), g21 = readJson(T21), split = readJson(td('split-view.checkpoint-21.json'));
+  const mut = (c, f) => { const x = JSON.parse(JSON.stringify(c)); f(x); return x; };
+  const wf = (name, v) => { const f = path.join(tmp, name); fs.writeFileSync(f, JSON.stringify(v)); return f; };
+  const otherOp = L.makeCheckpoint(L.testIdentity('test-alice'), L.makeEntries([{ time: 1790900000, record: goodLog.entries[0].record }]), 1);
+  const cmpCases = [ // [name, a, b, ok, relation, error codes in order]
+    ['same checkpoint twice', T21, T21, true, 'identical', []],
+    ['two sizes of the same log', T21, wf('size12.json', goodLog.checkpoints[1]), true, 'different-size', []],
+    ['split view: same size, different history', T21, td('split-view.checkpoint-21.json'), false, 'conflict', ['CMP_CONFLICT']],
+    ['split view, arguments swapped', td('split-view.checkpoint-21.json'), T21, false, 'conflict', ['CMP_CONFLICT']],
+    ['changed root without re-signing', T21, wf('badsig.json', mut(g21, c => { c.root = '0'.repeat(64); })), false, null, ['CMP_BAD_SIG']],
+    ['a different operator', T21, wf('otherop.json', otherOp), false, null, ['CMP_DIFFERENT_OPERATOR']],
+    ['second file missing a key', T21, wf('nokey.json', mut(g21, c => { delete c.sig; })), false, null, ['CMP_BAD_FORMAT']],
+    ['both files malformed', wf('m1.json', { a: 1 }), wf('m2.json', []), false, null, ['CMP_BAD_FORMAT', 'CMP_BAD_FORMAT']],
+    ['size written as text', T21, wf('strsize.json', mut(g21, c => { c.size = '21'; })), false, null, ['CMP_BAD_FORMAT']],
+    ['a log file instead of a checkpoint', T21, td('good.json'), false, null, ['CMP_BAD_FORMAT']],
+  ];
+  const cj = cmpCases.map(([, a, b]) => ({ op: 'compare', a, b }));
+  const cn = cj.map(j => L.compareCheckpoints(readJson(j.a), readJson(j.b))), cpy = pythonCheckpoints(cj, tmp);
+  cmpCases.forEach(([name, , , want, rel, codes], i) => {
+    ok(cn[i].ok === want && cn[i].relation === rel && deepEq(cn[i].errors.map(e => e.code), codes), 'compare: ' + name + ' gives ok=' + want + ', relation ' + rel + (codes.length ? ', ' + codes.join(' + ') : ''));
+    ok(deepEq(cn[i], cpy[i]), 'compare: ' + name + ': Node and Python give identical output');
+  });
+  ok(cn[2].errors[0].where === 'both' && cn[1].operator === cn[0].operator, 'compare: a conflict is reported for both files, and the operator is named when the checkpoints can be compared');
+  ok(cn[7].errors[0].where === 'a' && cn[7].errors[1].where === 'b' && cn[4].errors[0].where === 'b', 'compare: format and signature errors say which file (a or b) they are about');
+
+  // Saving: take a checkpoint out of a log.
+  const logs = ['good.json', 'rule-late-sign.json', 'rule-ok-new-signer.json', 'unicode.json', 'rewritten-history.json', 'truncated.json',
+    'tamper-text.json', 'delete-entry.json', 'reorder.json', 'forged-sig.json', 'tamper-time.json', 'bad-format.json', 'bad-checkpoint.json'];
+  const ej = [];
+  logs.forEach(f => { ej.push({ op: 'extract', log: td(f) }); });
+  ej.push({ op: 'extract', log: td('good.json'), index: 0 }, { op: 'extract', log: td('good.json'), index: 1 }, { op: 'extract', log: td('good.json'), index: 3 },
+    { op: 'extract', log: wf('nocp.json', mut(goodLog, l => { l.checkpoints = []; })) });
+  const en = ej.map(j => L.extractCheckpoint(readJson(j.log), j.index)), ep = pythonCheckpoints(ej, tmp);
+  logs.forEach((f, i) => {
+    const integrity = L.verifyLog(readJson(td(f))).integrity_errors.length > 0;
+    ok(!!en[i].error === integrity, 'save: ' + f + (integrity ? ' has integrity errors, so no checkpoint is taken' : ' is intact, so a checkpoint is taken'));
+  });
+  ej.forEach((j, i) => ok(deepEq(shapeEx(en[i]), shapeEx(ep[i])), 'save: Node and Python agree on ' + path.basename(j.log) + (j.index !== undefined ? ' index ' + j.index : '')));
+  ok(deepEq(en[0].checkpoint, goodLog.checkpoints[2]) && en[0].index === 2, 'save: with no index the last checkpoint is taken (good.json: position 2, size ' + goodLog.checkpoints[2].size + ')');
+  ok(en[1].ruleErrors > 0 && en[1].checkpoint, 'save: a log that breaks a rule but is intact still gives its checkpoint, with a note');
+  ok(en[ej.length - 4].checkpoint.size === 10 && en[ej.length - 3].checkpoint.size === 12 && /no checkpoint at position 3/.test(en[ej.length - 2].error || '') && /no checkpoints/.test(en[ej.length - 1].error || ''),
+    'save: --index picks a position; an out-of-range index and a log with no checkpoints are refused with a plain message');
+  // A saved checkpoint does its job: it clears the log it came from and exposes a rewrite.
+  const saved = en[ej.length - 3].checkpoint;
+  ok(L.verifyLog(goodLog, saved).ok === true, 'save: a checkpoint saved from good.json passes as the trusted checkpoint for good.json');
+  ok(L.verifyLog(readJson(td('rewritten-history.json')), L.extractCheckpoint(goodLog, 2).checkpoint).integrity_errors.some(e => e.code === 'TRUSTED_TRUNCATED'), 'save: the last checkpoint of good.json (size 22) shows a shortened rewrite as TRUSTED_TRUNCATED');
+
+  // Command line: both programs, same bytes, same exit codes, and nothing is written when a log is refused.
+  const run = (cmd, args) => cp.spawnSync(cmd, args, { encoding: 'utf8' });
+  const nodeCli = a => run('node', [path.join(root, 'node', 'cip-log.js')].concat(a));
+  const pyCli = a => run('python3', [path.join(root, 'python', 'verify.py')].concat(a));
+  const fN = path.join(tmp, 'saved-node.json'), fP = path.join(tmp, 'saved-py.json');
+  const rN = nodeCli(['checkpoint', td('good.json'), '--index', '1', '--out', fN]), rP = pyCli(['checkpoint', td('good.json'), '--index', '1', '--out', fP]);
+  ok(rN.status === 0 && rP.status === 0 && fs.readFileSync(fN, 'utf8') === fs.readFileSync(fP, 'utf8'), 'command line: both programs save the same bytes with --out');
+  ok(fs.readFileSync(fN, 'utf8') === JSON.stringify(goodLog.checkpoints[1], null, 1) + '\n', 'command line: the saved file has the same layout as the checkpoint files in testdata/');
+  ok(nodeCli(['checkpoint', td('good.json')]).stdout === pyCli(['checkpoint', td('good.json')]).stdout, 'command line: without --out both print the checkpoint, and it is identical');
+  const refN = path.join(tmp, 'refused-node.json'), refP = path.join(tmp, 'refused-py.json');
+  const bN = nodeCli(['checkpoint', td('tamper-text.json'), '--out', refN]), bP = pyCli(['checkpoint', td('tamper-text.json'), '--out', refP]);
+  ok(bN.status === 1 && bP.status === 1 && !fs.existsSync(refN) && !fs.existsSync(refP) && /not saved/.test(bN.stderr) && /not saved/.test(bP.stderr), 'command line: a log with integrity errors is refused with exit 1 and no file is written');
+  ok(nodeCli(['checkpoint', td('good.json'), '--index', 'x']).status === 2 && pyCli(['checkpoint', td('good.json'), '--index', 'x']).status === 2 &&
+     nodeCli(['checkpoint', td('good.json'), '--index', '-1']).status === 2 && pyCli(['checkpoint', td('good.json'), '--index', '-1']).status === 2 &&
+     nodeCli(['checkpoint', td('good.json'), '--out']).status === 2 && pyCli(['checkpoint', td('good.json'), '--out']).status === 2, 'command line: a bad --index or a missing --out file name is a usage error (exit 2) in both');
+  const cN = nodeCli(['compare', T21, td('split-view.checkpoint-21.json')]), cP = pyCli(['compare', T21, td('split-view.checkpoint-21.json')]);
+  ok(cN.status === 1 && cP.status === 1 && cN.stdout === cP.stdout, 'command line: compare exits 1 on a conflict and both print the same result');
+  ok(nodeCli(['compare', T21, T21]).status === 0 && pyCli(['compare', T21, T21]).status === 0 && nodeCli(['compare', T21]).status === 2 && pyCli(['compare', T21]).status === 2, 'command line: compare exits 0 when the checkpoints agree and 2 when a file name is missing');
+  ok(nodeCli(['verify', td('good.json'), '--trusted', fN]).status === 0 && pyCli([td('good.json'), '--trusted', fP]).status === 0, 'command line: a saved checkpoint file works as --trusted, and the old Python command form still works');
+}
+
 // ---- 4. random single edits: all rejected, both verifiers agree ----
 function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
 const good = readJson(td('good.json')), rnd = rng(7), goodText = JSON.stringify(good);
@@ -143,6 +232,14 @@ ok(mNode.every(r => r.ok === false), '600 random single edits to the good log ar
 ok(mPy.every(r => r.ok === false), '600 random single edits to the good log are all rejected by the Python verifier (' + mPy.filter(r => r.ok).length + ' accepted)');
 const disagree = mNode.map((r, i) => deepEq(r, mPy[i]) ? -1 : i).filter(i => i >= 0);
 ok(disagree.length === 0, 'Node and Python give identical output on all 600 edited logs' + (disagree.length ? ' (first difference: m' + disagree[0] + ')' : ''));
+{ // saving a checkpoint from each of the 600 edited logs: refused exactly when integrity errors exist, and both programs agree
+  const ej2 = mjobs.map(j => ({ op: 'extract', log: j.log })), pe = pythonCheckpoints(ej2, tmp);
+  const ne = mjobs.map(j => L.extractCheckpoint(readJson(j.log)));
+  const wrong = ne.map((r, i) => !!r.error === (mNode[i].integrity_errors.length > 0) ? -1 : i).filter(i => i >= 0);
+  const split = ne.map((r, i) => deepEq(shapeEx(r), shapeEx(pe[i])) ? -1 : i).filter(i => i >= 0);
+  ok(wrong.length === 0, 'saving a checkpoint from each of the 600 edited logs is refused exactly when the log has integrity errors' + (wrong.length ? ' (first mismatch: m' + wrong[0] + ')' : ''));
+  ok(split.length === 0, 'Node and Python agree on saving a checkpoint from all 600 edited logs' + (split.length ? ' (first difference: m' + split[0] + ')' : ''));
+}
 
 // ---- 4b. the viewer page: its checking logic must agree with the Node verifier ----
 {

@@ -50,6 +50,11 @@ const out = {};
 const good = goodSteps();
 out['good.json'] = logOf(good, [10, 12, good.length]);
 out['good.checkpoint-21.json'] = cps(good, [21])[0]; // what a watcher saved before the last entry was added
+// What a second watcher was shown by an operator who tells different audiences different stories:
+// the same first 21 positions, but one comment (entry 9) reads differently, so the root differs.
+// Both checkpoints are validly signed; comparing them (SPEC 5.1) is the proof of the split.
+{ const s = good.slice(); s[9] = step(T0 + 200, rec('dave', 'comment', { proposal: pid(good, 5), text: 'Seven days is fine by me.' }));
+  out['split-view.checkpoint-21.json'] = cps(s, [21])[0]; }
 
 // ----- integrity failures: edits made without the operator's help (no re-chaining) -----
 const clone = o => JSON.parse(JSON.stringify(o));

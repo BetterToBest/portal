@@ -15,7 +15,7 @@ A gate is only met when the evidence is public: the commit it was run on, the da
 | # | Gate | How it is checked | Status today |
 |---|---|---|---|
 | G1 | The written rules and the programs agree | At least three verifiers, at least one written by someone other than the main author, agree on every shared test log and on thousands of random single edits. | Partly met: two verifiers, same author, agree on 20 test logs and 600 random edits. The third, outside one is missing. |
-| G2 | Any change to the record is detected | Every single edit to a good log is rejected. A log rebuilt and re-signed by its operator is exposed by a checkpoint saved earlier. | Partly met: tested on test data. No process yet for publishing checkpoints or for who keeps them. |
+| G2 | Any change to the record is detected | Every single edit to a good log is rejected. A log rebuilt and re-signed by its operator is exposed by a checkpoint saved earlier. | Partly met: tested on test data, and there are now commands to save and compare checkpoints and a written proposal for who keeps them ([checkpoints.md](checkpoints.md)). No real watchers exist yet, and the bar for "enough" watchers is a proposal. |
 | G3 | A signature covers the exact text it was given | Signing an old version, signing twice and editing text after signing are all rejected. | Met on test data (rule logs and edit tests). |
 | G4 | Keys stay with the person | A review of key generation, storage and recovery (paper §4.3.2). | Not met: the prototype has no real key handling, only test identities that anyone can recompute. |
 | G5 | One real person, one key | A tested way to link a key to one verified person without recording how they vote. | Not met: outside the prototype. The paper's identity layer (§4.2.3) is not built. |
@@ -39,7 +39,7 @@ For each gate, when it is checked: the commit, the date, who ran it, the exact c
 
 1. Is ten gates the right set? What is missing, for example resilience when an operator goes offline, or a way to withdraw a result?
 2. Who counts as independent for G1 and G8, given a pseudonymous project with few contributors?
-3. How many people must keep checkpoints, and where should they publish them, for G2 to mean something?
+3. How many people must keep checkpoints, and where should they publish them, for G2 to mean something? [checkpoints.md](checkpoints.md) proposes three watchers and two places as a starting point; is that right?
 4. Should a gate be allowed to be met by a documented, accepted limitation rather than a fix? If so, who accepts it?
 
 Comments and corrections are welcome in [Discussions](https://github.com/BetterToBest/portal/discussions).

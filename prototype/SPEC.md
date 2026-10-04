@@ -60,6 +60,15 @@ Derived values:
 
 Exactly those keys; `size` and `time` are integers. `sig` is by `operator` over the canonical form of `{"operator", "root", "size", "time"}`. `root` is the Merkle tree hash (RFC 6962 section 2.1) of the first `size` entries, where leaf `i` is `SHA-256(0x00 || recomputed entry hash i as 32 bytes)` and an inner node is `SHA-256(0x01 || left || right)`, splitting at the largest power of two smaller than the count. The **operator** is the author of entry 0 when entry 0 is a valid `genesis` record.
 
+### 5.1 Saving and comparing checkpoints
+
+A checkpoint is useful to others only as a file they keep. Two operations are defined on checkpoint files, and both verifiers provide them:
+
+- **Save.** Take one checkpoint out of a log as a standalone file: exactly the five keys of section 5, nothing else. A program may do this only for a log with no integrity errors, so that a corrupted log never produces a "saved" checkpoint. Rule errors do not stop it, because they say nothing about whether the checkpoint is intact.
+- **Compare.** Check two saved checkpoints against each other with no log at all. The errors, in order, are `CMP_BAD_FORMAT` (`where` is `a` or `b`; per checkpoint), `CMP_DIFFERENT_OPERATOR` (`where` is `both`), `CMP_BAD_SIG` (per checkpoint). If there are none, the checkpoints have a **relation**: `identical` (same size and root), `different-size` (the two cover logs of different lengths, so they cannot be compared without the log), or `conflict` (same size, different roots; reported as `CMP_CONFLICT`, `where` `both`). A `conflict` between two validly signed checkpoints is proof that the operator signed two different histories of the same length. The output is JSON with `ok` (true only when there are no errors), `errors`, `relation` (null when a format, operator or signature error stops the comparison) and `operator` (null in the same case).
+
+Comparing different sizes needs the log: check the log against the older checkpoint with `--trusted` (section 6).
+
 ## 6. Checks, in order
 
 The verifier reports errors as `{code, where, index}`. It does not stop at the first error. Two kinds:
@@ -106,7 +115,7 @@ Both verifiers print the same JSON: `ok` (true only when there are no errors), `
 - It does not check that a real, unique person holds a key. Identities are test labels that anyone can recompute from the label. See [phase-3-plan.md](../docs/phase-3-plan.md).
 - It does not run an operator, a network or any consensus. One operator signs the checkpoints.
 - A hash chain alone cannot expose an operator who rewrites the whole log. Only a checkpoint saved earlier by someone else can (`TRUSTED_MISMATCH`). A rewrite that changes an early entry also tends to break later records, because proposal ids depend on position, but the operator cannot re-sign other people's records, so what is left to rewrite is the tail.
-- A watcher who saved a checkpoint can only detect changes inside the part of the log that checkpoint covers.
+- A watcher who saved a checkpoint can only detect changes inside the part of the log that checkpoint covers. Two watchers can compare their checkpoints (section 5.1) but only a `conflict` at the same size proves anything; a checkpoint nobody else holds proves nothing to anyone else.
 
 ## 9. Open questions
 

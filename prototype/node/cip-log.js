@@ -1,10 +1,16 @@
 // CIP Phase 3 prototype: reference implementation of the test log (see prototype/SPEC.md).
-// A research prototype on TEST DATA. Not a voting system. No network access, no storage,
-// no analytics: it reads a file you give it and prints a result. Built-in Node modules only.
+// A research prototype on TEST DATA. Not a voting system. No network access, no analytics:
+// it reads the files you give it and prints a result (it writes a file only when you pass
+// --out to the checkpoint command). Built-in Node modules only.
 //
 //   node prototype/node/cip-log.js verify <log.json> [--trusted <checkpoint.json>]
+//   node prototype/node/cip-log.js checkpoint <log.json> [--index N] [--out <file>]
+//   node prototype/node/cip-log.js compare <checkpoint-a.json> <checkpoint-b.json>
 //
-// Exit code 0 when the log passes every check, 1 otherwise. The result is printed as JSON.
+// verify: exit code 0 when the log passes every check, 1 otherwise; the result is printed as JSON.
+// checkpoint: checks the log's integrity, then prints (or saves) one of its checkpoints as a
+//   standalone file, the last one unless --index says otherwise. Exit 1 if the log fails.
+// compare: checks two checkpoints against each other (SPEC section 5.1). Exit 0 unless it reports errors.
 'use strict';
 const crypto = require('crypto');
 const fs = require('fs');
@@ -134,6 +140,27 @@ function cpChecks(prefix, c, operator, entries, hashes, out, where, index) {
   }
 }
 
+// Compares two saved checkpoints with no log at all (SPEC section 5.1). Two checkpoints that carry the
+// same operator signature, the same size and different roots are proof the operator signed two
+// histories. Checkpoints of different sizes cannot be compared without the log.
+const cpShapeOk = c => keysAre(c, ['operator', 'root', 'size', 'time', 'sig']) && isHex64(c.operator) && isHex64(c.root) && isInt(c.size) && isInt(c.time) && isHex128(c.sig);
+function compareCheckpoints(a, b) {
+  const res = { ok: false, errors: [], relation: null, operator: null };
+  const err = (code, where) => res.errors.push({ code, where });
+  const cs = [['a', a], ['b', b]], usable = [];
+  cs.forEach(([w, c]) => { if (!cpShapeOk(c)) err('CMP_BAD_FORMAT', w); else usable.push([w, c]); });
+  if (usable.length === 2 && a.operator !== b.operator) err('CMP_DIFFERENT_OPERATOR', 'both');
+  usable.forEach(([w, c]) => { if (!verifySig(c.operator, checkpointPayload(c), c.sig)) err('CMP_BAD_SIG', w); });
+  if (res.errors.length === 0) {
+    res.operator = a.operator;
+    if (a.size !== b.size) res.relation = 'different-size';
+    else if (a.root === b.root) res.relation = 'identical';
+    else { res.relation = 'conflict'; err('CMP_CONFLICT', 'both'); }
+  }
+  res.ok = res.errors.length === 0;
+  return res;
+}
+
 function verifyLog(log, trusted) {
   const res = { ok: false, integrity_errors: [], rule_errors: [], summary: null };
   if (!keysAre(log, ['format', 'entries', 'checkpoints']) || log.format !== 'cip-test-log/0' || !Array.isArray(log.entries) || !Array.isArray(log.checkpoints)) {
@@ -214,13 +241,42 @@ function verifyLog(log, trusted) {
   return res;
 }
 
+// Picks one checkpoint out of a log that has no integrity errors, ready to save as its own file.
+function extractCheckpoint(log, index) {
+  const r = verifyLog(log);
+  if (r.integrity_errors.length) return { error: 'the log has integrity errors, so no checkpoint was taken from it', details: r.integrity_errors };
+  const cps = log.checkpoints;
+  if (!cps.length) return { error: 'the log holds no checkpoints' };
+  const i = index === undefined ? cps.length - 1 : index;
+  if (!Number.isInteger(i) || i < 0 || i >= cps.length) return { error: 'there is no checkpoint at position ' + index + ' (the log holds ' + cps.length + ', numbered from 0)' };
+  return { checkpoint: cps[i], index: i, ruleErrors: r.rule_errors.length };
+}
+const formatCheckpoint = c => JSON.stringify(c, null, 1) + '\n'; // same layout as the files in testdata/
+
 if (require.main === module) {
   const a = process.argv.slice(2);
-  if (a[0] !== 'verify' || !a[1]) { console.error('usage: node cip-log.js verify <log.json> [--trusted <checkpoint.json>]'); process.exit(2); }
+  const usage = () => { console.error('usage:\n  node cip-log.js verify <log.json> [--trusted <checkpoint.json>]\n  node cip-log.js checkpoint <log.json> [--index N] [--out <file>]\n  node cip-log.js compare <checkpoint-a.json> <checkpoint-b.json>'); process.exit(2); };
   const read = f => JSON.parse(fs.readFileSync(f, 'utf8'));
-  const ti = a.indexOf('--trusted');
-  const result = verifyLog(read(a[1]), ti > 0 ? read(a[ti + 1]) : undefined);
-  console.log(JSON.stringify(result, null, 2));
-  process.exit(result.ok ? 0 : 1);
+  const opt = n => { const i = a.indexOf(n); return i > 0 ? a[i + 1] : undefined; };
+  if (a[0] === 'verify' && a[1]) {
+    const ti = a.indexOf('--trusted');
+    const result = verifyLog(read(a[1]), ti > 0 ? read(a[ti + 1]) : undefined);
+    console.log(JSON.stringify(result, null, 2));
+    process.exit(result.ok ? 0 : 1);
+  } else if (a[0] === 'checkpoint' && a[1]) {
+    const ix = opt('--index'), out = opt('--out');
+    if (a.includes('--index') && !/^\d+$/.test(ix || '')) usage();
+    if (a.includes('--out') && !out) usage();
+    const r = extractCheckpoint(read(a[1]), ix === undefined ? undefined : Number(ix));
+    if (r.error) { console.error('not saved: ' + r.error); if (r.details) console.error(JSON.stringify(r.details)); process.exit(1); }
+    if (r.ruleErrors) console.error('note: the log breaks ' + r.ruleErrors + ' rule(s); run verify to see them. The checkpoint itself is intact.');
+    if (out) { fs.writeFileSync(out, formatCheckpoint(r.checkpoint)); console.error('saved checkpoint ' + r.index + ' (size ' + r.checkpoint.size + ') to ' + out); }
+    else process.stdout.write(formatCheckpoint(r.checkpoint));
+    process.exit(0);
+  } else if (a[0] === 'compare' && a[1] && a[2]) {
+    const result = compareCheckpoints(read(a[1]), read(a[2]));
+    console.log(JSON.stringify(result, null, 2));
+    process.exit(result.ok ? 0 : 1);
+  } else usage();
 }
-module.exports = { canon, sha256hex, testIdentity, makeRecord, makeEntries, makeCheckpoint, entryHash, versionHash, merkleRoot, verifyLog };
+module.exports = { canon, sha256hex, testIdentity, makeRecord, makeEntries, makeCheckpoint, entryHash, versionHash, merkleRoot, verifyLog, compareCheckpoints, extractCheckpoint, formatCheckpoint };
