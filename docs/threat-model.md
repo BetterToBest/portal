@@ -24,7 +24,7 @@ No single point of failure. Transparent operations. Cryptographic verification i
 | Single implementation bug | Several implementations so one flaw does not compromise the whole (§4.2.1) | Proposed |
 | Vote buying or coercion | Verifiable but unlinkable ballots (§4.3); reduced incentive when basic needs are met (§6) | Proposed |
 | Learning how someone voted | Zero-knowledge proofs, homomorphic encryption (§4.3) | Proposed |
-| Lost or stolen keys | Keys stay with the citizen; social recovery through trusted contacts (§4.3) | Proposed |
+| Lost or stolen keys | Keys stay with the citizen; social recovery through trusted contacts (§4.3). The paper gives no parameters; a draft with options and open questions is in [key-handling.md](key-handling.md) | Proposed; draft under review |
 | Insecure software | Regular independent audits and transparent disclosure (§4.5.1) | Proposed |
 | Excluding people without devices or skills | Multiple access channels, literacy support, no mandatory participation (§4.6) | Proposed |
 | Blocked accountability | Distributed Judicial Guard with concurrent prosecution paths and a public referral dashboard (§5, A.8) | Proposed |

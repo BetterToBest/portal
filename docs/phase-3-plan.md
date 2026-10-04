@@ -62,6 +62,7 @@ Started in [`prototype/`](../prototype/). It is early, it runs on test data only
 - **Interface (C7): started.** A [log viewer page](../prototype/viewer/index.html) checks a log in the browser with no network and no storage, and says in plain words what failed. Automated accessibility and scripted keyboard checks pass; testing with a screen reader has not happened. It is a viewer only: it cannot file a proposal or sign.
 - **Test plan: drafted.** [phase-3-test-plan.md](phase-3-test-plan.md) lists ten gates that must pass before any real vote, and says honestly which are not met.
 - **Checkpoint keeping (gate G2): drafted and partly built.** [checkpoints.md](checkpoints.md) proposes who saves checkpoints, where, and what comparing them proves. Both programs can now save a checkpoint from a log and compare two saved checkpoints, and tests cover both.
+- **Key handling (gate G4): drafted.** [key-handling.md](key-handling.md) sets out rules any design must meet, storage choices, two ways to build social recovery, and what would count as meeting the gate. It is a written proposal only: the prototype still uses test keys that anyone can recompute, and nothing about real keys is built or reviewed.
 
 A caveat on C5: both verifiers were written by the same person from the same spec. That catches slips but not a shared misreading. A third verifier written by someone else from the spec alone would be the real test.
 
