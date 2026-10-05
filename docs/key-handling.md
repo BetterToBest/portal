@@ -53,7 +53,7 @@ The paper's three parts, with the questions each one leaves. Two ways to build *
 
 **Judicial Guard assistance for extreme cases.** The paper names it and does not define "extreme." Any role here is a concentration of power over who counts as a participant, so it should be the narrowest possible and checkable. Starting questions: what triggers it, how many guardians must agree, what they can and cannot do (never choose or hold a key, only extend a time lock or confirm that a person exists), and how it is published and challenged. The same questions are worked through for the halt power in [halt-power.md](halt-power.md), and the structure there is a starting point.
 
-**Rotation and revocation.** The paper is silent. Proposal: a person with a working key can replace it at any time with a record signed by the old key, and can mark a key as lost; a lost-key record signed by the person's recovery route takes effect only after the same time lock. Neither exists in the prototype's record types ([SPEC.md](../prototype/SPEC.md)).
+**Rotation and revocation.** The paper is silent. Proposal: a person with a working key can replace it at any time with a record signed by the old key, and can mark a key as lost; a lost-key record signed by the person's recovery route takes effect only after the same time lock. Neither exists in the prototype's record types ([SPEC.md](../prototype/SPEC.md)). Recovery must replace a key and never add a second one for the same person; see [identity-linking.md](identity-linking.md).
 
 ## What can go wrong
 

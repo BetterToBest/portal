@@ -158,7 +158,7 @@ The project cannot meet G9 alone. It needs a group that agrees, which is why the
 
 1. Is a small, advisory, low-stakes question right for a first pilot? Who picks it, and what keeps the pilot from becoming a proxy for a fight inside the group?
 2. Who is accountable on the host side, and what must a pseudonymous project tell participants about who it is, without personal details on public pages?
-3. How is eligibility checked, and consent recorded, without a list that could later be joined to ballots or keys (gate G5)?
+3. How is eligibility checked, and consent recorded, without a list that could later be joined to ballots or keys (gate G5)? Options for the eligibility side are drafted in [identity-linking.md](identity-linking.md).
 4. Is 20 the right minimum for reporting a result, and what happens for a group that is smaller?
 5. After a stop, are ballots already cast counted, voided, or published only as a process report?
 6. Who is independent enough to be the observer, given few contributors (test plan, open question 2)?

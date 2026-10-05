@@ -45,7 +45,7 @@ The paper names the classic risk: if attackers control more than half the nodes,
 ### Gaps and questions for reviewers
 
 - **Stake and wealth.** Safeguard 1 makes attacks expensive, but a stake requirement can also favor wealthy operators. How does this fit the 5% funder cap and the "economic independence" goal (§4.1)?
-- **Identity versus privacy.** Safeguard 2 asks for verified, non-anonymous nodes. Open question 1 above asks how to establish one-person-one-identity without a surveillance database. These pull against each other and need an explicit answer.
+- **Identity versus privacy.** Safeguard 2 asks for verified, non-anonymous nodes. Open question 1 above asks how to establish one-person-one-identity without a surveillance database. These pull against each other and need an explicit answer. A first draft of the options is in [identity-linking.md](identity-linking.md).
 - **Halt power.** Safeguard 6 lets the Judicial Guard halt the system on a detected attack. A halt power that is easy to trigger is itself an attack surface. A draft set of limits (checkable triggers, multi-guardian concurrence, automatic expiry, challenge, public log) is in [halt-power.md](halt-power.md) (issue #4).
 - **Unspecified numbers.** The paper does not give the delay lengths in safeguard 5 or the region and institution quotas in safeguards 3 and 4. A simulator could test which values actually hold.
 
@@ -72,7 +72,7 @@ Real elections, legal authority, and the Judicial Guard institution. The prototy
 
 ## Open questions
 
-1. How is one-person-one-identity established without creating a surveillance database?
+1. How is one-person-one-identity established without creating a surveillance database? Options and risks are drafted in [identity-linking.md](identity-linking.md).
 2. How does the design behave when connectivity or nodes partially fail?
 3. What is the incident-response process when a flaw is found in a live pilot? A first draft of who can pause or stop a pilot, and why, is in [pilot-design.md](pilot-design.md).
 4. Which threats above can be tested in a simulator before any real deployment?
