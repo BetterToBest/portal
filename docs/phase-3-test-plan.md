@@ -23,7 +23,7 @@ A gate is only met when the evidence is public: the commit it was run on, the da
 | G7 | People can use it | Automated accessibility checks in light and dark, then testing by people who use a screen reader, a keyboard alone and a small screen. | Partly met: automated checks and scripted keyboard tests pass on the viewer and simulators. Testing with real assistive technology has not happened (#7, #11). |
 | G8 | Outside security review | An independent review of the threat model (#8) and of the cryptography, with findings fixed or published. | Not met. |
 | G9 | The community agrees to what is being tested | A pilot design written first: consent, what data exists and for how long, an accessibility plan, how a result is reported, and who can stop it. | Not met: Phase 5. A written proposal for consent, data, access, result reporting and who can stop a pilot, with open questions, is in [pilot-design.md](pilot-design.md); it has not been reviewed. No community has been approached and none has agreed. |
-| G10 | It is clear what the result means | Every screen and every result says that the vote is advisory, what it does not show, and where the rules are written. | Not met: no vote interface exists. |
+| G10 | It is clear what the result means | Every screen and every result says that the vote is advisory, what it does not show, and where the rules are written. | Not met: no vote interface exists. A written proposal of wording rules, a template notice and examples is in [advisory-notice.md](advisory-notice.md); no volunteer has read it and nothing is built or reviewed. |
 
 ## What a run must publish
 

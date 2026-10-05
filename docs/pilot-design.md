@@ -98,7 +98,7 @@ Written before the vote, and the same whatever the result is.
 
 **The report always says**, in this order and in plain words:
 
-1. This was an advisory test of software, by a small group that chose to take part, and it binds no one.
+1. This was an advisory test of software, by a small group that chose to take part, and it binds no one. (The exact wording is drafted in [advisory-notice.md](advisory-notice.md).)
 2. What it does not show: it is not a poll of everyone, it is not a measure of how CIP would work at scale, and it says nothing about whether the group's wider members agree.
 3. The question and the ballot exactly as shown, which were the same for everyone.
 4. How many were eligible (if the host will say), how many took part, and the count for each option. A tie is reported as tied, following [ranked-choice.md](ranked-choice.md) for advisory votes.
