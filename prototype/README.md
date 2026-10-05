@@ -68,7 +68,7 @@ Each command prints the result as JSON and exits with 0 if the log passes, 1 if 
 ## Ways to help
 
 - Check the schema with a validator you trust (for example Ajv, or Python's `jsonschema`) against the examples in `schema/examples/`, and tell us if one disagrees. It was checked with both of those here, but a second pair of eyes is the point.
-- Write a third verifier from `SPEC.md` in a language you like, and check that it agrees with the test logs.
+- Write a third verifier from `SPEC.md` in a language you like, and check that it agrees with the test logs. The [review brief](../docs/review-brief.md) says how to do it so that it counts as an independent check.
 - Find a case where the two verifiers disagree, or where the spec is unclear.
 - Review the rules in `SPEC.md` and the open questions at the end of it and in the [plan](../docs/phase-3-plan.md).
 

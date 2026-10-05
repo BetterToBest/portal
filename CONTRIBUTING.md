@@ -7,7 +7,7 @@ You do not need to be a developer. Every contribution below matters.
 ## Ways to help
 
 - **Developers:** prototype the components in the roadmap below.
-- **Security and cryptography reviewers:** challenge the architecture and threat model.
+- **Security and cryptography reviewers:** challenge the architecture and threat model. See the [review brief](docs/review-brief.md).
 - **Designers and accessibility experts:** make participation easy for everyone.
 - **Legal and policy thinkers:** map the statutory questions raised by the Judicial Guard.
 - **Writers and organizers:** improve docs, explain the project, find pilot communities.

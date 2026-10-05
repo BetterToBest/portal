@@ -5,7 +5,7 @@ Each is small and self-contained. Suggested labels are in brackets. These are no
 1. **Extract paper §4.2.3 (51% attacks) into the threat model** [documentation, good first issue]
    Done. See the section on 51% attacks in [threat-model.md](threat-model.md). No issue was opened for it.
 2. **[Review the threat model for gaps](https://github.com/BetterToBest/portal/issues/8)** [review, security] (#8)
-   Read `docs/threat-model.md` and post threats or mitigations we missed.
+   Read `docs/threat-model.md` and post threats or mitigations we missed. The [review brief](review-brief.md) says what a fuller review would cover and how findings are published.
 3. **[Draft a ballot and proposal data schema](https://github.com/BetterToBest/portal/issues/9)** [spec] (#9)
    Propose a JSON shape for a proposal, a signature, and a sealed ballot. Keep it minimal. Partly done: the proposal, signature, comment and amendment shapes for the Phase 3 test log are a [JSON Schema](../prototype/schema/cip-test-log.schema.json) with examples. Still open: the sealed ballot, and any change you think the existing shapes need.
 4. **[Write a plain-language glossary of CIP terms](https://github.com/BetterToBest/portal/issues/10)** [documentation, good first issue] (#10)
