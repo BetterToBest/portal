@@ -149,9 +149,15 @@ function bodyOk(type,b){
 const stateOf=(p,st,now)=>p.sigs.size<st.threshold?'collecting':(now<p.thresholdTime+st.comment_seconds?'comment':'closed');
 // P supplies two primitives, so the same logic runs in a browser and in Node tests:
 //   P.sha256(Uint8Array) -> Promise<Uint8Array>, P.verify(pubHex, Uint8Array message, sigHex) -> Promise<boolean>
+// SPEC section 4.2, rules 2 and 3: a public key must be a canonical encoding and not a point of small order.
+const P25519=(1n<<255n)-19n;
+const SMALL_ORDER=new Set(['01'+'00'.repeat(31),'ec'+'ff'.repeat(30)+'7f','00'.repeat(32),'00'.repeat(31)+'80','c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a','c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa','26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05','26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85']);
+const keyAllowed=h=>{const b=fromHex(h),sign=b[31]>>7;b[31]&=0x7f;let y=0n;for(let i=31;i>=0;i--)y=(y<<8n)|BigInt(b[i]);if(y>=P25519)return false;if(sign&&(y===1n||y===P25519-1n))return false;return !SMALL_ORDER.has(h)};
+// The whole signature check: format, the key rules, then the browser's (or Node's) own Ed25519.
+const checkSigAsync=async(P,pub,msg,sig)=>{if(!isHex64(pub)||!isHex128(sig)||!keyAllowed(pub))return false;try{return (await P.verify(pub,enc.encode(msg),sig))===true}catch(e){return false}};
 async function verifyLogAsync(log,trusted,P){
   const sha=async s=>toHex(await P.sha256(enc.encode(s)));
-  const vsig=async(pub,msg,sig)=>{if(!isHex64(pub)||!isHex128(sig))return false;try{return (await P.verify(pub,enc.encode(msg),sig))===true}catch(e){return false}};
+  const vsig=(pub,msg,sig)=>checkSigAsync(P,pub,msg,sig);
   const merkle=async hs=>{
     const leaf=h=>P.sha256(cat(Uint8Array.of(0),fromHex(h)));
     const go=async(lo,hi)=>{const n=hi-lo;if(n===1)return leaf(hs[lo]);let k=1;while(k*2<n)k*=2;return P.sha256(cat(Uint8Array.of(1),await go(lo,lo+k),await go(lo+k,hi)))};

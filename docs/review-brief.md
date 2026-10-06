@@ -31,6 +31,8 @@ node prototype/node/cip-log.js verify prototype/testdata/good.json
 node prototype/node/cip-log.js verify prototype/testdata/rewritten-history.json --trusted prototype/testdata/good.checkpoint-21.json
 ```
 
+**Also check the odd cases.** [`prototype/vectors/ed25519-odd-cases.json`](../prototype/vectors/ed25519-odd-cases.json) holds 40 public key, message and signature cases that Ed25519 libraries can treat differently, each with the result [SPEC section 4.2](../prototype/SPEC.md) requires. A verifier that passes the 20 logs but gives a different result on any of these cases has not followed 4.2. If your library gives a different result and you think the spec is wrong, say so: that is a Job B finding too.
+
 **Then go further.** Make your own edits to `good.json` (change a value, remove an entry, swap two, repeat one, add whitespace around a hex value, use odd Unicode) and compare your verifier with both existing ones. The project's own tests do 600 random single edits and 750 whitespace cases ([`tests/prototype.test.js`](../tests/prototype.test.js)). Yours are worth more because they come from a different mind.
 
 **The most useful result is not a green run.** For each place where your output differs from the reference, say which it is:
@@ -53,7 +55,7 @@ Kind 3 is what this job exists to find. A spec that two careful readers read dif
 
 **Questions we cannot answer ourselves.**
 
-- Both programs delegate Ed25519 verification to a library: Node's own `crypto` module, and Python's `cryptography` package. As far as the tests show, nothing covers signature encodings or public keys that some libraries accept and others refuse (for example a signature that is not in the canonical form, or a public key of small order). Do the two libraries agree on those, and does the spec need a rule?
+- Both programs delegate Ed25519 verification to a library: Node's own `crypto` module, and Python's `cryptography` package. We tried 40 odd cases ourselves (signatures that are not in the canonical form, keys that are not canonical, keys of small order, a signature with an extra order-8 component), on Node, Python and headless Chromium. All three gave identical answers, which means the libraries do not disagree with each other here. They do disagree with a strict reading of RFC 8032: all three accept 13 cases it would refuse, all of them non-canonical or small-order public keys. [SPEC section 4.2](../prototype/SPEC.md) now says what a verifier must do, and both programs and the viewer apply it. What we have not done: tried a library outside OpenSSL and BoringSSL (for example the ones in Firefox, Safari, Go, Rust or libsodium), or answered whether the rule should also require keys to lie in the prime-order subgroup (SPEC section 9, question 5). Is 4.2 the right rule, and is anything missing from the 40 cases?
 - Is the canonical form precise enough that two independent programs always write the same bytes, including for strange Unicode and for numbers near the safe-integer limit?
 - Does the split-view check in [`checkpoints.md`](checkpoints.md) prove what it says it proves, and no more?
 - Does anything in the prototype leak, store or send data that it should not? The project's tripwire test is coarse and, as the README says, does not prove the absence of anything.
@@ -68,6 +70,7 @@ Kind 3 is what this job exists to find. A spec that two careful readers read dif
 | The written rules | [`prototype/SPEC.md`](../prototype/SPEC.md) |
 | 20 test logs and 2 saved checkpoints | [`prototype/testdata/`](../prototype/testdata/) |
 | The answer key | section 3 of [`tests/prototype.test.js`](../tests/prototype.test.js) |
+| 40 odd key and signature cases, with required results | [`prototype/vectors/ed25519-odd-cases.json`](../prototype/vectors/ed25519-odd-cases.json) |
 | The format as a JSON Schema, with 15 examples that pass and 42 that fail, each with the reason | [`prototype/schema/`](../prototype/schema/) |
 | The gate table and what counts as met | [`phase-3-test-plan.md`](phase-3-test-plan.md) |
 | What the prototype does not do | [`prototype/README.md`](../prototype/README.md), "Limits you should know about" |
@@ -117,7 +120,7 @@ Both, like every gate, need public evidence: the commit, the date, who did it, t
 2. Should there be a private route for a serious finding? GitHub's private vulnerability reporting is one option the maintainer can turn on. Is it worth having when nothing is live?
 3. Would a language-neutral answer key help? One file listing every test log and its expected output would let a reviewer check a verifier without running the Node program, and a test would keep it in sync. Is that worth adding?
 4. How many outside reviewers are enough for G8, and does the answer change because the code was written with an AI model's help?
-5. Should the spec be amended to say what a verifier must do with signature encodings and public keys that libraries treat differently, once Job B has an answer?
+5. SPEC section 4.2 refuses non-canonical and small-order public keys, which common libraries accept. Is that the right rule, or should the spec accept whatever the libraries accept and list the cases as known differences? Should it go further and require keys in the prime-order subgroup?
 6. How are reviewers thanked and credited when the project has no money and some reviewers want no public mention?
 
 Comments and corrections are welcome in [Discussions](https://github.com/BetterToBest/portal/discussions).

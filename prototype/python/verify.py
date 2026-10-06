@@ -75,9 +75,33 @@ def sha_hex(s):
     return sha(s.encode('utf-8')).hex()
 
 
+P25519 = 2 ** 255 - 19
+# SPEC section 4.2, rule 3: the eight points of small order, as canonical encodings.
+SMALL_ORDER = {
+    '01' + '00' * 31, 'ec' + 'ff' * 30 + '7f', '00' * 32, '00' * 31 + '80',
+    'c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a', 'c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa',
+    '26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05', '26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85',
+}
+
+
+def key_allowed(pub):
+    """SPEC section 4.2, rules 2 and 3. Common libraries accept non-canonical and small-order keys, so
+    this check is ours, made before the library is asked."""
+    y = int.from_bytes(bytes.fromhex(pub), 'little')
+    sign = y >> 255
+    y &= (1 << 255) - 1
+    if y >= P25519:
+        return False  # not the canonical form of y
+    if sign and y in (1, P25519 - 1):
+        return False  # x is 0 here, so a set sign bit is not allowed
+    return pub not in SMALL_ORDER
+
+
 def verify_sig(pub, msg, sig):
     try:
         if not (isinstance(pub, str) and isinstance(sig, str) and HEX64.fullmatch(pub) and HEX128.fullmatch(sig)):
+            return False
+        if not key_allowed(pub):
             return False
         Ed25519PublicKey.from_public_bytes(bytes.fromhex(pub)).verify(bytes.fromhex(sig), msg.encode('utf-8'))
         return True

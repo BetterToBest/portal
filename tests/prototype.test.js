@@ -335,7 +335,7 @@ print(json.dumps(out))`;
 {
   const html = fs.readFileSync(path.join(root, 'viewer', 'index.html'), 'utf8');
   const core = html.split('/*CORE-START*/')[1].split('/*CORE-END*/')[0];
-  const V = new Function(core + ';return {verifyLogAsync}')();
+  const V = new Function(core + ';return {verifyLogAsync, checkSigAsync}')();
   const SPKI = Buffer.from('302a300506032b6570032100', 'hex');
   const prims = {
     sha256: async b => new Uint8Array(crypto.createHash('sha256').update(b).digest()),
@@ -354,6 +354,53 @@ print(json.dumps(out))`;
     ok(bad.length === 0, 'viewer page logic gives identical output on all ' + hexEdits.length + ' logs with whitespace around a hex value' + (bad.length ? ' (first difference: ' + bad[0] + ')' : ''));
     const b = cp.spawnSync('node', [path.join(root, 'node', 'build-viewer.js'), '--check'], { encoding: 'utf8' });
     ok(b.status === 0, 'example logs inside the viewer page match prototype/testdata' + (b.status ? ' (' + b.stdout.trim() + ')' : ''));
+    // ---- 4c. odd Ed25519 keys and signatures (SPEC section 4.2) ----
+    {
+      const genV = cp.spawnSync('python3', [path.join(root, 'python', 'make-ed25519-vectors.py'), '--check'], { encoding: 'utf8' });
+      ok(genV.status === 0, 'committed Ed25519 odd cases match what make-ed25519-vectors.py produces (expected results come from RFC 8032 arithmetic, not from a library)' + (genV.status ? ' (' + genV.stdout.trim() + ')' : ''));
+      const vec = readJson(path.join(root, 'vectors', 'ed25519-odd-cases.json')), cases = vec.cases;
+      ok(cases.length >= 30 && cases.filter(c => c.expect).length >= 2 && cases.filter(c => !c.expect).length >= 25, 'odd cases: ' + cases.length + ' cases, a few that must pass and many that must fail');
+      const specText = fs.readFileSync(path.join(root, 'SPEC.md'), 'utf8');
+      ok(vec.small_order_keys.length === 8 && vec.small_order_keys.every(h => specText.includes(h)), 'SPEC.md lists the same eight small-order keys the cases file derives by arithmetic');
+      const nodeBadV = cases.filter(c => L.verifySig(c.pub, c.msg, c.sig) !== c.expect).map(c => c.name);
+      ok(nodeBadV.length === 0, 'Node verifier gives the required result on all ' + cases.length + ' odd Ed25519 cases' + (nodeBadV.length ? ' (differs: ' + nodeBadV.slice(0, 3).join('; ') + ')' : ''));
+      const PY3 = `
+import sys, json, importlib.util
+spec = importlib.util.spec_from_file_location('v', sys.argv[1]); v = importlib.util.module_from_spec(spec); spec.loader.exec_module(v)
+cases = json.load(open(sys.argv[2]))['cases']
+print(json.dumps([v.verify_sig(c['pub'], c['msg'], c['sig']) for c in cases]))`;
+      const pr = cp.spawnSync('python3', ['-c', PY3, path.join(root, 'python', 'verify.py'), path.join(root, 'vectors', 'ed25519-odd-cases.json')], { encoding: 'utf8' });
+      if (pr.status !== 0) { console.log(pr.stderr); throw new Error('python odd-case run failed'); }
+      const pyRes = JSON.parse(pr.stdout);
+      const pyBadV = cases.filter((c, i) => pyRes[i] !== c.expect).map(c => c.name);
+      ok(pyBadV.length === 0, 'Python verifier gives the required result on all ' + cases.length + ' odd Ed25519 cases' + (pyBadV.length ? ' (differs: ' + pyBadV.slice(0, 3).join('; ') + ')' : ''));
+      const vwBad = [];
+      for (const c of cases) if (await V.checkSigAsync(prims, c.pub, c.msg, c.sig) !== c.expect) vwBad.push(c.name);
+      ok(vwBad.length === 0, 'viewer page logic gives the required result on all ' + cases.length + ' odd Ed25519 cases' + (vwBad.length ? ' (differs: ' + vwBad.slice(0, 3).join('; ') + ')' : ''));
+
+      // Whole logs: a key that is not allowed, with a signature that common libraries accept, must fail the whole check the same way everywhere.
+      const opId = L.testIdentity('test-operator'), bobId = L.testIdentity('test-bob');
+      const ID = '01' + '00'.repeat(31), ZERO_SIG = ID + '00'.repeat(32);
+      const oddLog = (rec) => {
+        const entries = L.makeEntries([
+          { time: 1790900000, record: L.makeRecord(opId, 'genesis', { threshold: 3, comment_seconds: 1000 }) },
+          { time: 1790900010, record: rec }]);
+        return { format: 'cip-test-log/0', entries, checkpoints: [L.makeCheckpoint(opId, entries, 2)] };
+      };
+      const regOdd = key => ({ type: 'register_key', author: key, body: { public_key: key, label: 'test-odd' }, sig: ZERO_SIG });
+      const logs = [
+        ['identity key', oddLog(regOdd(ID)), false],
+        ['non-canonical identity key (y = p + 1)', oddLog(regOdd('ee' + 'ff'.repeat(30) + '7f')), false],
+        ['identity key with the sign bit set (x = 0)', oddLog(regOdd('01' + '00'.repeat(30) + '80')), false],
+        ['control: an ordinary key', oddLog(L.makeRecord(bobId, 'register_key', { public_key: bobId.pub, label: 'test-bob' })), true]
+      ];
+      const files = logs.map(([n, l], i) => { const f = path.join(tmp, 'odd-' + i + '.json'); fs.writeFileSync(f, JSON.stringify(l)); return { log: f }; });
+      const pyLogs = pythonVerify(files, tmp);
+      for (let i = 0; i < logs.length; i++) {
+        const [name, log, want] = logs[i], n = L.verifyLog(JSON.parse(JSON.stringify(log))), v = await V.verifyLogAsync(JSON.parse(JSON.stringify(log)), undefined, prims);
+        ok(n.ok === want && deepEq(n, pyLogs[i]) && deepEq(n, v) && (want || n.integrity_errors.some(e => e.code === 'BAD_SIG' && e.index === 1)), 'whole log, ' + name + ': ' + (want ? 'passes' : 'fails with BAD_SIG at entry 1') + ', and Node, Python and the viewer give identical output');
+      }
+    }
     finish();
   })();
 }

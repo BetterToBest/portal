@@ -56,6 +56,35 @@ Derived values:
 
 [`schema/cip-test-log.schema.json`](schema/cip-test-log.schema.json) (JSON Schema draft 2020-12) describes the **shape** of everything in sections 1 to 5: which keys, which types, which lengths, which hex strings. A log passes the schema exactly when every entry, record body and checkpoint has the right shape under sections 1 to 5, which is what the verifiers' `BAD_FORMAT`, `BAD_BODY` and `CP_BAD_FORMAT` checks look at (the tests compare the two on every test log and every edited log). The schema cannot check anything that needs computing or comparing: hashes, signatures, the chain, canonical form beyond the number rule, the `test-` label rule, or any rule of section 6. If the schema and the text of this spec ever disagree, the spec wins and the schema has a bug. Examples that pass and fail, each with the reason, are in [`schema/examples/`](schema/examples/).
 
+### 4.2 Checking a signature and its key
+
+Every signature in a log (a record's `sig`, a checkpoint's `sig`, the `sig` of a trusted checkpoint) is checked the same way. It passes only if all four rules hold. If any one fails, the signature does not verify, and the error is the one named in section 6 for that place (`BAD_SIG`, `CP_BAD_SIG`, `TRUSTED_BAD_SIG` or `CMP_BAD_SIG`); no other error is added for it.
+
+1. **Shape.** The public key is 64 lowercase hex characters and the signature is 128 (sections 3 to 5).
+2. **A canonical key.** Read the 32 bytes of the key as a little-endian integer. Clear bit 255 (the sign bit) and call the rest `y`. `y` must be less than 2^255 - 19. If `y` is 1 or 2^255 - 20 (the two values for which x is 0), the sign bit must be 0.
+3. **Not a key of small order.** The key must not be one of these eight canonical encodings, the points whose order divides 8:
+
+```
+0100000000000000000000000000000000000000000000000000000000000000
+ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f
+0000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000080
+c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a
+c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa
+26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05
+26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85
+```
+
+4. **The signature equation.** As in RFC 8032 section 5.1.7, **without** the cofactor. `S` (the last 32 bytes, little-endian) must be less than L = 2^252 + 27742317777372353535851937790883648493. `R` (the first 32 bytes) must be the canonical encoding of a point. And `[S]B = R + [k]A`, where `A` is the key and `k` is SHA-512 of `R`, `A` and the message, read little-endian, modulo L. The check with the cofactor (`[8][S]B = [8]R + [8][k]A`) is not allowed: a signature whose `R` carries an order-8 component passes it and fails this one, and honest signers never produce one.
+
+**Why these rules are written down.** RFC 8032 lets implementations differ on exactly these points, so a log that one verifier accepts another may refuse. Rules 1 and 4 are what the common libraries already do. Rules 2 and 3 are not: they accept keys that are not canonical and keys of small order. On Node 22 (OpenSSL 3.5), Python 3.13 with the `cryptography` package (OpenSSL 4.0) and headless Chromium 141 (the browser's own Ed25519), all three gave identical answers on the 40 cases in [`vectors/ed25519-odd-cases.json`](vectors/ed25519-odd-cases.json). All three accepted the same 15 of them, and 13 of those break rule 2 or rule 3. A verifier built on a stricter library would refuse those and so disagree with this prototype about the same log. A small-order key is a key that anyone can sign for, so refusing it costs an honest participant nothing.
+
+With rule 2, a usable key has exactly one spelling, so `DUPLICATE_KEY` (section 6) cannot be dodged by writing the same key two ways.
+
+**The test cases.** [`vectors/ed25519-odd-cases.json`](vectors/ed25519-odd-cases.json) holds 40 cases: a public key, a message and a signature, and the result this section requires (2 must pass, 38 must fail). The results are computed from RFC 8032 arithmetic by [`python/make-ed25519-vectors.py`](python/make-ed25519-vectors.py), not taken from any library, and the same script derives the eight small-order points by arithmetic and checks them against the list above. A verifier that gives a different result on any case has not followed this section.
+
+**What this does not cover.** A key that is a valid point with a small-order component, but is not itself of small order, is not refused by rule 3. The equation in rule 4 decides, and the test cases include one such key that passes and one that fails. Whether to require keys to lie in the prime-order subgroup is open (section 9, question 5).
+
 ## 5. Checkpoints
 
 ```json
@@ -83,7 +112,7 @@ The verifier reports errors as `{code, where, index}`. It does not stop at the f
 2. `BAD_INDEX`: `index` is not the position.
 3. `BAD_PREV`: `prev` does not match section 3.
 4. `BAD_HASH`: stored `hash` differs from the recomputed one.
-5. `BAD_SIG`: the record signature does not verify (an invalid key or signature counts as failing).
+5. `BAD_SIG`: the record signature does not verify under section 4.2 (an invalid key or signature counts as failing).
 
 Then for each checkpoint, in order (`where` is `checkpoint`, `index` is its position in the list):
 
@@ -127,3 +156,4 @@ Both verifiers print the same JSON: `ok` (true only when there are no errors), `
 2. `time` is set by the operator and trusted for ordering and for the comment period. Who checks it?
 3. Should a signer be able to withdraw?
 4. What should happen at the exact moment a comment period ends?
+5. Section 4.2 refuses small-order keys but accepts a valid key that has a small-order component. Should keys be required to lie in the prime-order subgroup, at the cost of one more scalar multiplication per new key and a check that few libraries offer?

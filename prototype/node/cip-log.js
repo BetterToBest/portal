@@ -45,9 +45,25 @@ const sha256hex = s => sha256(Buffer.from(s, 'utf8')).toString('hex');
 // ---------- Ed25519 helpers ----------
 const SPKI = Buffer.from('302a300506032b6570032100', 'hex');
 const PKCS8 = Buffer.from('302e020100300506032b657004220420', 'hex');
+// SPEC section 4.2, rules 2 and 3: a public key must be a canonical encoding and not a point of small order.
+// Common libraries accept both kinds of key, so this check is ours, made before the library is asked.
+const P25519 = (1n << 255n) - 19n;
+const SMALL_ORDER = new Set([
+  '01' + '00'.repeat(31), 'ec' + 'ff'.repeat(30) + '7f', '00'.repeat(32), '00'.repeat(31) + '80',
+  'c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a', 'c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa',
+  '26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05', '26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85']);
+function keyAllowed(pubHex) {
+  const b = Buffer.from(pubHex, 'hex'), sign = b[31] >> 7;
+  b[31] &= 0x7f;
+  let y = 0n;
+  for (let i = 31; i >= 0; i--) y = (y << 8n) | BigInt(b[i]);
+  if (y >= P25519) return false;                          // not the canonical form of y
+  if (sign && (y === 1n || y === P25519 - 1n)) return false; // x is 0 here, so a set sign bit is not allowed
+  return !SMALL_ORDER.has(pubHex);
+}
 function verifySig(pubHex, msg, sigHex) {
   try {
-    if (!isHex64(pubHex) || !isHex128(sigHex)) return false;
+    if (!isHex64(pubHex) || !isHex128(sigHex) || !keyAllowed(pubHex)) return false;
     const key = crypto.createPublicKey({ key: Buffer.concat([SPKI, Buffer.from(pubHex, 'hex')]), format: 'der', type: 'spki' });
     return crypto.verify(null, Buffer.from(msg, 'utf8'), key, Buffer.from(sigHex, 'hex'));
   } catch (e) { return false; }
@@ -286,4 +302,4 @@ if (require.main === module) {
     process.exit(result.ok ? 0 : 1);
   } else usage();
 }
-module.exports = { canon, sha256hex, testIdentity, makeRecord, makeEntries, makeCheckpoint, entryHash, versionHash, merkleRoot, verifyLog, compareCheckpoints, extractCheckpoint, formatCheckpoint, shapeOk };
+module.exports = { verifySig, canon, sha256hex, testIdentity, makeRecord, makeEntries, makeCheckpoint, entryHash, versionHash, merkleRoot, verifyLog, compareCheckpoints, extractCheckpoint, formatCheckpoint, shapeOk };

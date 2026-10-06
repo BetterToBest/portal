@@ -1,0 +1,296 @@
+{
+ "format": "cip-ed25519-odd-cases/0",
+ "about": "Test data for SPEC section 4.2. Each case is a public key, a message and a signature (hex), and the result a verifier must give. Computed from RFC 8032 arithmetic, not from any library. The keys are test keys.",
+ "small_order_keys": [
+  "0100000000000000000000000000000000000000000000000000000000000000",
+  "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+  "0000000000000000000000000000000000000000000000000000000000000000",
+  "0000000000000000000000000000000000000000000000000000000000000080",
+  "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a",
+  "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa",
+  "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05",
+  "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85"
+ ],
+ "cases": [
+  {
+   "name": "valid signature",
+   "pub": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+   "msg": "hello",
+   "sig": "3b44cfd0d44e3ee7a05181ce07df45288ec99754b08d1b55f870b3d962b5804438d3d7f7c7a91b0cbee5de3e715730b89442b855d461ee2b2aafbf561ddcd404",
+   "expect": true
+  },
+  {
+   "name": "S + L (S not below L)",
+   "pub": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+   "msg": "hello",
+   "sig": "3b44cfd0d44e3ee7a05181ce07df45288ec99754b08d1b55f870b3d962b5804425a7cd54e20c2e649482d6e14f510fcd9442b855d461ee2b2aafbf561ddcd414",
+   "expect": false
+  },
+  {
+   "name": "S + 8L (S above 2^255)",
+   "pub": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+   "msg": "hello",
+   "sig": "3b44cfd0d44e3ee7a05181ce07df45288ec99754b08d1b55f870b3d962b58044a07286df9ac2aecc70cc9b566626285f9542b855d461ee2b2aafbf561ddcd484",
+   "expect": false
+  },
+  {
+   "name": "S + 2^253 (high bits set)",
+   "pub": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+   "msg": "hello",
+   "sig": "3b44cfd0d44e3ee7a05181ce07df45288ec99754b08d1b55f870b3d962b5804438d3d7f7c7a91b0cbee5de3e715730b89442b855d461ee2b2aafbf561ddcd424",
+   "expect": false
+  },
+  {
+   "name": "S = L exactly",
+   "pub": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+   "msg": "hello",
+   "sig": "3b44cfd0d44e3ee7a05181ce07df45288ec99754b08d1b55f870b3d962b58044edd3f55c1a631258d69cf7a2def9de1400000000000000000000000000000010",
+   "expect": false
+  },
+  {
+   "name": "S = 0",
+   "pub": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+   "msg": "hello",
+   "sig": "3b44cfd0d44e3ee7a05181ce07df45288ec99754b08d1b55f870b3d962b580440000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "R carries an order-8 component (cofactored check passes, plain check fails)",
+   "pub": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+   "msg": "hello",
+   "sig": "0914e63c7da7f45c00e7738ff7fe3b95bd53a93c20cd1bd0206f4293bb5beb2d571e6b25319f706469bb71d020a54ea0ea69eef52f215f26794d7354867cef08",
+   "expect": false
+  },
+  {
+   "name": "public key has an order-8 component, hash multiple of 8 is true",
+   "pub": "ee96fbc244137734829d21078f090b1c2028bc4a04f8c7dfd2d4871c7b2ef277",
+   "msg": "t3",
+   "sig": "f79964009c96b712343a5b0ce9b378c36bda10ef255a01d84e0a7ed29899d4a67b347204f5771cdb62114bdc3c953e5096d046a6c9400f6b90ba7885b8a07305",
+   "expect": true
+  },
+  {
+   "name": "public key has an order-8 component, hash multiple of 8 is false",
+   "pub": "ee96fbc244137734829d21078f090b1c2028bc4a04f8c7dfd2d4871c7b2ef277",
+   "msg": "t0",
+   "sig": "2fec11fcfb04516d13a20889016d54de058ab7d6943cb8d286032ccbc6d1168de07f0174029e60a856ed4e85cb04703841a1b60c11b02f4c6baa8773c6fb8102",
+   "expect": false
+  },
+  {
+   "name": "small-order key [identity (y=1)], R = identity, S = 0, plain equation holds",
+   "pub": "0100000000000000000000000000000000000000000000000000000000000000",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 2 (y=-1)], R = identity, S = 0, plain equation fails",
+   "pub": "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 2 (y=-1)], R = identity, S = 0, plain equation holds",
+   "pub": "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "msg": "s4",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 4, even], R = identity, S = 0, plain equation holds",
+   "pub": "0000000000000000000000000000000000000000000000000000000000000000",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 4, even], R = identity, S = 0, plain equation fails",
+   "pub": "0000000000000000000000000000000000000000000000000000000000000000",
+   "msg": "s1",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 4, odd], R = identity, S = 0, plain equation fails",
+   "pub": "0000000000000000000000000000000000000000000000000000000000000080",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 4, odd], R = identity, S = 0, plain equation holds",
+   "pub": "0000000000000000000000000000000000000000000000000000000000000080",
+   "msg": "s3",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 8 a], R = identity, S = 0, plain equation fails",
+   "pub": "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 8 a], R = identity, S = 0, plain equation holds",
+   "pub": "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a",
+   "msg": "s3",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 8 b], R = identity, S = 0, plain equation fails",
+   "pub": "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 8 b], R = identity, S = 0, plain equation holds",
+   "pub": "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa",
+   "msg": "s11",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 8 c], R = identity, S = 0, plain equation fails",
+   "pub": "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 8 c], R = identity, S = 0, plain equation holds",
+   "pub": "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05",
+   "msg": "s6",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 8 d], R = identity, S = 0, plain equation fails",
+   "pub": "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [order 8 d], R = identity, S = 0, plain equation holds",
+   "pub": "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85",
+   "msg": "s10",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [non-canonical identity (y=p+1)], R = identity, S = 0, plain equation holds",
+   "pub": "eeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [non-canonical y=p], R = identity, S = 0, plain equation fails",
+   "pub": "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [non-canonical y=p], R = identity, S = 0, plain equation holds",
+   "pub": "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "msg": "s1",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [non-canonical y=p, sign bit set], R = identity, S = 0, plain equation fails",
+   "pub": "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [non-canonical y=p, sign bit set], R = identity, S = 0, plain equation holds",
+   "pub": "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "msg": "s1",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [x=0 with sign bit set (y=1)], R = identity, S = 0, plain equation holds",
+   "pub": "0100000000000000000000000000000000000000000000000000000000000080",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "small-order key [non-canonical identity, sign bit set], R = identity, S = 0, plain equation holds",
+   "pub": "eeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "msg": "s0",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "public key = identity, R = non-canonical identity (y=p+1), S = 0",
+   "pub": "0100000000000000000000000000000000000000000000000000000000000000",
+   "msg": "x",
+   "sig": "eeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "public key = identity, R = non-canonical y=p, S = 0",
+   "pub": "0100000000000000000000000000000000000000000000000000000000000000",
+   "msg": "x",
+   "sig": "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "public key = identity, R = non-canonical y=p, sign bit set, S = 0",
+   "pub": "0100000000000000000000000000000000000000000000000000000000000000",
+   "msg": "x",
+   "sig": "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "public key = identity, R = x=0 with sign bit set (y=1), S = 0",
+   "pub": "0100000000000000000000000000000000000000000000000000000000000000",
+   "msg": "x",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "public key = identity, R = non-canonical identity, sign bit set, S = 0",
+   "pub": "0100000000000000000000000000000000000000000000000000000000000000",
+   "msg": "x",
+   "sig": "eeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "public key is not a point on the curve (y=2)",
+   "pub": "0200000000000000000000000000000000000000000000000000000000000000",
+   "msg": "x",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "public key is 32 bytes of 0xff",
+   "pub": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "msg": "x",
+   "sig": "01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "expect": false
+  },
+  {
+   "name": "valid signature, message changed",
+   "pub": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+   "msg": "hellp",
+   "sig": "3b44cfd0d44e3ee7a05181ce07df45288ec99754b08d1b55f870b3d962b5804438d3d7f7c7a91b0cbee5de3e715730b89442b855d461ee2b2aafbf561ddcd404",
+   "expect": false
+  },
+  {
+   "name": "valid signature, one bit of R changed",
+   "pub": "ae5f92a8a0cbe8284dd02a148611ce292c83a234230306af65783648fd31b73b",
+   "msg": "hello",
+   "sig": "3a44cfd0d44e3ee7a05181ce07df45288ec99754b08d1b55f870b3d962b5804438d3d7f7c7a91b0cbee5de3e715730b89442b855d461ee2b2aafbf561ddcd404",
+   "expect": false
+  }
+ ]
+}
