@@ -1,0 +1,1379 @@
+{
+ "format": "cip-answer-key/0",
+ "about": "The result every verifier must print for each shared test log (SPEC section 7). Paths are relative to the prototype/ folder. Compare as JSON values: key order does not matter. exit_code is what the command line returns (0 when ok, 1 otherwise). Test data only.",
+ "cases": [
+  {
+   "log": "testdata/good.json",
+   "trusted": "testdata/good.checkpoint-21.json",
+   "note": "a valid log, checked against a saved checkpoint",
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 22,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/good.json",
+   "trusted": null,
+   "note": "the same valid log with no saved checkpoint",
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 22,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rule-ok-new-signer.json",
+   "trusted": null,
+   "note": "valid: a new signer is registered, then signs",
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 23,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 2,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/unicode.json",
+   "trusted": null,
+   "note": "valid: non-ASCII text, which must canonicalize identically in every language",
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 23,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      },
+      {
+       "id": "57400264b464ca83aa2706068e6970bf119daea6b97580eac3a7ca1c554564f7",
+       "title": "🏛 Open budgets, café 日本語",
+       "versions": 1,
+       "version": "5e5749e4df0a55c3d944d9de4a5812206c09686d7000d80da464bf867af6c800",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/tamper-text.json",
+   "trusted": null,
+   "note": "a proposal text edited after signing",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_HASH",
+      "where": "entry",
+      "index": 5
+     },
+     {
+      "code": "BAD_SIG",
+      "where": "entry",
+      "index": 5
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 1
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 2
+     }
+    ],
+    "rule_errors": [
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 6
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 7
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 8
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 9
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 10
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 11
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 12
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 13
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 14
+     }
+    ],
+    "summary": {
+     "entries": 22,
+     "registered": 5,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/delete-entry.json",
+   "trusted": null,
+   "note": "an entry removed",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 9
+     },
+     {
+      "code": "BAD_PREV",
+      "where": "entry",
+      "index": 9
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 10
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 11
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 12
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 13
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 14
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 15
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 16
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 17
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 18
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 19
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 20
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 1
+     },
+     {
+      "code": "CP_BAD_SIZE",
+      "where": "checkpoint",
+      "index": 2
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 21,
+     "registered": 4,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 1,
+       "version": "5e8eeb8056d4953588a8a5ebe67228385932dd64aea3a41826354455faf1d0b5",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/reorder.json",
+   "trusted": null,
+   "note": "two entries swapped",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 6
+     },
+     {
+      "code": "BAD_PREV",
+      "where": "entry",
+      "index": 6
+     },
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 7
+     },
+     {
+      "code": "BAD_PREV",
+      "where": "entry",
+      "index": 7
+     },
+     {
+      "code": "BAD_PREV",
+      "where": "entry",
+      "index": 8
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 1
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 2
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 22,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/forged-sig.json",
+   "trusted": null,
+   "note": "a signature that does not match its author",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_HASH",
+      "where": "entry",
+      "index": 7
+     },
+     {
+      "code": "BAD_SIG",
+      "where": "entry",
+      "index": 7
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 1
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 2
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 22,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/tamper-time.json",
+   "trusted": null,
+   "note": "a time edited after hashing",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_HASH",
+      "where": "entry",
+      "index": 9
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 1
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 2
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 22,
+     "registered": 5,
+     "comments": 1,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/bad-format.json",
+   "trusted": null,
+   "note": "a malformed entry",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_FORMAT",
+      "where": "entry",
+      "index": 3
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 1
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 2
+     }
+    ],
+    "rule_errors": [
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 8
+     },
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 13
+     },
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 16
+     },
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 17
+     },
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 18
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 19
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 20
+     }
+    ],
+    "summary": {
+     "entries": 22,
+     "registered": 4,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 2,
+       "state": "collecting"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/bad-checkpoint.json",
+   "trusted": null,
+   "note": "a checkpoint with a wrong signature and root",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "CP_BAD_SIG",
+      "where": "checkpoint",
+      "index": 1
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 1
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 22,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rewritten-history.json",
+   "trusted": "testdata/good.checkpoint-21.json",
+   "note": "a clean-looking rewrite, caught only by the saved checkpoint",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "TRUSTED_MISMATCH",
+      "where": "trusted",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 21,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 2,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rewritten-history.json",
+   "trusted": null,
+   "note": "the same rewrite with no saved checkpoint: passes, which is the limit of the chain alone",
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 21,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 2,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/truncated.json",
+   "trusted": "testdata/good.checkpoint-21.json",
+   "note": "a log cut short, caught only by the saved checkpoint",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "TRUSTED_TRUNCATED",
+      "where": "trusted",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 18,
+     "registered": 4,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/truncated.json",
+   "trusted": null,
+   "note": "the same cut log with no saved checkpoint: passes",
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 18,
+     "registered": 4,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rule-late-sign.json",
+   "trusted": null,
+   "note": "a signature after the comment period closed",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "PROPOSAL_CLOSED",
+      "where": "entry",
+      "index": 22
+     }
+    ],
+    "summary": {
+     "entries": 23,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rule-unregistered.json",
+   "trusted": null,
+   "note": "a record from a key that was never registered",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 22
+     }
+    ],
+    "summary": {
+     "entries": 23,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rule-duplicate-sig.json",
+   "trusted": null,
+   "note": "the same person signing twice",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "DUPLICATE_SIGNATURE",
+      "where": "entry",
+      "index": 23
+     }
+    ],
+    "summary": {
+     "entries": 24,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 2,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rule-stale-version.json",
+   "trusted": null,
+   "note": "a signature on an old version of a proposal",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "STALE_VERSION",
+      "where": "entry",
+      "index": 22
+     }
+    ],
+    "summary": {
+     "entries": 23,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rule-not-proposer.json",
+   "trusted": null,
+   "note": "an amendment by someone other than the proposer",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "NOT_PROPOSER",
+      "where": "entry",
+      "index": 22
+     }
+    ],
+    "summary": {
+     "entries": 23,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rule-bad-label.json",
+   "trusted": null,
+   "note": "a key registered with a label that breaks the rules",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "BAD_LABEL",
+      "where": "entry",
+      "index": 2
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 6
+     },
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 7
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 8
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 9
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 10
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 11
+     },
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 12
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 13
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 14
+     },
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 15
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 16
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 18
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 19
+     },
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 20
+     }
+    ],
+    "summary": {
+     "entries": 22,
+     "registered": 4,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "6137c6500745baaf632b1019baba7127f15b25673c5f375b939f2550789c0c2f",
+       "title": "Open the budget meetings",
+       "versions": 1,
+       "version": "5e8eeb8056d4953588a8a5ebe67228385932dd64aea3a41826354455faf1d0b5",
+       "signatures": 0,
+       "state": "collecting"
+      },
+      {
+       "id": "c8475f61f3ca1222b98496723388235fc17ce93245866671d624ec7a8c9bb365",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rule-time-reversed.json",
+   "trusted": null,
+   "note": "an entry dated before the one before it",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "TIME_REVERSED",
+      "where": "entry",
+      "index": 22
+     }
+    ],
+    "summary": {
+     "entries": 23,
+     "registered": 5,
+     "comments": 3,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "log": "testdata/rule-unknown-proposal.json",
+   "trusted": null,
+   "note": "a signature on a proposal that does not exist",
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "UNKNOWN_PROPOSAL",
+      "where": "entry",
+      "index": 22
+     }
+    ],
+    "summary": {
+     "entries": 23,
+     "registered": 5,
+     "comments": 2,
+     "proposals": [
+      {
+       "id": "44dafb81008eb01a10bfc925240ce84d7679d0281c293c2e2d90cfc091bc70b6",
+       "title": "Open the budget meetings",
+       "versions": 2,
+       "version": "3d018b1cbcd870d8bcae71f06d254e11c1cea23b8d46a50d8b272a63e8d71456",
+       "signatures": 3,
+       "state": "closed"
+      },
+      {
+       "id": "0d167ff3755f13ae84b2b5e82a3082a6a40dfee3092a3f1305d3699f66753f45",
+       "title": "Publish the road repair list",
+       "versions": 1,
+       "version": "2f22a8863d8fed3fdd27855ac93a86c1be74d9476724b7721f552037693c9b6b",
+       "signatures": 1,
+       "state": "collecting"
+      },
+      {
+       "id": "b82b071c41ec6fef5ac55c89c84e38faaeba9a9cabc1bf8ecbe2f1306ce67850",
+       "title": "Free bus passes for students",
+       "versions": 1,
+       "version": "589474cf6a9aabb30eddfabe4607e1d7f20feeb4ff1c19a3b03151ea512a2e36",
+       "signatures": 3,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

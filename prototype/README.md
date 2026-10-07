@@ -14,6 +14,7 @@ Nothing here collects or monetizes user behavior data. The programs read the fil
 | `node/cip-log.js` | Reference implementation: builds records, entries and checkpoints, and verifies a log. Built-in Node modules only. |
 | `node/make-test-logs.js` | Builds every test log from fixed test identities and fixed times, so the files never change between runs. |
 | `python/verify.py` | A second verifier, written from the spec. Needs the `cryptography` package. |
+| `answer-key/expected.json`, `node/make-answer-key.js` | The result every verifier must print for each shared test log, as one language-neutral JSON file: 23 cases with the log, the saved checkpoint if one is used, the exit code and the full expected output. Written by the Node program; the tests check it against the Python program, both command lines and a hand-written table of error codes, and fail if it drifts. A reviewer writing a third verifier can compare against this file alone. |
 | `vectors/ed25519-odd-cases.json`, `python/make-ed25519-vectors.py` | 40 public key, message and signature cases that common Ed25519 libraries can treat differently, each with the result [SPEC section 4.2](SPEC.md) requires (2 must pass, 38 must fail). The results are computed from RFC 8032 arithmetic in the generator, which uses only the Python standard library. Any verifier, in any language, can be checked against this file. |
 | `checkpoint` and `compare` commands | In both programs: save one checkpoint from a log as its own file, and compare two saved checkpoints with no log. See [checkpoints.md](../docs/checkpoints.md) and SPEC section 5.1. |
 | `viewer/index.html` | A single page that checks a log in your browser and shows proposals, signatures and anything that failed, in plain words. It makes no network requests and stores nothing, and the browser is told to block them. Its example logs are copied in by `node/build-viewer.js`. |
@@ -22,7 +23,7 @@ Nothing here collects or monetizes user behavior data. The programs read the fil
 | `schema/cip-test-log.schema.json` | The format of the log, its entries, records and checkpoints as a JSON Schema (draft 2020-12). Shape only: it cannot check hashes, signatures or rules. See SPEC section 4.1. |
 | `schema/examples/` | 15 examples that pass and 42 that fail the schema, each failing for one stated reason (`expected-errors.json`). Built by `node/make-schema-examples.js`. |
 | `node/schema-check.js` | A small checker for the schema: `node prototype/node/schema-check.js <file.json> [--def record]`. It implements only the parts of JSON Schema the schema uses and refuses the rest. |
-| [`../tests/prototype.test.js`](../tests/prototype.test.js) | Runs every test log through both verifiers and checks they agree. Also tries 600 random single edits (changed values, wrong types, removed, swapped or repeated entries) and 750 logs with whitespace around one hex value, which must all be rejected. The same logs and edits are run through the viewer page's logic, and through the schema, which must agree with the verifiers' format checks (and with Python's `jsonschema` package, when installed). It also runs the 40 odd Ed25519 cases through Node, Python and the viewer logic, and four whole logs that carry an odd key. |
+| [`../tests/prototype.test.js`](../tests/prototype.test.js) | Runs every test log through both verifiers and checks they agree. Also tries 600 random single edits (changed values, wrong types, removed, swapped or repeated entries) and 750 logs with whitespace around one hex value, which must all be rejected. The same logs and edits are run through the viewer page's logic, and through the schema, which must agree with the verifiers' format checks (and with Python's `jsonschema` package, when installed). It checks the answer key against both programs and both command lines. It also runs the 40 odd Ed25519 cases through Node, Python and the viewer logic, and four whole logs that carry an odd key. |
 
 ## Try it
 
@@ -42,6 +43,7 @@ node prototype/node/cip-log.js checkpoint prototype/testdata/good.json --out my-
 node prototype/node/cip-log.js compare prototype/testdata/good.checkpoint-21.json prototype/testdata/split-view.checkpoint-21.json
 
 python3 prototype/python/make-ed25519-vectors.py --check
+node prototype/node/make-answer-key.js --check
 
 node tests/prototype.test.js
 ```

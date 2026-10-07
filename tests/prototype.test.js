@@ -1,6 +1,6 @@
 // Tests for the Phase 3 prototype in prototype/ (test log, Node verifier, Python verifier).
 // Checks: the test logs are reproducible; every shared test log gives the expected result in
-// BOTH verifiers and the two outputs are identical; 600 random single edits to the good log are
+// BOTH verifiers and the two outputs are identical, and match the language-neutral answer key; 600 random single edits to the good log are
 // all rejected by both with the same result; so are 750 logs with whitespace around one hex value
 // (the Python verifier once accepted a trailing newline);
 // the JSON Schema (prototype/schema/) accepts every valid example and rejects every invalid one for the stated
@@ -130,6 +130,41 @@ ok(states(nodeVerify({ log: td('rewritten-history.json') })) === 'closed,collect
   const f = path.join(tmp, 'numbers.json'); fs.writeFileSync(f, txt);
   const a = nodeVerify({ log: f }), b = pythonVerify([{ log: f }], tmp)[0];
   ok(a.ok === true && deepEq(a, b), 'whole numbers written as 3.0 or 1.7909e9 verify the same in both verifiers');
+}
+
+// ---- 3a. the language-neutral answer key (prototype/answer-key/expected.json) ----
+{
+  const keyFile = path.join(root, 'answer-key', 'expected.json');
+  const genK = cp.spawnSync('node', [path.join(root, 'node', 'make-answer-key.js'), '--check'], { encoding: 'utf8' });
+  ok(genK.status === 0, 'committed answer key matches what make-answer-key.js produces' + (genK.status ? ' (' + genK.stdout.trim() + ')' : ''));
+  const key = readJson(keyFile);
+  const kcase = key.cases.map(c => ({ log: path.join(root, c.log), trusted: c.trusted ? path.join(root, c.trusted) : undefined }));
+  const kPy = pythonVerify(kcase, tmp);
+  ok(key.format === 'cip-answer-key/0' && key.cases.length >= table.length, 'answer key: format and size (' + key.cases.length + ' cases)');
+  // every test log appears, and every saved-checkpoint case names a file that exists
+  const allLogs = fs.readdirSync(path.join(root, 'testdata')).filter(f => !/\.checkpoint-\d+\.json$/.test(f)).sort();
+  const inKey = Array.from(new Set(key.cases.map(c => path.basename(c.log)))).sort();
+  ok(deepEq(allLogs, inKey), 'answer key: lists every one of the ' + allLogs.length + ' test logs in testdata/ and nothing else');
+  // the key against the Python verifier, case by case
+  const kBad = key.cases.filter((c, i) => !deepEq(c.expect, kPy[i]) || c.exit_code !== (c.expect.ok ? 0 : 1));
+  ok(kBad.length === 0, 'answer key: the Python verifier gives exactly the recorded output for all ' + key.cases.length + ' cases' + (kBad.length ? ' (differs: ' + kBad.slice(0, 3).map(c => c.log).join(', ') + ')' : ''));
+  // the key against the hand-written table above (an independent statement of ok and error codes)
+  table.forEach(([f, t, want, codes]) => {
+    const c = key.cases.find(x => path.basename(x.log) === f && (x.trusted ? path.join(root, x.trusted) : null) === (t || null));
+    const all = c ? c.expect.integrity_errors.concat(c.expect.rule_errors) : [];
+    ok(!!c && c.expect.ok === want && codes.every(e => all.some(x => x.code === e.code && x.index === e.index)), 'answer key: ' + f + (t ? ' with the saved checkpoint' : '') + ' agrees with the hand-written table (ok is ' + want + ')');
+  });
+  // the command line prints the recorded output and returns the recorded exit code, in both programs
+  const cliRun = (cmd, script, c) => cp.spawnSync(cmd, [path.join(root, script)].concat(cmd === 'node' ? ['verify'] : [], [path.join(root, c.log)], c.trusted ? ['--trusted', path.join(root, c.trusted)] : []), { encoding: 'utf8' });
+  const cliBad = [];
+  key.cases.forEach(c => {
+    [['node', 'node/cip-log.js'], ['python3', 'python/verify.py']].forEach(([cmd, script]) => {
+      const r = cliRun(cmd, script, c);
+      let got = null; try { got = JSON.parse(r.stdout); } catch (e) { /* stays null */ }
+      if (r.status !== c.exit_code || !deepEq(got, c.expect)) cliBad.push(cmd + ' ' + c.log);
+    });
+  });
+  ok(cliBad.length === 0, 'answer key: both command-line programs print the recorded output and exit code for all ' + key.cases.length + ' cases' + (cliBad.length ? ' (differs: ' + cliBad.slice(0, 3).join(', ') + ')' : ''));
 }
 
 // ---- 3b. saving and comparing checkpoints (SPEC 5.1) ----
