@@ -156,4 +156,4 @@ Both verifiers print the same JSON: `ok` (true only when there are no errors), `
 2. `time` is set by the operator and trusted for ordering and for the comment period. Who checks it?
 3. Should a signer be able to withdraw?
 4. What should happen at the exact moment a comment period ends?
-5. Section 4.2 refuses small-order keys but accepts a valid key that has a small-order component. Should keys be required to lie in the prime-order subgroup, at the cost of one more scalar multiplication per new key and a check that few libraries offer?
+5. Section 4.2 refuses small-order keys but accepts a valid key that has a small-order component. Should keys be required to lie in the prime-order subgroup, at the cost of one more scalar multiplication per new key and a check that few libraries offer? Evidence from seven other libraries is in [`vectors/other-libraries/`](vectors/other-libraries/README.md): with that check, the 4.2 key rules and a check that `S` is below the group order in front of any of them, all nine variants tested agree on all 40 cases; without it, the libraries that use the cofactored equation cannot follow rule 4.

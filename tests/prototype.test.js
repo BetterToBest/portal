@@ -1,6 +1,6 @@
 // Tests for the Phase 3 prototype in prototype/ (test log, Node verifier, Python verifier).
 // Checks: the test logs are reproducible; every shared test log gives the expected result in
-// BOTH verifiers and the two outputs are identical, and match the language-neutral answer key; 600 random single edits to the good log are
+// BOTH verifiers and the two outputs are identical, and match the language-neutral answer key; recorded results from other Ed25519 libraries are consistent; 600 random single edits to the good log are
 // all rejected by both with the same result; so are 750 logs with whitespace around one hex value
 // (the Python verifier once accepted a trailing newline);
 // the JSON Schema (prototype/schema/) accepts every valid example and rejects every invalid one for the stated
@@ -165,6 +165,27 @@ ok(states(nodeVerify({ log: td('rewritten-history.json') })) === 'closed,collect
     });
   });
   ok(cliBad.length === 0, 'answer key: both command-line programs print the recorded output and exit code for all ' + key.cases.length + ' cases' + (cliBad.length ? ' (differs: ' + cliBad.slice(0, 3).join(', ') + ')' : ''));
+}
+
+// ---- 3c. recorded results from other Ed25519 libraries (prototype/vectors/other-libraries/) ----
+{
+  const dir = path.join(root, 'vectors', 'other-libraries');
+  const rec = readJson(path.join(dir, 'results.json'));
+  const nCases = readJson(path.join(root, 'vectors', 'ed25519-odd-cases.json')).cases.length;
+  const libsRec = Object.keys(rec.results);
+  ok(libsRec.length >= 7 && libsRec.every(k => Array.isArray(rec.results[k]) && rec.results[k].length === nCases && rec.results[k].every(v => typeof v === 'boolean')), 'other libraries: results.json has a yes or no for each of the ' + nCases + ' odd cases from each of ' + libsRec.length + ' library variants');
+  ok(Object.keys(rec.versions).length >= 5 && Object.values(rec.versions).every(v => /^\d+\.\d+/.test(v)), 'other libraries: the version of every library is recorded');
+  const an = cp.spawnSync('python3', ['-I', path.join(dir, 'analyze.py'), '--json'], { encoding: 'utf8' });
+  let A = null; try { A = JSON.parse(an.stdout); } catch (e) { /* stays null */ }
+  ok(an.status === 0 && A && A.rows.length === libsRec.length, 'other libraries: analyze.py reads the recorded results' + (an.status ? ' (' + an.stderr.trim().split('\n').pop() + ')' : ''));
+  if (A) {
+    const row = n => A.rows.find(r => r.library.startsWith(n));
+    ok(row('PyNaCl').alone_vs_42 === nCases && row('libsodium-wrappers').alone_vs_42 === nCases, 'other libraries: libsodium (PyNaCl and libsodium-wrappers) agrees with SPEC 4.2 on all ' + nCases + ' cases on its own');
+    ok(A.rows.every(r => r.refuses_what_42_accepts === 0), 'other libraries: none refuses a case that SPEC 4.2 requires to pass');
+    ok(A.rows.every(r => r.with_wrapper_vs_subgroup_rule === nCases), 'other libraries: with the 4.2 key rules, S below L and a prime-order-subgroup check in front, every variant agrees on all ' + nCases + ' cases');
+    ok(A.rows.some(r => r.alone_vs_42 < nCases), 'other libraries: some libraries do disagree with 4.2 on their own (so the check above means something)');
+    ok(A.expectation_changes_under_subgroup_rule.length === 1, 'other libraries: the subgroup rule would change exactly one expected result');
+  }
 }
 
 // ---- 3b. saving and comparing checkpoints (SPEC 5.1) ----
