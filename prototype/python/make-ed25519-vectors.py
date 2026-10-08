@@ -91,7 +91,7 @@ def h512(b):
 
 
 def spec_verify(pub, msg, sig):
-    """SPEC section 4.2, rule 4: RFC 8032 section 5.1.7 without the cofactor, S below L, and
+    """SPEC section 4.2, rule 4 only (rule 5, the prime-order subgroup, is applied in expect()): RFC 8032 section 5.1.7 without the cofactor, S below L, and
     canonical encodings for the public key and R (a non-canonical encoding fails to decode)."""
     a = decode(pub)
     r = decode(sig[:32])
@@ -131,6 +131,12 @@ SMALL_ORDER = [
 assert set(SMALL_ORDER) == torsion_encodings(), 'the small-order list does not match the arithmetic'
 
 
+def in_prime_subgroup(enc):
+    """SPEC section 4.2, rule 5: the encoding is canonical and [L] times the point is the identity."""
+    pt = decode(enc)
+    return pt is not None and same(mul(Q, pt), NEUTRAL)
+
+
 def key_allowed(pub):
     """SPEC section 4.2, rules 2 and 3."""
     y = int.from_bytes(pub, 'little')
@@ -144,7 +150,8 @@ def key_allowed(pub):
 
 
 def expect(pub, msg, sig):
-    return key_allowed(pub) and spec_verify(pub, msg, sig)
+    """All five rules of SPEC section 4.2 (rule 1, the hex shape, holds for every case here)."""
+    return key_allowed(pub) and spec_verify(pub, msg, sig) and in_prime_subgroup(pub) and in_prime_subgroup(sig[:32])
 
 
 def build():
@@ -193,6 +200,23 @@ def build():
                 add_case('public key has an order-8 component, hash multiple of 8 is %s' % ('true' if want_even else 'false'),
                          pub_t, m, rs + int.to_bytes((r + k * a) % Q, 32, 'little'))
                 break
+
+    # Both the key and R carry an order-8 component and the two cancel, so the plain equation holds:
+    # [S]B = R + [k]A with R = [r]B + [j]T and A = [a]B + T needs (j + k) to be a multiple of 8.
+    for i in range(1000):
+        m = ('c%d' % i).encode()
+        r = h512(prefix + m) % Q
+        found = False
+        for j in range(1, 8):
+            rs = encode(add(mul(r, BASE), mul(j, t8)))
+            k = h512(rs + pub_t + m) % Q
+            if (j + k) % 8 == 0:
+                add_case('key and R each carry an order-8 component and they cancel (the plain equation holds)',
+                         pub_t, m, rs + int.to_bytes((r + k * a) % Q, 32, 'little'))
+                found = True
+                break
+        if found:
+            break
 
     names = ['identity (y=1)', 'order 2 (y=-1)', 'order 4, even', 'order 4, odd', 'order 8 a', 'order 8 b', 'order 8 c', 'order 8 d']
     noncanon = {

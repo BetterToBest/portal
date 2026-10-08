@@ -45,7 +45,7 @@ const sha256hex = s => sha256(Buffer.from(s, 'utf8')).toString('hex');
 // ---------- Ed25519 helpers ----------
 const SPKI = Buffer.from('302a300506032b6570032100', 'hex');
 const PKCS8 = Buffer.from('302e020100300506032b657004220420', 'hex');
-// SPEC section 4.2, rules 2 and 3: a public key must be a canonical encoding and not a point of small order.
+// SPEC section 4.2, rules 2 and 3: a public key must be a canonical encoding and not a point of small order (rule 5, below, adds the prime-order subgroup).
 // Common libraries accept both kinds of key, so this check is ours, made before the library is asked.
 const P25519 = (1n << 255n) - 19n;
 const SMALL_ORDER = new Set([
@@ -61,11 +61,55 @@ function keyAllowed(pubHex) {
   if (sign && (y === 1n || y === P25519 - 1n)) return false; // x is 0 here, so a set sign bit is not allowed
   return !SMALL_ORDER.has(pubHex);
 }
+// SPEC section 4.2, rule 5: the public key and R must lie in the prime-order subgroup, that is, [L] times the
+// point is the identity. Libraries differ on points that carry a small-order component (some check the equation
+// with the cofactor, some without), so this check is ours, made after the library says yes. The point arithmetic
+// is the textbook Edwards form on BigInt; results are cached because a log repeats the same few keys.
+const L25519 = (1n << 252n) + 27742317777372353535851937790883648493n;
+const mod25519 = x => ((x % P25519) + P25519) % P25519;
+function powMod(b, e, m) { let r = 1n; b %= m; while (e > 0n) { if (e & 1n) r = r * b % m; b = b * b % m; e >>= 1n; } return r; }
+const D25519 = mod25519(-121665n) * powMod(121666n, P25519 - 2n, P25519) % P25519;
+const SQRT_M1 = powMod(2n, (P25519 - 1n) / 4n, P25519);
+function decodePoint(hex) {                                  // null unless the 32 bytes are a canonical encoding of a curve point
+  const b = Buffer.from(hex, 'hex'), sign = BigInt(b[31] >> 7);
+  b[31] &= 0x7f;
+  let y = 0n;
+  for (let i = 31; i >= 0; i--) y = (y << 8n) | BigInt(b[i]);
+  if (y >= P25519) return null;
+  const y2 = y * y % P25519;
+  const x2 = mod25519(y2 - 1n) * powMod((D25519 * y2 + 1n) % P25519, P25519 - 2n, P25519) % P25519;
+  if (x2 === 0n) return sign ? null : [0n, y, 1n, 0n];
+  let x = powMod(x2, (P25519 + 3n) / 8n, P25519);
+  if (x * x % P25519 !== x2) x = x * SQRT_M1 % P25519;
+  if (x * x % P25519 !== x2) return null;
+  if ((x & 1n) !== sign) x = P25519 - x;
+  return [x, y, 1n, x * y % P25519];
+}
+function edAdd(p, q) {                                       // extended coordinates, works for doubling too
+  const a = mod25519((p[1] - p[0]) * (q[1] - q[0])), b = mod25519((p[1] + p[0]) * (q[1] + q[0]));
+  const c = mod25519(2n * p[3] * q[3] % P25519 * D25519), d = mod25519(2n * p[2] * q[2]);
+  const e = b - a, f = d - c, g = d + c, h = b + a;
+  return [mod25519(e * f), mod25519(g * h), mod25519(f * g), mod25519(e * h)];
+}
+const subgroupMemo = new Map();
+function inPrimeSubgroup(hex) {
+  if (subgroupMemo.has(hex)) return subgroupMemo.get(hex);
+  const pt = decodePoint(hex);
+  let ok = false;
+  if (pt) {
+    let r = [0n, 1n, 1n, 0n], base = pt;
+    for (let s = L25519; s > 0n; s >>= 1n) { if (s & 1n) r = edAdd(r, base); base = edAdd(base, base); }
+    ok = r[0] === 0n && mod25519(r[1] - r[2]) === 0n;
+  }
+  if (subgroupMemo.size > 4096) subgroupMemo.clear();
+  subgroupMemo.set(hex, ok);
+  return ok;
+}
 function verifySig(pubHex, msg, sigHex) {
   try {
     if (!isHex64(pubHex) || !isHex128(sigHex) || !keyAllowed(pubHex)) return false;
     const key = crypto.createPublicKey({ key: Buffer.concat([SPKI, Buffer.from(pubHex, 'hex')]), format: 'der', type: 'spki' });
-    return crypto.verify(null, Buffer.from(msg, 'utf8'), key, Buffer.from(sigHex, 'hex'));
+    return crypto.verify(null, Buffer.from(msg, 'utf8'), key, Buffer.from(sigHex, 'hex')) && inPrimeSubgroup(pubHex) && inPrimeSubgroup(sigHex.slice(0, 64));
   } catch (e) { return false; }
 }
 // TEST identities only: the key comes from the label, so anyone can recompute it. Never use for real.

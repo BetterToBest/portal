@@ -14,6 +14,7 @@ checkpoints as a standalone file, the last one unless --index says otherwise; ex
 fails. compare: checks two checkpoints against each other (SPEC section 5.1); exit 0 unless it
 reports errors. It writes a file only when you pass --out to checkpoint.
 """
+import functools
 import hashlib
 import json
 import re
@@ -85,7 +86,7 @@ SMALL_ORDER = {
 
 
 def key_allowed(pub):
-    """SPEC section 4.2, rules 2 and 3. Common libraries accept non-canonical and small-order keys, so
+    """SPEC section 4.2, rules 2 and 3 (rule 5 is in_prime_subgroup, below). Common libraries accept non-canonical and small-order keys, so
     this check is ours, made before the library is asked."""
     y = int.from_bytes(bytes.fromhex(pub), 'little')
     sign = y >> 255
@@ -97,6 +98,58 @@ def key_allowed(pub):
     return pub not in SMALL_ORDER
 
 
+# SPEC section 4.2, rule 5: the public key and R must lie in the prime-order subgroup, that is, [L] times the
+# point is the identity. Libraries differ on points that carry a small-order component (some check the
+# equation with the cofactor, some without), so this check is ours, made after the library says yes. The
+# arithmetic is the textbook Edwards form on Python integers; results are cached because a log repeats
+# the same few keys.
+L25519 = 2 ** 252 + 27742317777372353535851937790883648493
+D25519 = -121665 * pow(121666, P25519 - 2, P25519) % P25519
+SQRT_M1 = pow(2, (P25519 - 1) // 4, P25519)
+
+
+def _decode_point(h):
+    """None unless the 32 bytes are a canonical encoding of a curve point."""
+    y = int.from_bytes(bytes.fromhex(h), 'little')
+    sign = y >> 255
+    y &= (1 << 255) - 1
+    if y >= P25519:
+        return None
+    y2 = y * y % P25519
+    x2 = (y2 - 1) * pow(D25519 * y2 + 1, P25519 - 2, P25519) % P25519
+    if x2 == 0:
+        return None if sign else (0, y, 1, 0)
+    x = pow(x2, (P25519 + 3) // 8, P25519)
+    if (x * x - x2) % P25519:
+        x = x * SQRT_M1 % P25519
+    if (x * x - x2) % P25519:
+        return None
+    if (x & 1) != sign:
+        x = P25519 - x
+    return (x, y, 1, x * y % P25519)
+
+
+def _ed_add(p, q):
+    a, b = (p[1] - p[0]) * (q[1] - q[0]) % P25519, (p[1] + p[0]) * (q[1] + q[0]) % P25519
+    c, d = 2 * p[3] * q[3] * D25519 % P25519, 2 * p[2] * q[2] % P25519
+    e, f, g, h = b - a, d - c, d + c, b + a
+    return (e * f % P25519, g * h % P25519, f * g % P25519, e * h % P25519)
+
+
+@functools.lru_cache(maxsize=4096)
+def in_prime_subgroup(h):
+    pt = _decode_point(h)
+    if pt is None:
+        return False
+    r, base, s = (0, 1, 1, 0), pt, L25519
+    while s > 0:
+        if s & 1:
+            r = _ed_add(r, base)
+        base = _ed_add(base, base)
+        s >>= 1
+    return r[0] % P25519 == 0 and (r[1] - r[2]) % P25519 == 0
+
+
 def verify_sig(pub, msg, sig):
     try:
         if not (isinstance(pub, str) and isinstance(sig, str) and HEX64.fullmatch(pub) and HEX128.fullmatch(sig)):
@@ -104,7 +157,7 @@ def verify_sig(pub, msg, sig):
         if not key_allowed(pub):
             return False
         Ed25519PublicKey.from_public_bytes(bytes.fromhex(pub)).verify(bytes.fromhex(sig), msg.encode('utf-8'))
-        return True
+        return in_prime_subgroup(pub) and in_prime_subgroup(sig[:64])
     except Exception:
         return False
 

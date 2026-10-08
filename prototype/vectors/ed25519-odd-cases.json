@@ -66,13 +66,20 @@
    "pub": "ee96fbc244137734829d21078f090b1c2028bc4a04f8c7dfd2d4871c7b2ef277",
    "msg": "t3",
    "sig": "f79964009c96b712343a5b0ce9b378c36bda10ef255a01d84e0a7ed29899d4a67b347204f5771cdb62114bdc3c953e5096d046a6c9400f6b90ba7885b8a07305",
-   "expect": true
+   "expect": false
   },
   {
    "name": "public key has an order-8 component, hash multiple of 8 is false",
    "pub": "ee96fbc244137734829d21078f090b1c2028bc4a04f8c7dfd2d4871c7b2ef277",
    "msg": "t0",
    "sig": "2fec11fcfb04516d13a20889016d54de058ab7d6943cb8d286032ccbc6d1168de07f0174029e60a856ed4e85cb04703841a1b60c11b02f4c6baa8773c6fb8102",
+   "expect": false
+  },
+  {
+   "name": "key and R each carry an order-8 component and they cancel (the plain equation holds)",
+   "pub": "ee96fbc244137734829d21078f090b1c2028bc4a04f8c7dfd2d4871c7b2ef277",
+   "msg": "c0",
+   "sig": "7a1e1ae0e4da6329b40ffff3ac0c6186ab92d493548bd1cef5a2c3bee6495322e925bdee2339e177e642bd793e082335e0d7b05c07ad4df7dbec3e5384aafa07",
    "expect": false
   },
   {

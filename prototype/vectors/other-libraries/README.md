@@ -1,6 +1,8 @@
 # Do other Ed25519 libraries agree with SPEC section 4.2? (evidence, not a verifier)
 
-Status: **evidence for reviewers.** The two verifiers in this repository, and the browser viewer, all sit on OpenSSL or BoringSSL. [SPEC section 4.2](../../SPEC.md) says exactly which public keys and signatures a verifier must accept, and [`ed25519-odd-cases.json`](../ed25519-odd-cases.json) holds 40 cases with the required result for each, computed from RFC 8032 arithmetic and not from any library. This folder runs those 40 cases through libraries that do **not** use OpenSSL or BoringSSL, and records what each one says. No verifier here uses any of them, and nothing in the project depends on this folder.
+Status: **evidence for reviewers, and the reason for rule 5.** The two verifiers in this repository, and the browser viewer, all sit on OpenSSL or BoringSSL. [SPEC section 4.2](../../SPEC.md) says exactly which public keys and signatures a verifier must accept, and [`ed25519-odd-cases.json`](../ed25519-odd-cases.json) holds 41 cases with the required result for each, computed from RFC 8032 arithmetic and not from any library. This folder runs those 41 cases through libraries that do **not** use OpenSSL or BoringSSL, and records what each one says. No verifier here uses any of them, and nothing in the project depends on this folder.
+
+The first run was made against rules 1 to 4 of section 4.2, with 40 cases. It showed that libraries disagree on keys and signatures with a small-order component, and that a prime-order-subgroup check in front of any of them removes the disagreement. Rule 5 was added to section 4.2 because of that, and the one expected result it changes was updated in the vector file. The raw answers in `results.json` are what each library said, and do not depend on the rule; the table is computed against the current expected results. A 41st case (a key and `R` whose small-order components cancel, so that the plain equation holds) was added afterwards and every library was run again.
 
 CIP is a research proposal, not a live voting system. Everything here is test data and a few small programs that read files.
 
@@ -20,37 +22,35 @@ Each case is a public key, a message and a signature. A library that raises an e
 
 ## Results
 
-Counts are out of 40 cases. "Agrees with 4.2" means the library's yes or no matched what SPEC 4.2 requires. The last two columns are explained below the table. Reproduce the table with `python3 analyze.py`.
+Counts are out of 41 cases. "Agrees" means the library's yes or no matched what SPEC 4.2 requires (only one case must pass: the ordinary valid signature). "After the checks" means the library's yes counts only if the checks of section 4.2 that a program adds in front of any library also hold: the key rules (2 and 3), `S` below the group order, and the key and `R` in the prime-order subgroup (rule 5). Reproduce the table with `python3 analyze.py`.
 
-| Library | Agrees with 4.2 on its own | Accepts what 4.2 refuses | Agrees with 4.2 after the key rules (2 and 3) | Agrees with the subgroup rule after the checks |
-|---|---|---|---|---|
-| PyNaCl (libsodium) | 40 | 0 | 40 | 40 |
-| libsodium-wrappers | 40 | 0 | 40 | 40 |
-| @noble/curves, zip215 off | 38 | 2 | 38 | 40 |
-| @noble/ed25519, zip215 off | 38 | 2 | 38 | 40 |
-| elliptic | 28 | 12 | 40 | 40 |
-| PyCryptodome | 27 | 13 | 38 | 40 |
-| tweetnacl | 25 | 15 | 38 | 40 |
-| @noble/curves, default | 11 | 29 | 38 | 40 |
-| @noble/ed25519, default | 11 | 29 | 38 | 40 |
+| Library | Agrees on its own | Accepts what 4.2 refuses | Agrees after the checks |
+|---|---|---|---|
+| PyNaCl (libsodium) | 39 | 2 | 41 |
+| libsodium-wrappers | 39 | 2 | 41 |
+| @noble/curves, zip215 off | 37 | 4 | 41 |
+| @noble/ed25519, zip215 off | 37 | 4 | 41 |
+| elliptic | 27 | 14 | 41 |
+| PyCryptodome | 26 | 15 | 41 |
+| tweetnacl | 24 | 17 | 41 |
+| @noble/curves, default | 10 | 31 | 41 |
+| @noble/ed25519, default | 10 | 31 | 41 |
 
 No library refused a signature that 4.2 requires to be accepted.
 
 ## What this shows
 
-1. **libsodium agrees with 4.2 on all 40 cases with no extra code.** It is the only library tested that does.
-2. **The other libraries accept cases that 4.2 refuses, mostly keys of small order or non-canonical spellings.** A verifier built on one of them would disagree with this prototype about the same log, unless its author adds the key rules of 4.2 (rules 2 and 3). With those two rules in front, `elliptic` agrees on all 40.
-3. **Two things a key filter does not fix.** `tweetnacl` accepts signatures whose `S` is not below the group order (the cases "S + L" and "S + 8L"), so a verifier on it also needs its own check of `S`. `@noble/*` and `PyCryptodome` accept a signature with an order-8 component in `R`, and a key with an order-8 component where the plain equation fails. 4.2 rule 4 forbids both, because it uses the equation without the cofactor. These libraries appear to use the cofactored equation, which is a different but common reading of RFC 8032. A third verifier written on one of them needs more than a key filter to follow 4.2.
-4. **A prime-order-subgroup rule would close the gap.** [SPEC section 9, question 5](../../SPEC.md) asks whether keys (and `R`) should be required to lie in the prime-order subgroup. The last column adds three checks in front of each library: the 4.2 key rules, `S` below the group order, and key and `R` both in the prime-order subgroup. With them, **all nine variants agree on all 40 cases**. The cost is one expectation changing: the case "public key has an order-8 component, hash multiple of 8 is true" passes under 4.2 today and would fail under the subgroup rule. Honest keys and signatures are in the subgroup, so honest participants would notice nothing. The libraries that agree with 4.2 on their own (libsodium) would agree with the subgroup rule on 39 of 40 cases.
-
-None of this changes any verifier in this repository. It is the evidence behind a decision on question 5, which is still open.
+1. **No library follows 4.2 on its own.** libsodium comes closest: it differs on two cases, both with an order-8 component that rule 5 refuses and libsodium accepts (a key with such a component whose plain equation holds, and a key and `R` whose small-order components cancel).
+2. **The other libraries accept many cases 4.2 refuses**, mostly keys of small order or non-canonical spellings. A verifier built on one of them would disagree with this prototype about the same log, unless its author adds the checks.
+3. **Some gaps need more than a key filter.** `tweetnacl` accepts signatures whose `S` is not below the group order (the cases "S + L" and "S + 8L"). `@noble/*` and `PyCryptodome` accept a signature with an order-8 component in `R`, and a key with an order-8 component where the plain equation fails. They appear to use the cofactored equation, which is a different but common reading of RFC 8032. Rule 4 forbids both cases.
+4. **The checks close every gap.** With the key rules, an `S` check and the prime-order-subgroup check (rule 5) in front, all nine variants agree on all 41 cases. Honest keys and signatures lie in the prime-order subgroup, so honest participants notice nothing. The cost is one multiplication by the group order for each new key and each signature, which the two programs and the viewer cache.
 
 ## What this does not show
 
 - It does not cover Firefox, Safari, Go, Rust (`ed25519-dalek` and others), Java or .NET. They could not be run here. If you can run `../ed25519-odd-cases.json` through one of them, a result is welcome in [Discussions](https://github.com/BetterToBest/portal/discussions) or as an issue.
 - Library behavior changes between versions. These results are for the versions in the table only.
-- The "subgroup rule" column is a proposal being tested, not a rule in the spec.
-- Passing these 40 cases does not make a verifier correct. They are the cases that libraries disagree about, not all of Ed25519.
+- Rule 5 is a proposal for reviewers to challenge (SPEC section 9, question 5), not a settled standard.
+- Passing these 41 cases does not make a verifier correct. They are the cases that libraries disagree about, not all of Ed25519.
 
 ## Run it yourself
 

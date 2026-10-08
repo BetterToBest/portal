@@ -180,11 +180,10 @@ ok(states(nodeVerify({ log: td('rewritten-history.json') })) === 'closed,collect
   ok(an.status === 0 && A && A.rows.length === libsRec.length, 'other libraries: analyze.py reads the recorded results' + (an.status ? ' (' + an.stderr.trim().split('\n').pop() + ')' : ''));
   if (A) {
     const row = n => A.rows.find(r => r.library.startsWith(n));
-    ok(row('PyNaCl').alone_vs_42 === nCases && row('libsodium-wrappers').alone_vs_42 === nCases, 'other libraries: libsodium (PyNaCl and libsodium-wrappers) agrees with SPEC 4.2 on all ' + nCases + ' cases on its own');
+    ok(['PyNaCl', 'libsodium-wrappers'].every(n => row(n).refuses_what_42_accepts === 0 && row(n).differs_alone.length <= 2 && row(n).differs_alone.every(x => /order-8 component|cancel/.test(x))), 'other libraries: libsodium (PyNaCl and libsodium-wrappers) differs from SPEC 4.2 on at most two cases, both with an order-8 component that it accepts and rule 5 refuses');
     ok(A.rows.every(r => r.refuses_what_42_accepts === 0), 'other libraries: none refuses a case that SPEC 4.2 requires to pass');
-    ok(A.rows.every(r => r.with_wrapper_vs_subgroup_rule === nCases), 'other libraries: with the 4.2 key rules, S below L and a prime-order-subgroup check in front, every variant agrees on all ' + nCases + ' cases');
-    ok(A.rows.some(r => r.alone_vs_42 < nCases), 'other libraries: some libraries do disagree with 4.2 on their own (so the check above means something)');
-    ok(A.expectation_changes_under_subgroup_rule.length === 1, 'other libraries: the subgroup rule would change exactly one expected result');
+    ok(A.rows.every(r => r.agrees_after_checks === nCases), 'other libraries: with the 4.2 key rules, S below L and the prime-order-subgroup check (rule 5) in front, every variant agrees on all ' + nCases + ' cases');
+    ok(A.rows.every(r => r.agrees_alone < nCases), 'other libraries: no library follows SPEC 4.2 on its own (so the check above means something)');
   }
 }
 
@@ -415,7 +414,7 @@ print(json.dumps(out))`;
       const genV = cp.spawnSync('python3', [path.join(root, 'python', 'make-ed25519-vectors.py'), '--check'], { encoding: 'utf8' });
       ok(genV.status === 0, 'committed Ed25519 odd cases match what make-ed25519-vectors.py produces (expected results come from RFC 8032 arithmetic, not from a library)' + (genV.status ? ' (' + genV.stdout.trim() + ')' : ''));
       const vec = readJson(path.join(root, 'vectors', 'ed25519-odd-cases.json')), cases = vec.cases;
-      ok(cases.length >= 30 && cases.filter(c => c.expect).length >= 2 && cases.filter(c => !c.expect).length >= 25, 'odd cases: ' + cases.length + ' cases, a few that must pass and many that must fail');
+      ok(cases.length >= 41 && cases.filter(c => c.expect).length >= 1 && cases.filter(c => !c.expect).length >= 30, 'odd cases: ' + cases.length + ' cases, one that must pass and many that must fail');
       const specText = fs.readFileSync(path.join(root, 'SPEC.md'), 'utf8');
       ok(vec.small_order_keys.length === 8 && vec.small_order_keys.every(h => specText.includes(h)), 'SPEC.md lists the same eight small-order keys the cases file derives by arithmetic');
       const nodeBadV = cases.filter(c => L.verifySig(c.pub, c.msg, c.sig) !== c.expect).map(c => c.name);
@@ -430,6 +429,13 @@ print(json.dumps([v.verify_sig(c['pub'], c['msg'], c['sig']) for c in cases]))`;
       const pyRes = JSON.parse(pr.stdout);
       const pyBadV = cases.filter((c, i) => pyRes[i] !== c.expect).map(c => c.name);
       ok(pyBadV.length === 0, 'Python verifier gives the required result on all ' + cases.length + ' odd Ed25519 cases' + (pyBadV.length ? ' (differs: ' + pyBadV.slice(0, 3).join('; ') + ')' : ''));
+      // Rule 5 does real work: Node's own library says yes to the cases with a small-order component whose plain equation holds, and the verifier still refuses them.
+      {
+        const SPKI = Buffer.from('302a300506032b6570032100', 'hex');
+        const libAlone = c => crypto.verify(null, Buffer.from(c.msg, 'utf8'), crypto.createPublicKey({ key: Buffer.concat([SPKI, Buffer.from(c.pub, 'hex')]), format: 'der', type: 'spki' }), Buffer.from(c.sig, 'hex'));
+        const sub = cases.filter(c => /order-8 component/.test(c.name) && !c.expect && libAlone(c));
+        ok(sub.length >= 2 && sub.every(c => L.verifySig(c.pub, c.msg, c.sig) === false), 'rule 5 (prime-order subgroup): ' + sub.length + ' odd cases that Node\'s own Ed25519 accepts are refused by the verifier (' + sub.map(c => c.name.slice(0, 45)).join('; ') + ')');
+      }
       const vwBad = [];
       for (const c of cases) if (await V.checkSigAsync(prims, c.pub, c.msg, c.sig) !== c.expect) vwBad.push(c.name);
       ok(vwBad.length === 0, 'viewer page logic gives the required result on all ' + cases.length + ' odd Ed25519 cases' + (vwBad.length ? ' (differs: ' + vwBad.slice(0, 3).join('; ') + ')' : ''));

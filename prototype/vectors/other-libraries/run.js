@@ -1,4 +1,4 @@
-// Runs the 40 odd Ed25519 cases (../ed25519-odd-cases.json) through Ed25519 libraries that do not use
+// Runs the 41 odd Ed25519 cases (../ed25519-odd-cases.json) through Ed25519 libraries that do not use
 // OpenSSL or BoringSSL, and prints a JSON result to standard output. Evidence only: no verifier in
 // this repository uses these libraries. Run from this folder after installing them (see README.md):
 //   node run.js > node-results.json

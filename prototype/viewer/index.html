@@ -149,12 +149,23 @@ function bodyOk(type,b){
 const stateOf=(p,st,now)=>p.sigs.size<st.threshold?'collecting':(now<p.thresholdTime+st.comment_seconds?'comment':'closed');
 // P supplies two primitives, so the same logic runs in a browser and in Node tests:
 //   P.sha256(Uint8Array) -> Promise<Uint8Array>, P.verify(pubHex, Uint8Array message, sigHex) -> Promise<boolean>
-// SPEC section 4.2, rules 2 and 3: a public key must be a canonical encoding and not a point of small order.
+// SPEC section 4.2, rules 2 and 3: a public key must be a canonical encoding and not a point of small order (rule 5, below, adds the prime-order subgroup).
 const P25519=(1n<<255n)-19n;
 const SMALL_ORDER=new Set(['01'+'00'.repeat(31),'ec'+'ff'.repeat(30)+'7f','00'.repeat(32),'00'.repeat(31)+'80','c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a','c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa','26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05','26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85']);
 const keyAllowed=h=>{const b=fromHex(h),sign=b[31]>>7;b[31]&=0x7f;let y=0n;for(let i=31;i>=0;i--)y=(y<<8n)|BigInt(b[i]);if(y>=P25519)return false;if(sign&&(y===1n||y===P25519-1n))return false;return !SMALL_ORDER.has(h)};
-// The whole signature check: format, the key rules, then the browser's (or Node's) own Ed25519.
-const checkSigAsync=async(P,pub,msg,sig)=>{if(!isHex64(pub)||!isHex128(sig)||!keyAllowed(pub))return false;try{return (await P.verify(pub,enc.encode(msg),sig))===true}catch(e){return false}};
+// SPEC section 4.2, rule 5: the key and R must lie in the prime-order subgroup ([L] times the point is the identity).
+// Libraries differ on points with a small-order component, so this check is ours, made after the library says yes.
+const L25519=(1n<<252n)+27742317777372353535851937790883648493n;
+const mod25519=x=>((x%P25519)+P25519)%P25519;
+const powMod=(b,e,m)=>{let r=1n;b%=m;while(e>0n){if(e&1n)r=r*b%m;b=b*b%m;e>>=1n}return r};
+const D25519=mod25519(-121665n)*powMod(121666n,P25519-2n,P25519)%P25519;
+const SQRT_M1=powMod(2n,(P25519-1n)/4n,P25519);
+const decodePoint=h=>{const b=fromHex(h),sign=BigInt(b[31]>>7);b[31]&=0x7f;let y=0n;for(let i=31;i>=0;i--)y=(y<<8n)|BigInt(b[i]);if(y>=P25519)return null;const y2=y*y%P25519,x2=mod25519(y2-1n)*powMod((D25519*y2+1n)%P25519,P25519-2n,P25519)%P25519;if(x2===0n)return sign?null:[0n,y,1n,0n];let x=powMod(x2,(P25519+3n)/8n,P25519);if(x*x%P25519!==x2)x=x*SQRT_M1%P25519;if(x*x%P25519!==x2)return null;if((x&1n)!==sign)x=P25519-x;return [x,y,1n,x*y%P25519]};
+const edAdd=(p,q)=>{const a=mod25519((p[1]-p[0])*(q[1]-q[0])),b=mod25519((p[1]+p[0])*(q[1]+q[0])),c=mod25519(2n*p[3]*q[3]%P25519*D25519),d=mod25519(2n*p[2]*q[2]),e=b-a,f=d-c,g=d+c,h=b+a;return [mod25519(e*f),mod25519(g*h),mod25519(f*g),mod25519(e*h)]};
+const subgroupMemo=new Map();
+const inPrimeSubgroup=h=>{if(subgroupMemo.has(h))return subgroupMemo.get(h);const pt=decodePoint(h);let ok=false;if(pt){let r=[0n,1n,1n,0n],base=pt;for(let s=L25519;s>0n;s>>=1n){if(s&1n)r=edAdd(r,base);base=edAdd(base,base)}ok=r[0]===0n&&mod25519(r[1]-r[2])===0n}if(subgroupMemo.size>4096)subgroupMemo.clear();subgroupMemo.set(h,ok);return ok};
+// The whole signature check: format, the key rules, the browser's (or Node's) own Ed25519, then the subgroup rule.
+const checkSigAsync=async(P,pub,msg,sig)=>{if(!isHex64(pub)||!isHex128(sig)||!keyAllowed(pub))return false;try{return (await P.verify(pub,enc.encode(msg),sig))===true&&inPrimeSubgroup(pub)&&inPrimeSubgroup(sig.slice(0,64))}catch(e){return false}};
 async function verifyLogAsync(log,trusted,P){
   const sha=async s=>toHex(await P.sha256(enc.encode(s)));
   const vsig=(pub,msg,sig)=>checkSigAsync(P,pub,msg,sig);
