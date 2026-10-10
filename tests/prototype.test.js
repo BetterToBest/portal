@@ -173,18 +173,95 @@ ok(states(nodeVerify({ log: td('rewritten-history.json') })) === 'closed,collect
   const rec = readJson(path.join(dir, 'results.json'));
   const nCases = readJson(path.join(root, 'vectors', 'ed25519-odd-cases.json')).cases.length;
   const libsRec = Object.keys(rec.results);
-  ok(libsRec.length >= 7 && libsRec.every(k => Array.isArray(rec.results[k]) && rec.results[k].length === nCases && rec.results[k].every(v => typeof v === 'boolean')), 'other libraries: results.json has a yes or no for each of the ' + nCases + ' odd cases from each of ' + libsRec.length + ' library variants');
-  ok(Object.keys(rec.versions).length >= 5 && Object.values(rec.versions).every(v => /^\d+\.\d+/.test(v)), 'other libraries: the version of every library is recorded');
+  ok(libsRec.length >= 16 && libsRec.every(k => Array.isArray(rec.results[k]) && rec.results[k].length === nCases && rec.results[k].every(v => typeof v === 'boolean')), 'other libraries: results.json has a yes or no for each of the ' + nCases + ' odd cases from each of ' + libsRec.length + ' library variants');
+  ok(Object.keys(rec.versions).length >= 14 && Object.values(rec.versions).every(v => /^\d+\.\d+/.test(v)), 'other libraries: the version of every library is recorded');
   const an = cp.spawnSync('python3', ['-I', path.join(dir, 'analyze.py'), '--json'], { encoding: 'utf8' });
   let A = null; try { A = JSON.parse(an.stdout); } catch (e) { /* stays null */ }
   ok(an.status === 0 && A && A.rows.length === libsRec.length, 'other libraries: analyze.py reads the recorded results' + (an.status ? ' (' + an.stderr.trim().split('\n').pop() + ')' : ''));
   if (A) {
     const row = n => A.rows.find(r => r.library.startsWith(n));
-    ok(['PyNaCl', 'libsodium-wrappers'].every(n => row(n).refuses_what_42_accepts === 0 && row(n).differs_alone.length <= 2 && row(n).differs_alone.every(x => /order-8 component|cancel/.test(x))), 'other libraries: libsodium (PyNaCl and libsodium-wrappers) differs from SPEC 4.2 on at most two cases, both with an order-8 component that it accepts and rule 5 refuses');
+    ok(['PyNaCl', 'libsodium-wrappers', 'PHP sodium'].every(n => row(n).refuses_what_42_accepts === 0 && row(n).differs_alone.length <= 2 && row(n).differs_alone.every(x => /order-8 component|cancel/.test(x))), 'other libraries: libsodium (PyNaCl, libsodium-wrappers and PHP sodium) differs from SPEC 4.2 on at most two cases, both with an order-8 component that it accepts and rule 5 refuses');
+    const same = (a, b) => deepEq(rec.results[a], rec.results[b]);
+    ok(same('PyNaCl (libsodium)', 'libsodium-wrappers') && same('PyNaCl (libsodium)', 'PHP sodium (libsodium)'), 'other libraries: libsodium gives the same ' + nCases + ' answers through Python, JavaScript and PHP (the three harnesses read the cases the same way)');
+    ok(['Go', 'Java', 'PHP', 'Rust'].every(l => libsRec.some(k => k.startsWith(l))), 'other libraries: Go, Java, PHP and Rust are all in the recorded results');
+    ok(['run.go', 'run.php', 'Run.java', 'rust/Cargo.toml', 'rust/Cargo.lock', 'rust/src/main.rs'].every(f => fs.existsSync(path.join(dir, f))), 'other libraries: the Go, PHP, Java and Rust harnesses are in the folder (the Rust one with its Cargo.lock, so the crate versions are fixed)');
+    ok(A.rows.every(r => !r.differs_alone.some(x => /message changed|one bit of R/.test(x))), 'other libraries: every variant refuses the two tampered copies of the valid signature (a check that each harness reads the cases correctly)');
     ok(A.rows.every(r => r.refuses_what_42_accepts === 0), 'other libraries: none refuses a case that SPEC 4.2 requires to pass');
     ok(A.rows.every(r => r.agrees_after_checks === nCases), 'other libraries: with the 4.2 key rules, S below L and the prime-order-subgroup check (rule 5) in front, every variant agrees on all ' + nCases + ' cases');
     ok(A.rows.every(r => r.agrees_alone < nCases), 'other libraries: no library follows SPEC 4.2 on its own (so the check above means something)');
   }
+}
+
+// ---- 3d. points the spec was silent or unclear about (found by the cold-read test, docs/spec-cold-read.md) ----
+// A reader who had only SPEC.md wrote a third verifier (Rust). It gave a different output from the two programs on these
+// points, so the spec now says what to do, and each is pinned here: same output from both programs, and the exact errors.
+{
+  const T0 = 1790900000, id = n => L.testIdentity(n), op = id('test-operator'), al = id('test-alice'), bo = id('test-bob');
+  const rc = (i, t, b) => L.makeRecord(i, t, b), reg = (i, l) => rc(i, 'register_key', { public_key: i.pub, label: l });
+  const gen = rc(op, 'genesis', { threshold: 2, comment_seconds: 100 });
+  const mk = (steps, cps) => { const e = L.makeEntries(steps.map(([t, r]) => ({ time: T0 + t, record: r }))); return { format: 'cip-test-log/0', entries: e, checkpoints: (cps || []).map(n => L.makeCheckpoint(op, e, n)) }; };
+  const base = [[0, gen], [1, reg(al, 'test-alice')], [2, reg(bo, 'test-bob')], [3, rc(al, 'propose', { title: 'T', text: 'Body' })]];
+  const good = mk(base, [4]), pidOf = log => L.entryHash(log.entries[3]), v1 = L.versionHash('T', 'Body');
+  const wf = (name, v) => { const f = path.join(tmp, 'cr-' + name); fs.writeFileSync(f, typeof v === 'string' || Buffer.isBuffer(v) ? v : JSON.stringify(v)); return f; };
+  const runBoth = (args) => [['node', [path.join(root, 'node', 'cip-log.js')].concat(args)], ['python3', ['-I', path.join(root, 'python', 'verify.py')].concat(args.filter((a, i) => !(i === 0 && a === 'verify')))]]
+    .map(([c, a]) => { const r = cp.spawnSync(c, a, { encoding: 'utf8' }); let j = null; try { j = JSON.parse(r.stdout); } catch (e) { /* stays null */ } return { status: r.status, json: j, stderr: r.stderr, stdout: r.stdout }; });
+  const sh = (L2) => L2.map(e => e.code + '@' + e.where + (e.index === undefined ? '' : ':' + e.index)).join(' ');
+  const check = (name, args, status, ie, re) => {
+    const [n, py] = runBoth(args);
+    ok(n.status === status && py.status === status && n.json && py.json && deepEq(n.json, py.json) && sh(n.json.integrity_errors) === ie && sh(n.json.rule_errors) === re,
+      'cold read: ' + name + ' gives exit ' + status + ' and "' + (ie || 'no integrity errors') + (re ? ' | ' + re : '') + '" in both programs' + (n.json ? ' (got: ' + n.status + ' ' + sh(n.json.integrity_errors) + ' | ' + sh(n.json.rule_errors) + ')' : ' (no JSON: ' + n.stderr.trim().slice(0, 80) + ')'));
+  };
+  // files that are not valid JSON (SPEC section 1)
+  const text = JSON.stringify(good);
+  check('a file that is not JSON', ['verify', wf('notjson', '{"format": "cip-test-log/0", "entries": [')], 1, 'BAD_FORMAT@log:0', '');
+  check('a file that starts with a byte-order mark', ['verify', wf('bom', Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(text)]))], 1, 'BAD_FORMAT@log:0', '');
+  check('a file that is not UTF-8', ['verify', wf('latin1', Buffer.concat([Buffer.from(text.slice(0, 10)), Buffer.from([0xff, 0xfe]), Buffer.from(text.slice(10))]))], 1, 'BAD_FORMAT@log:0', '');
+  check('a file holding null', ['verify', wf('null', 'null')], 1, 'BAD_FORMAT@log:0', '');
+  check('a bare NaN', ['verify', wf('nan', text.replace('"size":4', '"size":NaN'))], 1, 'BAD_FORMAT@log:0', '');
+  check('an extra top-level key', ['verify', wf('extra', Object.assign({ extra: 1 }, good))], 1, 'BAD_FORMAT@log:0', '');
+  check('the wrong format string', ['verify', wf('fmt', Object.assign({}, good, { format: 'cip-test-log/1' }))], 1, 'BAD_FORMAT@log:0', '');
+  check('entries that is not a list', ['verify', wf('entobj', Object.assign({}, good, { entries: {} }))], 1, 'BAD_FORMAT@log:0', '');
+  check('a trusted checkpoint that is not JSON', ['verify', wf('good', good), '--trusted', wf('trustedjunk', '[1,2')], 1, 'TRUSTED_BAD_FORMAT@trusted:0', '');
+  check('a log that is not JSON, with a trusted checkpoint (the trusted one is not looked at)', ['verify', wf('notjson2', '{'), '--trusted', wf('tr-ok', good.checkpoints[0])], 1, 'BAD_FORMAT@log:0', '');
+  const missing = runBoth(['verify', path.join(tmp, 'cr-does-not-exist.json')]);
+  ok(missing.every(r => r.status === 2 && r.stdout === '' && /cannot read/.test(r.stderr)), 'cold read: a file that cannot be read gives exit 2, no JSON and a message on standard error, in both programs');
+  // an empty log passes (section 9, question 7) and a checkpoint in it has no operator
+  check('an empty log', ['verify', wf('empty', { format: 'cip-test-log/0', entries: [], checkpoints: [] })], 0, '', '');
+  // who the operator is (section 5): entry 0 only has to be a genesis record with a 64-hex author
+  { const e = JSON.parse(text); e.entries[0].hash = 'f'.repeat(64);
+    check('a genesis with a wrong hash (the operator is still known)', ['verify', wf('g-badhash', e)], 1, 'BAD_HASH@entry:0 BAD_PREV@entry:1', ''); }
+  { const bad = mk([[0, rc(op, 'genesis', { threshold: 0, comment_seconds: 100 })], [1, reg(al, 'test-alice')]], [2]);
+    check('a genesis with a bad body (the operator is still known)', ['verify', wf('g-badbody', bad)], 1, '', 'BAD_BODY@entry:0'); }
+  { const wrongOp = JSON.parse(text); wrongOp.checkpoints.push(L.makeCheckpoint(id('test-other'), good.entries, 4));
+    check('a checkpoint signed by another operator', ['verify', wf('wrongop', wrongOp)], 1, 'CP_WRONG_OPERATOR@checkpoint:1', ''); }
+  // BAD_FORMAT is the shape of the entry and record, BAD_BODY the body for the type (section 6)
+  check('a record type that is not in the table', ['verify', wf('unknowntype', mk([...base, [4, rc(al, 'vote', { x: 1 })]]))], 1, '', 'BAD_BODY@entry:4');
+  { const f = JSON.parse(JSON.stringify(mk([[0, gen], [1, reg(al, 'test-alice')]], [2]))); f.entries[0].record.body.threshold = 1.5;
+    check('a body number that section 2 does not allow', ['verify', wf('float', f)], 1, 'BAD_FORMAT@entry:0 CP_BAD_ROOT@checkpoint:0', ''); }
+  // signing: stale and repeated at once reports only STALE_VERSION (section 6, step 10)
+  { const pid = pidOf(good);
+    check('a signature that is both stale and a repeat', ['verify', wf('stale-dup', mk([...base, [4, rc(al, 'sign', { proposal: pid, version: v1 })], [5, rc(al, 'sign', { proposal: pid, version: 'a'.repeat(64) })]]))], 1, '', 'STALE_VERSION@entry:5');
+    check('a repeated signature on the current version', ['verify', wf('dup', mk([...base, [4, rc(al, 'sign', { proposal: pid, version: v1 })], [5, rc(al, 'sign', { proposal: pid, version: v1 })]]))], 1, '', 'DUPLICATE_SIGNATURE@entry:5');
+    const two = [[4, rc(al, 'sign', { proposal: pid, version: v1 })], [5, rc(bo, 'sign', { proposal: pid, version: v1 })]];
+    check('a comment one second before the comment period ends', ['verify', wf('cm-before', mk([...base, ...two, [104, rc(al, 'comment', { proposal: pid, text: 'ok' })]]))], 0, '', '');
+    check('a comment at the exact moment the comment period ends', ['verify', wf('cm-exact', mk([...base, ...two, [105, rc(al, 'comment', { proposal: pid, text: 'late' })]]))], 1, '', 'PROPOSAL_CLOSED@entry:6');
+    check('an amendment in the comment period starts collecting again', ['verify', wf('amend', mk([...base, ...two, [6, rc(al, 'amend', { proposal: pid, title: 'T2', text: 'B2' })], [500, rc(bo, 'comment', { proposal: pid, text: 'still open' })]]))], 0, '', ''); }
+  check('the operator registering its own key', ['verify', wf('opreg', mk([[0, gen], [1, reg(op, 'test-op')]]))], 1, '', 'DUPLICATE_KEY@entry:1');
+  // compare (section 5.1): errors have a code and a where, and no index
+  { const a = good.checkpoints[0], other = L.makeCheckpoint(id('test-other'), good.entries, 3), badSig = Object.assign({}, a, { root: '1'.repeat(64) });
+    const cmp = (name, x, y, want) => { const [n, py] = runBoth(['compare', x, y]); const got = n.json ? n.json.errors.map(e => e.code + '@' + e.where + (Object.keys(e).length === 2 ? '' : '+extra')).join(' ') : 'no json';
+      ok(n.json && py.json && deepEq(n.json, py.json) && got === want, 'cold read: compare ' + name + ' gives "' + want + '" in both programs, with no index (got: ' + got + ')'); };
+    cmp('with a file that is not JSON', wf('c-a', a), wf('c-junk', '{'), 'CMP_BAD_FORMAT@b');
+    cmp('with one malformed file and one bad signature (the well-formed one is still checked)', wf('c-bs', badSig), wf('c-junk2', '[]'), 'CMP_BAD_FORMAT@b CMP_BAD_SIG@a');
+    cmp('with different operators and one bad signature (both signatures are checked)', wf('c-a2', a), wf('c-o', Object.assign({}, other, { root: '2'.repeat(64) })), 'CMP_DIFFERENT_OPERATOR@both CMP_BAD_SIG@b'); }
+}
+
+{
+  const cr = path.join(root, 'cold-read');
+  ok(['README.md', 'DECISIONS.md', 'outputs.json', 'rust/Cargo.toml', 'rust/Cargo.lock', 'rust/src/main.rs'].every(f => fs.existsSync(path.join(cr, f))) && fs.existsSync(path.join(root, '..', 'docs', 'spec-cold-read.md')), 'cold read: the Rust verifier, its decision log, its outputs and the write-up are in the repository');
+  const ko = readJson(path.join(cr, 'outputs.json')), kk = readJson(path.join(root, 'answer-key', 'expected.json')).cases;
+  const same = kk.filter(c => { const o = ko[path.basename(c.log) + (c.trusted ? '+trusted' : '')]; return o && deepEq(o, c.expect); }).length;
+  ok(same === 22 && kk.length === 23, 'cold read: the recorded Rust output matches the answer key on 22 of its ' + kk.length + ' cases (the one difference, a stale and repeated signature, is listed in docs/spec-cold-read.md)');
 }
 
 // ---- 3b. saving and comparing checkpoints (SPEC 5.1) ----

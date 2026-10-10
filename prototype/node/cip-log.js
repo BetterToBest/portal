@@ -323,7 +323,13 @@ const formatCheckpoint = c => JSON.stringify(c, null, 1) + '\n'; // same layout 
 if (require.main === module) {
   const a = process.argv.slice(2);
   const usage = () => { console.error('usage:\n  node cip-log.js verify <log.json> [--trusted <checkpoint.json>]\n  node cip-log.js checkpoint <log.json> [--index N] [--out <file>]\n  node cip-log.js compare <checkpoint-a.json> <checkpoint-b.json>'); process.exit(2); };
-  const read = f => JSON.parse(fs.readFileSync(f, 'utf8'));
+  // A file that is not valid UTF-8 JSON (a byte-order mark counts as not valid) reads as null, which every format check
+  // refuses (SPEC section 6: BAD_FORMAT, TRUSTED_BAD_FORMAT, CMP_BAD_FORMAT). A file that cannot be read at all is a usage error.
+  const read = f => {
+    let buf;
+    try { buf = fs.readFileSync(f); } catch (e) { console.error('cannot read ' + f + ': ' + e.message); process.exit(2); }
+    try { return JSON.parse(new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(buf)); } catch (e) { return null; }
+  };
   const opt = n => { const i = a.indexOf(n); return i > 0 ? a[i + 1] : undefined; };
   if (a[0] === 'verify' && a[1]) {
     const ti = a.indexOf('--trusted');

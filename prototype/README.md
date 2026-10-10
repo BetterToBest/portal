@@ -15,7 +15,8 @@ Nothing here collects or monetizes user behavior data. The programs read the fil
 | `node/make-test-logs.js` | Builds every test log from fixed test identities and fixed times, so the files never change between runs. |
 | `python/verify.py` | A second verifier, written from the spec. Needs the `cryptography` package. |
 | `answer-key/expected.json`, `node/make-answer-key.js` | The result every verifier must print for each shared test log, as one language-neutral JSON file: 23 cases with the log, the saved checkpoint if one is used, the exit code and the full expected output. Written by the Node program; the tests check it against the Python program, both command lines and a hand-written table of error codes, and fail if it drifts. A reviewer writing a third verifier can compare against this file alone. |
-| `vectors/other-libraries/` | Evidence, not a verifier: the 41 odd Ed25519 cases run through seven libraries that do not use OpenSSL or BoringSSL (libsodium, tweetnacl, @noble, elliptic, PyCryptodome), with the harness, the recorded results and a table. Shows which libraries agree with SPEC 4.2 and what a subgroup check would change (SPEC section 9, question 5). |
+| `cold-read/` | Evidence, not a verifier: a third verifier in Rust written from SPEC.md alone by an AI helper of the same model family (so **not gate G1**), its log of 51 unclear spots, and its outputs. What it found and what changed is in [docs/spec-cold-read.md](../docs/spec-cold-read.md). |
+| `vectors/other-libraries/` | Evidence, not a verifier: the 41 odd Ed25519 cases run through thirteen libraries and wrappers that do not use OpenSSL or BoringSSL (libsodium in three forms, tweetnacl, @noble, elliptic, PyCryptodome, Go, the JDK and three Rust crates), with the harnesses, the recorded results and a table. Shows which libraries agree with SPEC 4.2 and what a subgroup check would change (SPEC section 9, question 5). |
 | `vectors/ed25519-odd-cases.json`, `python/make-ed25519-vectors.py` | 41 public key, message and signature cases that common Ed25519 libraries can treat differently, each with the result [SPEC section 4.2](SPEC.md) requires (1 must pass, 40 must fail). The results are computed from RFC 8032 arithmetic in the generator, which uses only the Python standard library. Any verifier, in any language, can be checked against this file. |
 | `checkpoint` and `compare` commands | In both programs: save one checkpoint from a log as its own file, and compare two saved checkpoints with no log. See [checkpoints.md](../docs/checkpoints.md) and SPEC section 5.1. |
 | `viewer/index.html` | A single page that checks a log in your browser and shows proposals, signatures and anything that failed, in plain words. It makes no network requests and stores nothing, and the browser is told to block them. Its example logs are copied in by `node/build-viewer.js`. |
@@ -51,7 +52,7 @@ node tests/prototype.test.js
 
 Or open the [log viewer](https://bettertobest.github.io/portal/prototype/viewer/), pick an example or choose a log file, and read the result. It needs a recent Chrome, Firefox or Safari, because it uses the browser's own Ed25519 support.
 
-Each command prints the result as JSON and exits with 0 if the log passes, 1 if not.
+Each command prints the result as JSON and exits with 0 if the log passes, 1 if not. A file that is not valid JSON counts as a format error (SPEC section 1) and gives exit 1; a file that cannot be read at all prints a message and gives exit 2.
 
 ## What the test logs show
 

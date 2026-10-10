@@ -471,9 +471,23 @@ def main(argv):
         sys.stderr.write(usage)
         return 2
 
+    def refuse(name):
+        raise ValueError(name)
+
     def read(path):
-        with open(path, encoding='utf-8') as f:
-            return normalize(json.load(f))
+        # A file that is not valid UTF-8 JSON (a byte-order mark counts as not valid) reads as None, which every format
+        # check refuses (SPEC section 6: BAD_FORMAT, TRUSTED_BAD_FORMAT, CMP_BAD_FORMAT). A file that cannot be read
+        # at all is a usage error.
+        try:
+            with open(path, 'rb') as f:
+                raw = f.read()
+        except OSError as e:
+            sys.stderr.write('cannot read %s: %s\n' % (path, e.strerror or e))
+            raise SystemExit(2)
+        try:
+            return normalize(json.loads(raw.decode('utf-8'), parse_constant=refuse))
+        except ValueError:  # includes UnicodeDecodeError and JSONDecodeError
+            return None
 
     def opt(name):
         return argv[argv.index(name) + 1] if name in argv and argv.index(name) > 0 and argv.index(name) + 1 < len(argv) else None
