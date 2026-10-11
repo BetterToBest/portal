@@ -256,9 +256,78 @@ ok(states(nodeVerify({ log: td('rewritten-history.json') })) === 'closed,collect
     cmp('with different operators and one bad signature (both signatures are checked)', wf('c-a2', a), wf('c-o', Object.assign({}, other, { root: '2'.repeat(64) })), 'CMP_DIFFERENT_OPERATOR@both CMP_BAD_SIG@b'); }
 }
 
+// ---- 3e. second cold read (Go): points the first fixes left unwritten (SPEC sections 3, 5, 5.1, 6, 7) ----
+{
+  const T0 = 1790900000, id = n => L.testIdentity(n), op = id('test-operator'), al = id('test-alice'), bo = id('test-bob');
+  const rc = (i, t, b) => L.makeRecord(i, t, b), reg = (i, l) => rc(i, 'register_key', { public_key: i.pub, label: l });
+  const gen0 = rc(op, 'genesis', { threshold: 2, comment_seconds: 0 });
+  const mk = (steps, cps) => { const e = L.makeEntries(steps.map(([t, r]) => ({ time: T0 + t, record: r }))); return { format: 'cip-test-log/0', entries: e, checkpoints: (cps || []).map(n => L.makeCheckpoint(op, e, n)) }; };
+  const base = [[0, gen0], [1, reg(al, 'test-alice')], [2, reg(bo, 'test-bob')], [3, rc(al, 'propose', { title: 'T', text: 'B' })]];
+  const pid = L.entryHash(mk(base).entries[3]), v1 = L.versionHash('T', 'B');
+  const sign = (i, t, v) => [t, rc(i, 'sign', { proposal: pid, version: v || v1 })];
+  const wf = (name, v) => { const f = path.join(tmp, 'cr2-' + name); fs.writeFileSync(f, typeof v === 'string' ? v : JSON.stringify(v)); return f; };
+  const both = args => [['node', [path.join(root, 'node', 'cip-log.js')].concat(args)], ['python3', ['-I', path.join(root, 'python', 'verify.py')].concat(args.filter((a, i) => !(i === 0 && a === 'verify')))]]
+    .map(([c, a]) => { const r = cp.spawnSync(c, a, { encoding: 'utf8' }); let j = null; try { j = JSON.parse(r.stdout); } catch (e) { /* stays null */ } return { status: r.status, json: j, stdout: r.stdout }; });
+  const sh = E => E.map(e => e.code + '@' + e.index).join(' ');
+  const chk = (name, log, ie, re, pick) => {
+    const [n, py] = both(['verify', wf(name, log)]);
+    const got = n.json ? sh(n.json.integrity_errors) + ' | ' + sh(n.json.rule_errors) : 'no json';
+    ok(n.json && py.json && deepEq(n.json, py.json) && got === ie + ' | ' + re && (!pick || pick(n.json)), 'cold read 2: ' + name + ' gives "' + ie + ' | ' + re + '" in both programs' + (got !== ie + ' | ' + re ? ' (got ' + got + ')' : ''));
+  };
+  chk('time before the threshold time is still in the comment state', mk([...base, sign(al, 4), sign(bo, 5), [3, rc(al, 'comment', { proposal: pid, text: 'x' })]]), '', 'TIME_REVERSED@6', j => j.summary.comments === 1 && j.summary.proposals[0].state === 'comment');
+  chk('an identical amendment adds a version, clears signatures and lets the signer sign again', mk([...base, sign(al, 4), [5, rc(al, 'amend', { proposal: pid, title: 'T', text: 'B' })], sign(al, 6)]), '', '', j => j.summary.proposals[0].versions === 2 && j.summary.proposals[0].signatures === 1 && j.summary.proposals[0].state === 'collecting');
+  chk('register_key with a wrong key and a bad label reports only the first', mk([[0, gen0], [1, rc(al, 'register_key', { public_key: bo.pub, label: 'nolabel' })]]), '', 'SELF_REGISTER_MISMATCH@1');
+  chk('a second genesis is DUPLICATE_GENESIS even when entry 0 was not a genesis', mk([[0, reg(al, 'test-alice')], [1, gen0], [2, reg(bo, 'test-bob')]]), '', 'NO_GENESIS@0 DUPLICATE_GENESIS@1');
+  chk('a comment whose only fault is TIME_REVERSED is counted', mk([...base, [10, rc(al, 'comment', { proposal: pid, text: 'a' })], [5, rc(al, 'comment', { proposal: pid, text: 'b' })]]), '', 'TIME_REVERSED@5', j => j.summary.comments === 2);
+  { const g = mk(base), e = JSON.parse(JSON.stringify(g)); delete e.entries[1].hash;
+    chk('a previous entry with no hash makes the next entry BAD_PREV', e, 'BAD_FORMAT@1 BAD_PREV@2', 'UNREGISTERED_AUTHOR@3'); }
+  const sg = (g, o) => { const c = Object.assign({ operator: op.pub, root: L.merkleRoot(g.entries.map(L.entryHash)), size: 4, time: 5 }, o); c.sig = op.sign(L.canon({ operator: c.operator, root: c.root, size: c.size, time: c.time })); return c; };
+  { const g = mk(base); g.checkpoints = [sg(g, { time: -5 })]; chk('a validly signed checkpoint with a negative time is fine', g, '', ''); }
+  { const g = mk(base); g.checkpoints = [sg(g, { size: 0 })]; chk('a validly signed checkpoint of size 0 is CP_BAD_SIZE', g, 'CP_BAD_SIZE@0', ''); }
+  { const g = mk(base); g.checkpoints = [sg(g, { size: -1 })]; chk('a validly signed checkpoint of size -1 is CP_BAD_SIZE', g, 'CP_BAD_SIZE@0', ''); }
+  {
+    ok(both(['verify', wf('notjsonlog2', '{'), '--trusted', path.join(tmp, 'cr2-does-not-exist.json')]).every(r => r.status === 2 && r.stdout === ''), 'cold read 2: a trusted checkpoint that cannot be read gives exit 2 even when the log is BAD_FORMAT, in both programs'); }
+  // compare: a conflict, and a different size
+  { const g = mk(base, [4]), h = mk([...base.slice(0, 3), [3, rc(al, 'propose', { title: 'T2', text: 'B' })]], [4]);
+    const fa = wf('cmp-a', g.checkpoints[0]), fb = wf('cmp-b', h.checkpoints[0]), fs3 = wf('cmp-c', mk(base, [3]).checkpoints[0]);
+    const [cn, cpy] = both(['compare', fa, fb]);
+    ok(cn.status === 1 && cpy.status === 1 && deepEq(cn.json, cpy.json) && cn.json.ok === false && cn.json.relation === 'conflict' && cn.json.operator === op.pub && deepEq(cn.json.errors, [{ code: 'CMP_CONFLICT', where: 'both' }]), 'cold read 2: a conflict gives ok false, relation conflict, the operator, and CMP_CONFLICT only, exit 1, in both programs');
+    const [dn, dpy] = both(['compare', fa, fs3]);
+    ok(dn.status === 0 && dpy.status === 0 && deepEq(dn.json, dpy.json) && dn.json.ok === true && dn.json.relation === 'different-size', 'cold read 2: checkpoints of different sizes give ok true, relation different-size, exit 0, in both programs');
+    const sv = (cmd, a) => cp.spawnSync(cmd[0], cmd.slice(1).concat(a), { encoding: 'utf8' });
+    const good = wf('save-good', g), bad = wf('save-bad', Object.assign({}, g, { entries: g.entries.map((e, i) => i === 2 ? Object.assign({}, e, { hash: 'f'.repeat(64) }) : e) }));
+    const nodeCmd = ['node', path.join(root, 'node', 'cip-log.js'), 'checkpoint'], pyCmd = ['python3', '-I', path.join(root, 'python', 'verify.py'), 'checkpoint'];
+    const okSave = [nodeCmd, pyCmd].map(c => sv(c, [good])), noSave = [nodeCmd, pyCmd].map(c => sv(c, [bad])), noIdx = [nodeCmd, pyCmd].map(c => sv(c, [good, '--index', '5']));
+    ok(okSave.every(r => r.status === 0 && deepEq(JSON.parse(r.stdout), g.checkpoints[0])) && noSave.every(r => r.status === 1 && r.stdout === '') && noIdx.every(r => r.status === 1 && r.stdout === ''), 'cold read 2: Save prints the last checkpoint and exits 0, and prints nothing and exits 1 for a log with an integrity error or a position that does not exist, in both programs'); }
+}
+
+// ---- 3f. edge cases for third verifiers (prototype/edge-cases/): reproducible, and the Python program gives the recorded answers ----
+{
+  const g = cp.spawnSync('node', [path.join(root, 'node', 'make-edge-cases.js'), '--check'], { encoding: 'utf8' });
+  ok(g.status === 0, 'edge cases: the committed inputs and expected.json are what the generator produces' + (g.status ? ' (' + g.stdout.trim().split('\n').slice(0, 2).join('; ') + ')' : ''));
+  const ec = readJson(path.join(root, 'edge-cases', 'expected.json'));
+  const badPy = [];
+  ec.cases.forEach(c => {
+    const args = c.command.map(a => /^edge-cases\//.test(a) ? path.join(root, a) : a).filter((a, i) => !(i === 0 && a === 'verify'));
+    const r = cp.spawnSync('python3', ['-I', path.join(root, 'python', 'verify.py')].concat(args), { encoding: 'utf8' });
+    let j = null; try { j = JSON.parse(r.stdout); } catch (e) { /* stays null */ }
+    if (r.status !== c.exit_code || !deepEq(j, c.expect)) badPy.push(c.note);
+  });
+  const badNode = [];
+  ec.cases.forEach(c => {
+    const args = c.command.map(a => /^edge-cases\//.test(a) ? path.join(root, a) : a);
+    const r = cp.spawnSync('node', [path.join(root, 'node', 'cip-log.js')].concat(args), { encoding: 'utf8' });
+    let j = null; try { j = JSON.parse(r.stdout); } catch (e) { /* stays null */ }
+    if (r.status !== c.exit_code || !deepEq(j, c.expect)) badNode.push(c.note);
+  });
+  ok(badNode.length === 0, 'edge cases: the Node command line prints the recorded output and exit code for all ' + ec.cases.length + ' cases (the file is produced in-process, so this also checks the command line)' + (badNode.length ? ' (differs: ' + badNode.slice(0, 3).join('; ') + ')' : ''));
+  ok(ec.cases.length >= 60 && badPy.length === 0, 'edge cases: the Python program prints the recorded output and exit code for all ' + ec.cases.length + ' cases' + (badPy.length ? ' (differs: ' + badPy.slice(0, 3).join('; ') + ')' : ''));
+  ok(ec.cases.every(c => c.command[0] !== 'verify' || c.expect === null || (c.expect.ok === (c.exit_code === 0))), 'edge cases: every verify case has an exit code that agrees with its ok value');
+}
+
 {
   const cr = path.join(root, 'cold-read');
-  ok(['README.md', 'DECISIONS.md', 'outputs.json', 'rust/Cargo.toml', 'rust/Cargo.lock', 'rust/src/main.rs'].every(f => fs.existsSync(path.join(cr, f))) && fs.existsSync(path.join(root, '..', 'docs', 'spec-cold-read.md')), 'cold read: the Rust verifier, its decision log, its outputs and the write-up are in the repository');
+  ok(['README.md', 'DECISIONS.md', 'DECISIONS-2.md', 'outputs.json', 'rust/Cargo.toml', 'rust/Cargo.lock', 'rust/src/main.rs', 'go/go.mod', 'go/main.go', 'go/verify.go', 'go/ed25519.go'].every(f => fs.existsSync(path.join(cr, f))) && fs.existsSync(path.join(root, '..', 'docs', 'spec-cold-read.md')), 'cold read: the Rust and Go verifiers, their decision logs, the Rust outputs and the write-up are in the repository');
   const ko = readJson(path.join(cr, 'outputs.json')), kk = readJson(path.join(root, 'answer-key', 'expected.json')).cases;
   const same = kk.filter(c => { const o = ko[path.basename(c.log) + (c.trusted ? '+trusted' : '')]; return o && deepEq(o, c.expect); }).length;
   ok(same === 22 && kk.length === 23, 'cold read: the recorded Rust output matches the answer key on 22 of its ' + kk.length + ' cases (the one difference, a stale and repeated signature, is listed in docs/spec-cold-read.md)');

@@ -18,7 +18,7 @@ Nothing is live. Everything is files, programs that read files, and a static sit
 
 **The task.** Write a program that checks a CIP test log, using only [`prototype/SPEC.md`](../prototype/SPEC.md), in any language you like.
 
-**A first cold read has already been done, by an AI helper of the same model family, and it is not a substitute for yours.** It found six unclear places in the spec, now fixed ([`docs/spec-cold-read.md`](spec-cold-read.md)). If you would rather not be steered by it, write your verifier first and read that page afterwards.
+**Two cold reads have already been done, by AI helpers of the same model family, and they are not a substitute for yours.** They found six unclear places in the spec, now fixed, and a Go verifier written from the clarified spec matched the answer key and 62 [edge cases](../prototype/edge-cases/) ([`docs/spec-cold-read.md`](spec-cold-read.md)). If you would rather not be steered by it, write your verifier first and read that page afterwards.
 
 **Please do this first pass without reading the existing verifiers** (`prototype/node/cip-log.js` and `prototype/python/verify.py`). The value is that you read the spec cold. If you have already read them, say so in your report.
 
@@ -35,7 +35,7 @@ node prototype/node/cip-log.js verify prototype/testdata/rewritten-history.json 
 
 **Also check the odd cases.** [`prototype/vectors/ed25519-odd-cases.json`](../prototype/vectors/ed25519-odd-cases.json) holds 41 public key, message and signature cases that Ed25519 libraries can treat differently, each with the result [SPEC section 4.2](../prototype/SPEC.md) requires. A verifier that passes the 20 logs but gives a different result on any of these cases has not followed 4.2. If your library gives a different result and you think the spec is wrong, say so: that is a Job B finding too.
 
-**Then go further.** Make your own edits to `good.json` (change a value, remove an entry, swap two, repeat one, add whitespace around a hex value, use odd Unicode) and compare your verifier with both existing ones. The project's own tests do 600 random single edits and 750 whitespace cases ([`tests/prototype.test.js`](../tests/prototype.test.js)). Yours are worth more because they come from a different mind.
+**Then go further.** [`prototype/edge-cases/`](../prototype/edge-cases/) holds 62 more commands with their expected output (files that are not JSON, a damaged first entry, half-broken compare pairs, Save). Then make your own edits to `good.json` (change a value, remove an entry, swap two, repeat one, add whitespace around a hex value, use odd Unicode) and compare your verifier with both existing ones. The project's own tests do 600 random single edits and 750 whitespace cases ([`tests/prototype.test.js`](../tests/prototype.test.js)). Yours are worth more because they come from a different mind.
 
 **The most useful result is not a green run.** For each place where your output differs from the reference, say which it is:
 

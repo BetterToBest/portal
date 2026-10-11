@@ -1,6 +1,6 @@
 # Cold-read test of the spec (Oct 2026)
 
-Status: **a result, not a gate.** This is **not gate G1** of the [Phase 3 test plan](phase-3-test-plan.md). An AI helper of the same model family as the one that helped write the project read [`prototype/SPEC.md`](../prototype/SPEC.md) and wrote a verifier from it. That is not an outside person, and it does not replace one. What it does is find places where the spec was unclear before a real reviewer has to. CIP is a research proposal, not a live voting system, and this tests a file format on test data.
+Status: **a result, not a gate.** This is **not gate G1** of the [Phase 3 test plan](phase-3-test-plan.md). Two AI helpers of the same model family as the one that helped write the project each read [`prototype/SPEC.md`](../prototype/SPEC.md) cold and wrote a verifier from it: the first in Rust (Oct 8), the second in Go (Oct 11) after the spec had been clarified. That is not an outside person, and it does not replace one. What it does is find places where the spec was unclear before a real reviewer has to. CIP is a research proposal, not a live voting system, and this tests a file format on test data.
 
 ## What was done
 
@@ -44,12 +44,37 @@ The raw, unedited log is [`prototype/cold-read/DECISIONS.md`](../prototype/cold-
 - **Read the same as the programs on the cases tried, so no change:** D9 (numbers such as `2.0`, `1e3`, above 2^53 - 1), D10 (negative `index`, `time`), D20 and D21 (state before the threshold time; an amendment restarts collecting), D26 (an identical amendment), D28, D29, D30 and D47 (checkpoint checks, size 0, negative time, another operator), D35, D42 and D43, D46 (follow-on errors are all reported), D49.
 - **Not separately tested:** D19, D24, D25, D27 (covered only by the answer key), D34, D37 (links that point outside the folder it was given), D39 (command line shape, a free choice), D51 items 2, 4, 9 and 10.
 
+## Second read: the clarified spec, in Go (Oct 11)
+
+A second helper, which had seen neither the programs nor the first helper's log, read the **clarified** spec (commit `2c13e5a`; the line that mentions the first cold read was removed from its copy). It was given the 22 test files and the 51 edge-case inputs, with no expected outputs, and wrote a Go verifier (about 1,450 lines, standard library only, its own Ed25519 arithmetic). It logged 60 hesitations ([`prototype/cold-read/DECISIONS-2.md`](../prototype/cold-read/DECISIONS-2.md), E1 to E60).
+
+| Test | First read (Rust, old spec) | Second read (Go, clarified spec) |
+|---|---|---|
+| The 41 odd Ed25519 cases | 41 of 41 | **41 of 41** |
+| The answer key (23 cases), output and exit code | 22 of 23 | **23 of 23** |
+| The 62 edge cases ([`prototype/edge-cases/`](../prototype/edge-cases/)): output and exit code | 34 of 62 | **62 of 62** |
+
+So the six gaps above are now clear enough that a second reader reproduces the programs on every case we have, including compare, Save and the exit codes. The edge cases are now checked-in test data, with the expected answer for each, so any future verifier can be run on them; the tests check them against the Python and Node programs. The helper also left 60 notes of hesitation. About 20 were marked as likely to make two careful readers differ; each was checked against the programs, and all of them were settled by writing the answer into the spec:
+
+- a negative `index` is `BAD_INDEX`; a previous entry with no `hash` makes the next one `BAD_PREV`;
+- a checkpoint's `size` and `time` are integers and nothing more (size below 1 is `CP_BAD_SIZE`), and its signature is checked under its own `operator` key;
+- a genesis at any position other than 0 is `DUPLICATE_GENESIS`; only the first applicable `register_key` error is reported; `register_key` is the one type that needs no registered author;
+- an amendment always adds a version, even with unchanged text, and restarts the threshold time; a proposal judged at a time before its threshold time is in the comment state;
+- a comment whose only fault is `TIME_REVERSED` is counted; the summary is judged at the last entry by position;
+- a conflict gives `ok` false with the relation and operator set, different sizes give `ok` true, Save's layout is free, and `compare` and `checkpoint` have exit codes; an unreadable trusted file gives exit 2 even when the log is `BAD_FORMAT`;
+- the figures "15 of 40" and "13" in section 4.2 are now explained (the valid case, 13 that break rule 2 or 3, and one that only rule 5 refuses), and rule 1 of 4.2 had a missing noun.
+
+What it did **not** settle, by choice: repeated JSON keys and the empty log (section 9, questions 6 and 7, decisions d11 and d12), and the command lines, which the spec leaves to each verifier. It chose its own exit code for `sigcheck`, which the spec does not define and the programs do not have.
+
+Two cautions on this second result. It saw the clarified text, which now says what the programs do in several places (for example that the two programs keep the last of a repeated key), so matching there shows the text can be followed, not that it is right. And it had the edge-case inputs, so it could run them; it still had no expected outputs.
+
 ## What this does not show
 
 - It is the same model family as the project's other work, on the same project, so a shared misreading is possible. Treat it as a first pass, as the [review brief](review-brief.md) says for any single reader.
 - The helper never saw the 41 Ed25519 cases while it worked, so its section 4.2 was written from the text alone. It passed all 41 afterwards, which is a stronger result for 4.2 than for the rest of the spec.
-- The spec has since been changed, and the helper has **not** read the new version. Whether the new wording is clear would need a second cold read.
-- The Rust verifier is slow (it uses big-integer arithmetic and no caching) and was only run on the test logs (up to 22 entries). It is evidence, not a tool. It is not part of the project's tests, and the tests do not need Rust.
+- Both helpers are the same model family. A second cold read that agrees with the programs shows the text is followable by that kind of reader; a human who reads differently may still find gaps.
+- The Rust verifier (first read) is slow (it uses big-integer arithmetic and no caching) and was only run on the test logs (up to 22 entries). It is evidence, not a tool. It is not part of the project's tests, and the tests do not need Rust.
+- The Go verifier is likewise evidence, not a tool, and is not run by the tests. Rust and Go source are in [`prototype/cold-read/`](../prototype/cold-read/README.md).
 - Choices such as `index` 0 for a file-level error are arbitrary; they were set to match the programs so that nothing else had to change.
 
 ## Run it yourself
@@ -57,7 +82,8 @@ The raw, unedited log is [`prototype/cold-read/DECISIONS.md`](../prototype/cold-
 ```
 cd prototype/cold-read/rust && cargo build --release
 ./target/release/cip-verify verify ../../testdata/good.json
-./target/release/cip-verify sigcheck <64 hex key> <message> <128 hex signature>
+cd ../go && go build -o cip-verify . && ./cip-verify verify ../../testdata/good.json
+node prototype/node/make-edge-cases.js --check     # the edge cases are what the generator makes
 ```
 
-`outputs.json` holds what it printed for the files in `prototype/testdata/` when it was written. Needs a Rust toolchain with edition 2024 support and the crates `hex`, `num-bigint`, `num-traits`, `serde_json` and `sha2` from crates.io.
+The Rust program needs a toolchain with edition 2024 support and the crates `hex`, `num-bigint`, `num-traits`, `serde_json` and `sha2`; the Go program needs only Go (standard library). Both take `verify`, `compare` and `sigcheck`; the Go one also takes `checkpoint` (Save). `prototype/cold-read/outputs.json` holds what the Rust program printed for the files in `prototype/testdata/`.

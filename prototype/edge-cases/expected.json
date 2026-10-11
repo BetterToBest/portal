@@ -1,0 +1,1638 @@
+{
+ "format": "cip-edge-cases/0",
+ "about": "Edge cases for a third verifier. Each case is a command (verify, compare or checkpoint, with files relative to prototype/), the exit code and the JSON printed (null when nothing is printed). Produced by the Node reference program; see docs/spec-cold-read.md. Cases marked open_question are not settled by the spec. Test data only.",
+ "cases": [
+  {
+   "note": "not json",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e01-not-json.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_FORMAT",
+      "where": "log",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": null
+   }
+  },
+  {
+   "note": "bom",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e02-bom.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_FORMAT",
+      "where": "log",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": null
+   }
+  },
+  {
+   "note": "extra top key",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e03-extra-top-key.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_FORMAT",
+      "where": "log",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": null
+   }
+  },
+  {
+   "note": "wrong format",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e04-wrong-format.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_FORMAT",
+      "where": "log",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": null
+   }
+  },
+  {
+   "note": "entries object",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e05-entries-object.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_FORMAT",
+      "where": "log",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": null
+   }
+  },
+  {
+   "note": "empty entries",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e06-empty-entries.json"
+   ],
+   "exit_code": 0,
+   "open_question": "SPEC section 9, question 7 (an empty log passes)",
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": null
+   }
+  },
+  {
+   "note": "dup top key",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e07-dup-top-key.json"
+   ],
+   "exit_code": 0,
+   "open_question": "SPEC section 9, question 6 (repeated keys): the programs accept this file, a stricter verifier would not",
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "threshold 2point0",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e08-threshold-2point0.json"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "threshold 1point5",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e09-threshold-1point5.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_FORMAT",
+      "where": "entry",
+      "index": 0
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": null
+   }
+  },
+  {
+   "note": "time exponent",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e10-time-exponent.json"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "negative index",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e11-negative-index.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_INDEX",
+      "where": "entry",
+      "index": 2
+     },
+     {
+      "code": "BAD_HASH",
+      "where": "entry",
+      "index": 2
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 1,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "negative time",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e12-negative-time.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_FORMAT",
+      "where": "entry",
+      "index": 2
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 1,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "time beyond safe",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e13-time-beyond-safe.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_FORMAT",
+      "where": "entry",
+      "index": 1
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     }
+    ],
+    "rule_errors": [
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 3
+     }
+    ],
+    "summary": {
+     "entries": 4,
+     "registered": 1,
+     "comments": 0,
+     "proposals": []
+    }
+   }
+  },
+  {
+   "note": "unknown type",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e14-unknown-type.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "BAD_BODY",
+      "where": "entry",
+      "index": 3
+     }
+    ],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": []
+    }
+   }
+  },
+  {
+   "note": "propose unregistered author",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e15-propose-unregistered-author.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 1
+     }
+    ],
+    "summary": {
+     "entries": 2,
+     "registered": 0,
+     "comments": 0,
+     "proposals": []
+    }
+   }
+  },
+  {
+   "note": "operator self register",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e16-operator-self-register.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "DUPLICATE_KEY",
+      "where": "entry",
+      "index": 1
+     }
+    ],
+    "summary": {
+     "entries": 2,
+     "registered": 0,
+     "comments": 0,
+     "proposals": []
+    }
+   }
+  },
+  {
+   "note": "genesis bad body",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e17-genesis-bad-body.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "BAD_BODY",
+      "where": "entry",
+      "index": 0
+     }
+    ],
+    "summary": null
+   }
+  },
+  {
+   "note": "no genesis first",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e18-no-genesis-first.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "NO_GENESIS",
+      "where": "entry",
+      "index": 0
+     },
+     {
+      "code": "DUPLICATE_GENESIS",
+      "where": "entry",
+      "index": 1
+     }
+    ],
+    "summary": null
+   }
+  },
+  {
+   "note": "entry0 bad hash",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e19-entry0-bad-hash.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_HASH",
+      "where": "entry",
+      "index": 0
+     },
+     {
+      "code": "BAD_PREV",
+      "where": "entry",
+      "index": 1
+     }
+    ],
+    "rule_errors": [],
+    "summary": null
+   }
+  },
+  {
+   "note": "entry0 bad sig",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e20-entry0-bad-sig.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_HASH",
+      "where": "entry",
+      "index": 0
+     },
+     {
+      "code": "BAD_SIG",
+      "where": "entry",
+      "index": 0
+     },
+     {
+      "code": "CP_BAD_ROOT",
+      "where": "checkpoint",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": null
+   }
+  },
+  {
+   "note": "sign stale and dup",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e21-sign-stale-and-dup.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "STALE_VERSION",
+      "where": "entry",
+      "index": 5
+     }
+    ],
+    "summary": {
+     "entries": 6,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 1,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "sign stale only",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e22-sign-stale-only.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "STALE_VERSION",
+      "where": "entry",
+      "index": 4
+     }
+    ],
+    "summary": {
+     "entries": 5,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "sign unknown and unregistered",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e23-sign-unknown-and-unregistered.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 4
+     }
+    ],
+    "summary": {
+     "entries": 5,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "comment at exact end",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e24-comment-at-exact-end.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "PROPOSAL_CLOSED",
+      "where": "entry",
+      "index": 6
+     }
+    ],
+    "summary": {
+     "entries": 7,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 2,
+       "state": "closed"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "comment just before end",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e25-comment-just-before-end.json"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 7,
+     "registered": 2,
+     "comments": 1,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 2,
+       "state": "comment"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "amend in comment state",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e26-amend-in-comment-state.json"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 8,
+     "registered": 2,
+     "comments": 1,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T2",
+       "versions": 2,
+       "version": "ff220e3f6ad7045b6a92f38627133c1ee9ec07f3002d78c9f7cfb58a3738dcdf",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "identical amend",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e27-identical-amend.json"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 5,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 2,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "third signature after threshold",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e28-third-signature-after-threshold.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "PROPOSAL_CLOSED",
+      "where": "entry",
+      "index": 7
+     }
+    ],
+    "summary": {
+     "entries": 8,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 3,
+       "state": "closed"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "time reversed after bad entry",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e29-time-reversed-after-bad-entry.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_HASH",
+      "where": "entry",
+      "index": 5
+     },
+     {
+      "code": "BAD_PREV",
+      "where": "entry",
+      "index": 6
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 7,
+     "registered": 2,
+     "comments": 1,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "duplicate genesis",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e30-duplicate-genesis.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "DUPLICATE_GENESIS",
+      "where": "entry",
+      "index": 4
+     }
+    ],
+    "summary": {
+     "entries": 5,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "bad label",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e31-bad-label.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "BAD_LABEL",
+      "where": "entry",
+      "index": 1
+     },
+     {
+      "code": "UNREGISTERED_AUTHOR",
+      "where": "entry",
+      "index": 2
+     }
+    ],
+    "summary": {
+     "entries": 3,
+     "registered": 0,
+     "comments": 0,
+     "proposals": []
+    }
+   }
+  },
+  {
+   "note": "register dup and mismatch",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e32-register-dup-and-mismatch.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [],
+    "rule_errors": [
+     {
+      "code": "DUPLICATE_KEY",
+      "where": "entry",
+      "index": 2
+     },
+     {
+      "code": "SELF_REGISTER_MISMATCH",
+      "where": "entry",
+      "index": 3
+     }
+    ],
+    "summary": {
+     "entries": 4,
+     "registered": 1,
+     "comments": 0,
+     "proposals": []
+    }
+   }
+  },
+  {
+   "note": "checkpoint wrong operator good sig",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e33-checkpoint-wrong-operator-good-sig.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "CP_WRONG_OPERATOR",
+      "where": "checkpoint",
+      "index": 1
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "checkpoint size zero",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e34-checkpoint-size-zero.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "CP_BAD_SIG",
+      "where": "checkpoint",
+      "index": 0
+     },
+     {
+      "code": "CP_BAD_SIZE",
+      "where": "checkpoint",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "checkpoint size too big",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e35-checkpoint-size-too-big.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "CP_BAD_SIG",
+      "where": "checkpoint",
+      "index": 0
+     },
+     {
+      "code": "CP_BAD_SIZE",
+      "where": "checkpoint",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "checkpoint missing key",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e36-checkpoint-missing-key.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "CP_BAD_FORMAT",
+      "where": "checkpoint",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "checkpoint negative time",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e37-checkpoint-negative-time.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "CP_BAD_SIG",
+      "where": "checkpoint",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "good for trusted",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e40-good-for-trusted.json"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "a trusted checkpoint that matches",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e40-good-for-trusted.json",
+    "--trusted",
+    "edge-cases/inputs/e40-trusted-ok.json"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "integrity_errors": [],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "a trusted checkpoint with a bad signature",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e40-good-for-trusted.json",
+    "--trusted",
+    "edge-cases/inputs/e41-trusted-bad-sig.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "TRUSTED_BAD_SIG",
+      "where": "trusted",
+      "index": 0
+     },
+     {
+      "code": "TRUSTED_MISMATCH",
+      "where": "trusted",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "a trusted checkpoint that is not JSON",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e40-good-for-trusted.json",
+    "--trusted",
+    "edge-cases/inputs/e42-trusted-garbage.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "TRUSTED_BAD_FORMAT",
+      "where": "trusted",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "a trusted checkpoint from another operator",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e40-good-for-trusted.json",
+    "--trusted",
+    "edge-cases/inputs/e43-trusted-other-operator.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "TRUSTED_WRONG_OPERATOR",
+      "where": "trusted",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "a trusted checkpoint larger than the log",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e40-good-for-trusted.json",
+    "--trusted",
+    "edge-cases/inputs/e44-trusted-too-big.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "TRUSTED_BAD_SIG",
+      "where": "trusted",
+      "index": 0
+     },
+     {
+      "code": "TRUSTED_TRUNCATED",
+      "where": "trusted",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": {
+     "entries": 4,
+     "registered": 2,
+     "comments": 0,
+     "proposals": [
+      {
+       "id": "67bbac8a732069263fabe4634c044248c8f4267e5bb3d5067bf66d25e7747eb0",
+       "title": "T",
+       "versions": 1,
+       "version": "ed8af9d41f204ef8a5c51ea78f6c2fba40ca9e44ce6668051c211ae2c9924b2d",
+       "signatures": 0,
+       "state": "collecting"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "note": "a log that is not JSON, with a trusted checkpoint (the trusted one is not looked at)",
+   "command": [
+    "verify",
+    "edge-cases/inputs/e01-not-json.json",
+    "--trusted",
+    "edge-cases/inputs/e40-trusted-ok.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "integrity_errors": [
+     {
+      "code": "BAD_FORMAT",
+      "where": "log",
+      "index": 0
+     }
+    ],
+    "rule_errors": [],
+    "summary": null
+   }
+  },
+  {
+   "note": "compare the good checkpoint with other operator",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c01-a.json",
+    "edge-cases/inputs/c02-other-operator.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "errors": [
+     {
+      "code": "CMP_DIFFERENT_OPERATOR",
+      "where": "both"
+     }
+    ],
+    "relation": null,
+    "operator": null
+   }
+  },
+  {
+   "note": "compare the good checkpoint with bad sig",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c01-a.json",
+    "edge-cases/inputs/c03-bad-sig.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "errors": [
+     {
+      "code": "CMP_BAD_SIG",
+      "where": "b"
+     }
+    ],
+    "relation": null,
+    "operator": null
+   }
+  },
+  {
+   "note": "compare the good checkpoint with extra key",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c01-a.json",
+    "edge-cases/inputs/c04-extra-key.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "errors": [
+     {
+      "code": "CMP_BAD_FORMAT",
+      "where": "b"
+     }
+    ],
+    "relation": null,
+    "operator": null
+   }
+  },
+  {
+   "note": "compare the good checkpoint with garbage",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c01-a.json",
+    "edge-cases/inputs/c05-garbage.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "errors": [
+     {
+      "code": "CMP_BAD_FORMAT",
+      "where": "b"
+     }
+    ],
+    "relation": null,
+    "operator": null
+   }
+  },
+  {
+   "note": "compare the good checkpoint with smaller",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c01-a.json",
+    "edge-cases/inputs/c06-smaller.json"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "errors": [],
+    "relation": "different-size",
+    "operator": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c"
+   }
+  },
+  {
+   "note": "compare the good checkpoint with other op bad sig",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c01-a.json",
+    "edge-cases/inputs/c07-other-op-bad-sig.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "errors": [
+     {
+      "code": "CMP_DIFFERENT_OPERATOR",
+      "where": "both"
+     },
+     {
+      "code": "CMP_BAD_SIG",
+      "where": "b"
+     }
+    ],
+    "relation": null,
+    "operator": null
+   }
+  },
+  {
+   "note": "compare the good checkpoint with size zero",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c01-a.json",
+    "edge-cases/inputs/c08-size-zero.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "errors": [
+     {
+      "code": "CMP_BAD_SIG",
+      "where": "b"
+     }
+    ],
+    "relation": null,
+    "operator": null
+   }
+  },
+  {
+   "note": "compare: other operator against the same with a bad signature",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c02-other-operator.json",
+    "edge-cases/inputs/c07-other-op-bad-sig.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "errors": [
+     {
+      "code": "CMP_BAD_SIG",
+      "where": "b"
+     }
+    ],
+    "relation": null,
+    "operator": null
+   }
+  },
+  {
+   "note": "compare: extra key against garbage",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c04-extra-key.json",
+    "edge-cases/inputs/c05-garbage.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "errors": [
+     {
+      "code": "CMP_BAD_FORMAT",
+      "where": "a"
+     },
+     {
+      "code": "CMP_BAD_FORMAT",
+      "where": "b"
+     }
+    ],
+    "relation": null,
+    "operator": null
+   }
+  },
+  {
+   "note": "compare: garbage against the good checkpoint",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c05-garbage.json",
+    "edge-cases/inputs/c01-a.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "errors": [
+     {
+      "code": "CMP_BAD_FORMAT",
+      "where": "a"
+     }
+    ],
+    "relation": null,
+    "operator": null
+   }
+  },
+  {
+   "note": "compare: bad signature against garbage (the well-formed one is still checked)",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c03-bad-sig.json",
+    "edge-cases/inputs/c05-garbage.json"
+   ],
+   "exit_code": 1,
+   "expect": {
+    "ok": false,
+    "errors": [
+     {
+      "code": "CMP_BAD_FORMAT",
+      "where": "b"
+     },
+     {
+      "code": "CMP_BAD_SIG",
+      "where": "a"
+     }
+    ],
+    "relation": null,
+    "operator": null
+   }
+  },
+  {
+   "note": "compare: the same checkpoint twice",
+   "command": [
+    "compare",
+    "edge-cases/inputs/c01-a.json",
+    "edge-cases/inputs/c01-a.json"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "ok": true,
+    "errors": [],
+    "relation": "identical",
+    "operator": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c"
+   }
+  },
+  {
+   "note": "Save a checkpoint from e40-good-for-trusted",
+   "command": [
+    "checkpoint",
+    "edge-cases/inputs/e40-good-for-trusted.json"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "operator": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c",
+    "root": "e79165a4f8cc59c8db58ea850610b3b20bea756ff589cfc12d5d6806764022cc",
+    "size": 4,
+    "time": 1790900003,
+    "sig": "38b579e7a3df43878ba755d5b98040670b06a9f9b0ab0fd603f70f188b7a228790f49fcd1ad8e6b2904965570d27183e290a316d1096afd365443f733ce9850c"
+   }
+  },
+  {
+   "note": "Save a checkpoint from e40-good-for-trusted at position 0",
+   "command": [
+    "checkpoint",
+    "edge-cases/inputs/e40-good-for-trusted.json",
+    "--index",
+    "0"
+   ],
+   "exit_code": 0,
+   "expect": {
+    "operator": "bccd1f2bd091dee1042f22d347b380d9366571444d6c0cd1ceb1e7090985b54c",
+    "root": "e79165a4f8cc59c8db58ea850610b3b20bea756ff589cfc12d5d6806764022cc",
+    "size": 4,
+    "time": 1790900003,
+    "sig": "38b579e7a3df43878ba755d5b98040670b06a9f9b0ab0fd603f70f188b7a228790f49fcd1ad8e6b2904965570d27183e290a316d1096afd365443f733ce9850c"
+   }
+  },
+  {
+   "note": "Save a checkpoint from e40-good-for-trusted at position 5",
+   "command": [
+    "checkpoint",
+    "edge-cases/inputs/e40-good-for-trusted.json",
+    "--index",
+    "5"
+   ],
+   "exit_code": 1,
+   "expect": null
+  },
+  {
+   "note": "Save a checkpoint from e03-extra-top-key",
+   "command": [
+    "checkpoint",
+    "edge-cases/inputs/e03-extra-top-key.json"
+   ],
+   "exit_code": 1,
+   "expect": null
+  },
+  {
+   "note": "Save a checkpoint from e06-empty-entries",
+   "command": [
+    "checkpoint",
+    "edge-cases/inputs/e06-empty-entries.json"
+   ],
+   "exit_code": 1,
+   "expect": null
+  },
+  {
+   "note": "Save a checkpoint from e21-sign-stale-and-dup",
+   "command": [
+    "checkpoint",
+    "edge-cases/inputs/e21-sign-stale-and-dup.json"
+   ],
+   "exit_code": 1,
+   "expect": null
+  }
+ ]
+}
