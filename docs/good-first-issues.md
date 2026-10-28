@@ -9,7 +9,7 @@ Each is small and self-contained. Suggested labels are in brackets. These are no
 3. **[Draft a ballot and proposal data schema](https://github.com/BetterToBest/portal/issues/9)** [spec] (#9)
    Propose a JSON shape for a proposal, a signature, and a sealed ballot. Keep it minimal. Partly done: the proposal, signature, comment and amendment shapes for the Phase 3 test log are a [JSON Schema](../prototype/schema/cip-test-log.schema.json) with examples. Still open: the sealed ballot, and any change you think the existing shapes need.
 4. **[Write a plain-language glossary of CIP terms](https://github.com/BetterToBest/portal/issues/10)** [documentation, good first issue] (#10)
-   One or two sentences each for ledger, zero-knowledge proof, liquid delegation, quadratic voting, Judicial Guard.
+   One or two sentences each for ledger, zero-knowledge proof, liquid delegation, quadratic voting, Judicial Guard. A first draft is in [glossary.md](glossary.md), for review: corrections and missing terms are welcome.
 5. **[Accessibility check of the landing page](https://github.com/BetterToBest/portal/issues/11)** [a11y, good first issue] (#11)
    Test keyboard navigation, contrast and a screen reader. Report or fix what you find.
 6. **[Document the delegation cycle and cap rules in voting-rules.md](https://github.com/BetterToBest/portal/issues/12)** [documentation, spec] (#12)
@@ -17,6 +17,6 @@ Each is small and self-contained. Suggested labels are in brackets. These are no
 7. **[Propose ranked-choice tie-break rules](https://github.com/BetterToBest/portal/issues/13)** [spec] (#13)
    A draft is in [ranked-choice.md](ranked-choice.md). It needs review before anything is built on it.
 8. **[Draft a one-page pilot brief for a community group](https://github.com/BetterToBest/portal/issues/14)** [outreach, good first issue] (#14)
-   Explain what a small advisory vote on CIP would involve, in plain language. Write it from the [pilot design](pilot-design.md) once that has been reviewed, and say only what the design says. Use the wording in the [advisory notice](advisory-notice.md) draft for what the vote is and is not.
+   Explain what a small advisory vote on CIP would involve, in plain language. Write it from the [pilot design](pilot-design.md) once that has been reviewed, and say only what the design says. Use the wording in the [advisory notice](advisory-notice.md) draft for what the vote is and is not. A first draft is in [pilot-brief.md](pilot-brief.md). The pilot design has not been reviewed in public yet, so the brief stays a draft.
 
 Larger open items are in the [issue list](https://github.com/BetterToBest/portal/issues) too, for example the oversight-body numbers (#2), telemetry (#3), the halt power (#4), the ranked-choice simulator (#5), the ledger fork simulation (#6) and the accessibility pass on both simulators (#7).
