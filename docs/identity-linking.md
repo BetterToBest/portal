@@ -58,7 +58,7 @@ A sketch, to be reviewed:
 3. **Key on the person's device.** The person makes a key as in [key-handling.md](key-handling.md) and redeems the code by registering the public key in the log. The log shows "a key was enrolled," with no name and no label that points to a person.
 4. **After the window,** the list of who received codes is deleted (placeholder: 30 days, as in the pilot design).
 
-An honest limit: with plain codes, the party that handed out the codes may be able to match a code to a key by timing or by watching the redemption. Delay-and-batch tricks may blunt that and may be theatre; that is open (question 5). What the design relies on is the next link: even if someone could match a person to a key, **the ballot must not reveal which key cast it.** That is the sealed ballot of Phase 4, not yet designed. This is why G5 cannot be fully met before Phase 4.
+An honest limit: with plain codes, the party that handed out the codes may be able to match a code to a key by timing or by watching the redemption. Delay-and-batch tricks may blunt that and may be theatre; that is open (question 5). What the design relies on is the next link: even if someone could match a person to a key, **the ballot must not reveal which key cast it.** That is the sealed ballot of Phase 4, drafted in [phase-4-privacy-design.md](phase-4-privacy-design.md) but not built or reviewed. This is why G5 cannot be fully met before Phase 4.
 
 ## What can go wrong
 

@@ -20,7 +20,7 @@ Nothing in this plan may collect or monetize user behavior data. That is a core 
 The smallest useful result. A reader can see exactly what CIP would do and challenge it.
 
 - Every draft in `/docs` has had at least one outside review, recorded on its issue (#3, #4, #12, #13 and the threat model in #8).
-- A proposal and ballot data schema exists (#9).
+- A proposal and ballot data schema exists (#9). The proposal part is the test log format in [prototype/SPEC.md](../prototype/SPEC.md); a sealed ballot shape is sketched in [phase-4-privacy-design.md](phase-4-privacy-design.md) and has not been reviewed.
 - A plain-language glossary exists (#10).
 - Every placeholder number in the drafts is either backed by a source or marked as a placeholder.
 - The oversight-body numbers are settled and the wording in the paper and the docs agrees (#2).
@@ -42,7 +42,7 @@ Phase 3 of the roadmap, planned in [phase-3-plan.md](phase-3-plan.md). Open sour
 
 - A prototype of proposals, signatures, comment periods and a tamper-evident log, runnable from the repository by someone who did not write it.
 - A published test plan, with the checks that must pass before any real vote is run.
-- A design for the privacy layer (Phase 4) with an outside cryptography review scheduled or completed.
+- A design for the privacy layer (Phase 4) with an outside cryptography review scheduled or completed. A first draft is in [phase-4-privacy-design.md](phase-4-privacy-design.md); no review is scheduled.
 - A pilot design (Phase 5): a small advisory vote with a willing community, with its consent, data and accessibility plans written down first. A first draft is in [pilot-design.md](pilot-design.md); it names no community.
 
 **Check:** an independent reviewer can build the prototype, run its tests, and confirm it stores no behavior data beyond what verification needs.
