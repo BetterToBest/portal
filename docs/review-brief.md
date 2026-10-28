@@ -18,7 +18,7 @@ Nothing is live. Everything is files, programs that read files, and a static sit
 
 **The task.** Write a program that checks a CIP test log, using only [`prototype/SPEC.md`](../prototype/SPEC.md), in any language you like.
 
-**Two cold reads have already been done, by AI helpers of the same model family, and they are not a substitute for yours.** They found six unclear places in the spec, now fixed, and a Go verifier written from the clarified spec matched the answer key and 62 [edge cases](../prototype/edge-cases/) ([`docs/spec-cold-read.md`](spec-cold-read.md)). If you would rather not be steered by it, write your verifier first and read that page afterwards.
+**Two cold reads have already been done, by AI helpers of the same model family, and they are not a substitute for yours.** They found six unclear places in the spec; five are now fixed, one (repeated JSON keys) is an open question in SPEC section 9, and a Go verifier written from the clarified spec matched the answer key and 62 [edge cases](../prototype/edge-cases/) ([`docs/spec-cold-read.md`](spec-cold-read.md)). If you would rather not be steered by it, write your verifier first and read that page afterwards.
 
 **Please do this first pass without reading the existing verifiers** (`prototype/node/cip-log.js` and `prototype/python/verify.py`). The value is that you read the spec cold. If you have already read them, say so in your report.
 

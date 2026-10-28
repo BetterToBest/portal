@@ -85,7 +85,7 @@ Threats it cannot test, such as capture of the operators, a 51% attack and vote 
 
 ## Placeholders and assumptions
 
-- 1,000 signatures and a 30 to 90 day comment period are the paper's examples, not settled numbers. Appendix A.8 uses 1,000 versus 5,000 signatures for citizen grand jury cases, which is a separate mechanism.
+- 1,000 signatures and a 30 to 90 day comment period are the paper's examples, not settled numbers. Appendix A.5 uses 1,000 versus 5,000 signatures for citizen grand jury cases, which is a separate mechanism.
 - The choices of Ed25519, a hash-chained log and RFC 8785 are suggestions to review. Reviewers may prefer others.
 - A signature does not show that a real, unique person signed. See the identity note above.
 

@@ -31,7 +31,7 @@ Nothing here collects or monetizes user behavior data. The programs read the fil
 
 ## Try it
 
-You need Node 18 or later. For the Python verifier you also need Python 3 and `pip install cryptography`.
+You need Node 18 or later. For the Python verifier you also need Python 3 and `pip install cryptography`. The last command, the full test, runs both verifiers, so it needs Python too; with `pip install jsonschema` it also checks the schema with that package (otherwise it skips that check and says so). It takes a minute or two. Run the commands from the repository root; `--out my-checkpoint.json` writes that file in the folder you are in.
 
 ```
 node prototype/node/cip-log.js verify prototype/testdata/good.json
@@ -56,7 +56,7 @@ Or open the [log viewer](https://bettertobest.github.io/portal/prototype/viewer/
 
 To make a log of your own, open the [proposal flow page](https://bettertobest.github.io/portal/prototype/try/): start a test log, register some test identities, file a proposal, sign it, comment, amend it and move the test clock forward until the comment period is over. Then download the log and its checkpoint and choose them in the viewer, or check them with either verifier. It needs the same browsers.
 
-Each command prints the result as JSON and exits with 0 if the log passes, 1 if not. A file that is not valid JSON counts as a format error (SPEC section 1) and gives exit 1; a file that cannot be read at all prints a message and gives exit 2.
+The `verify`, `compare` and `schema-check` commands print the result as JSON and exit with 0 if the log passes, 1 if not. `checkpoint` with `--out` prints one line and writes the file, and the two `--check` commands print `ok` when the file is up to date and exit 1 when it is not. A file that is not valid JSON counts as a format error (SPEC section 1) and gives exit 1; a file that cannot be read at all prints a message and gives exit 2.
 
 ## What the test logs show
 
