@@ -1,8 +1,8 @@
 # Changelog
 
-Newest first, grouped by phase. CIP is a research proposal, not a live voting system: everything here is a draft, a model or test-data software, and none of it has had an outside review. Dates are commit dates. Versions are tags in the sense of "a point worth citing"; none is created by this file.
+Newest first, grouped by phase. CIP is a research proposal, not a live voting system: everything here is a draft, a model or test-data software, and none of it has had an outside review. Dates are commit dates. Versions are tags in the sense of "a point worth citing"; a tag is not a claim that the work has been reviewed.
 
-## v0.3.0 (proposed): Phase 3 prototype, for review
+## v0.3.0 (2026-10-28): Phase 3 prototype, for review
 
 ### Phase 3: prototype (test data only)
 - A proposal flow page, [prototype/try/](prototype/try/index.html), that builds a test log step by step in the browser with a simulated clock (2026-10-28).
