@@ -8,7 +8,7 @@ Citizens Internet Portal (CIP): a research proposal for transparent democratic p
 - `docs/`: draft specs, plans and policies (threat model, voting rules, phase-3 plan, data-collection policy). Markdown only.
 - `simulator/`: four single-page browser models (`ranked`, `liquid`, `fork`, and the voting model at `index.html`). Results are illustrative.
 - `prototype/`: Phase 3 test log with two verifiers (`node/`, `python/`), `SPEC.md`, JSON Schema, test data, viewer page. Test data only.
-- `tests/`: `prototype.test.js` and `ranked-choice.test.js`.
+- `tests/`: `prototype.test.js`, `ranked-choice.test.js`, the PR guard and `pages.test.py` (browser checks of every page).
 - `.github/workflows/`: CI, issue tooling and `apply-update.yml`.
 
 ## Commands
@@ -19,6 +19,7 @@ node tests/ranked-choice.test.js simulator/ranked/index.html
 node prototype/node/cip-log.js verify prototype/testdata/good.json
 node prototype/node/make-answer-key.js --check                # generated files have --check modes; run it before regenerating
 node prototype/node/build-viewer.js --check
+AXE_PATH=<folder>/node_modules/axe-core/axe.min.js python3 -I tests/pages.test.py  # needs `pip install playwright==1.63.0` and axe-core from npm; see the file
 ```
 
 Node 18 or later. The generators (`make-*.js`) rewrite files when run without `--check`; commit their output only when you meant to change it.

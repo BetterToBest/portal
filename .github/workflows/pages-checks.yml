@@ -1,0 +1,65 @@
+name: Page checks
+
+# Opens every page (git ls-files '*.html') in headless Chromium, in light and dark, against a local
+# server, and fails on requests off the local server, serious or critical axe-core findings, controls
+# Tab cannot reach or that show no focus, Tab traps, console errors after clicking the buttons, and
+# broken relative links or anchors. The checks are in tests/pages.test.py. The full axe results are
+# uploaded as the "axe-results" artifact. These are automated checks only; they do not replace
+# testing by people who use a screen reader. You can also run it by hand: Actions tab > Page checks.
+#
+# It has read-only permissions and no secrets. Playwright and axe-core are pinned and installed for
+# this run only (axe-core into the runner's temp folder, with install scripts off); nothing is added
+# to the repository.
+on:
+  push:
+    paths:
+      - "**.html"
+      - "assets/**"
+      - "tests/pages.test.py"
+      - ".github/workflows/pages-checks.yml"
+  pull_request:
+    paths:
+      - "**.html"
+      - "assets/**"
+      - "tests/pages.test.py"
+      - ".github/workflows/pages-checks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright for Python and its Chromium
+        run: |
+          pip install playwright==1.63.0
+          python -m playwright install --with-deps chromium
+      - name: Install axe-core outside the repository
+        run: npm install --no-save --ignore-scripts --prefix "$RUNNER_TEMP/axe" axe-core@4.14.0
+      - name: Run the page checks
+        env:
+          AXE_PATH: ${{ runner.temp }}/axe/node_modules/axe-core/axe.min.js
+          PAGES_OUT: ${{ runner.temp }}/pages
+        run: python -I tests/pages.test.py
+      - name: Upload the full axe results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-results
+          path: ${{ runner.temp }}/pages/axe-results.json
+          if-no-files-found: ignore
