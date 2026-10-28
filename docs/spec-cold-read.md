@@ -54,7 +54,7 @@ A second helper, which had seen neither the programs nor the first helper's log,
 | The answer key (23 cases), output and exit code | 22 of 23 | **23 of 23** |
 | The 62 edge cases ([`prototype/edge-cases/`](../prototype/edge-cases/)): output and exit code | 34 of 62 | **62 of 62** |
 
-So the six gaps above are now clear enough that a second reader reproduces the programs on every case we have, including compare, Save and the exit codes. The edge cases are now checked-in test data, with the expected answer for each, so any future verifier can be run on them; the tests check them against the Python and Node programs. The helper also left 60 notes of hesitation. About 20 were marked as likely to make two careful readers differ; each was checked against the programs, and all of them were settled by writing the answer into the spec:
+So the gaps above, except number 5 (repeated keys, still open), are now clear enough that a second reader reproduces the programs on every case we have, including compare, Save and the exit codes. The edge cases are now checked-in test data, with the expected answer for each, so any future verifier can be run on them; the tests check them against the Python and Node programs. The helper also left 60 notes of hesitation. About 20 were marked as likely to make two careful readers differ; each was checked against the programs, and all of them were settled by writing the answer into the spec:
 
 - a negative `index` is `BAD_INDEX`; a previous entry with no `hash` makes the next one `BAD_PREV`;
 - a checkpoint's `size` and `time` are integers and nothing more (size below 1 is `CP_BAD_SIZE`), and its signature is checked under its own `operator` key;

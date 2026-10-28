@@ -12,7 +12,7 @@ No single point of failure. Transparent operations. Cryptographic verification i
 - Insiders and officials using regulatory or judicial capture
 - Coordinated influence networks using narrative capture (bots, micro-targeting)
 - Well-resourced actors, including nation-states (the paper's cost analysis targets these)
-- Corrupt or captured prosecutors who decline to act (paper §5.3, Appendix A.8)
+- Corrupt or captured prosecutors who decline to act (paper §5.5, Appendix A.8)
 
 ## Threats and proposed mitigations
 
@@ -27,7 +27,7 @@ No single point of failure. Transparent operations. Cryptographic verification i
 | Lost or stolen keys | Keys stay with the citizen; social recovery through trusted contacts (§4.3). The paper gives no parameters; a draft with options and open questions is in [key-handling.md](key-handling.md) | Proposed; draft under review |
 | Insecure software | Regular independent audits and transparent disclosure (§4.5.1) | Proposed |
 | Excluding people without devices or skills | Multiple access channels, literacy support, no mandatory participation (§4.6) | Proposed |
-| Blocked accountability | Distributed Judicial Guard with concurrent prosecution paths and a public referral dashboard (§5, A.8) | Proposed |
+| Blocked accountability | Distributed Judicial Guard with concurrent prosecution paths and a public referral dashboard (§5.5, A.6, A.8) | Proposed |
 | Abuse of the halt power | Checkable triggers, multi-guardian concurrence, automatic expiry, challenge and public log, in [halt-power.md](halt-power.md) (§4.2.3 is silent) | Draft, under review |
 | Usage data becoming tracking | Three-tier data policy: never collected, aggregate only, opt-in only, in [data-collection.md](data-collection.md) (§4.5.2 vs §4.6.2) | Draft, under review |
 | Malicious contributions to this repository | Automatic PR guard and reviewer rules; see "Malicious contributions" below | In place (Oct 2026) |
@@ -58,14 +58,14 @@ The paper names the classic risk: if attackers control more than half the nodes,
 
 ## Inconsistencies in the paper (tracked as issues)
 
-- **Oversight body size.** A 7-member board with a 5-of-7 supermajority appears in §5.4 and Appendix A.3. A "6/9" supermajority and tripartite appointment appear in §8.3.2 and §9.6. These need to be reconciled.
+- **Oversight body size.** A 7-member board appears in §5.4 and Appendix A.3, with a 5-of-7 supermajority in A.3. A "6/9" supermajority appears in §8.3.2, and tripartite appointment in §8.3.2 and §9.6. These need to be reconciled.
 - **Telemetry versus privacy.** Draft policy in [data-collection.md](data-collection.md).
 - **Halt-power limits.** The Judicial Guard override (§4.2.3) has no stated limits; draft limits in [halt-power.md](halt-power.md).
 
 ## Notes on thresholds
 
-- The **1,000-signature threshold for initiating a proposal** is an accepted starting point taken from the author's earlier Medium article. It may change, so keep this caveat wherever the number appears.
-- Appendix A.8 uses a separate pair of figures (1,000 versus 5,000 signatures) for citizen grand jury cases. That is a different mechanism from proposal initiation.
+- The **1,000-signature threshold for initiating a proposal** is an accepted starting point: the example in paper §4.4.1, also used in the author's earlier Medium article. It may change, so keep this caveat wherever the number appears.
+- Appendix A.5 (citizen grand juries) uses a separate pair of figures (1,000 versus 5,000 signatures) for citizen grand jury cases. That is a different mechanism from proposal initiation.
 
 ## Malicious contributions
 

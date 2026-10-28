@@ -4,10 +4,11 @@ Status: **draft for review.** Rules below come from the [CIP paper](https://bett
 
 ## Direct proposals
 
-- Any citizen can submit a proposal once it reaches a minimum signature threshold. The initial proposed threshold is **1,000 signatures**, from the companion Medium article. It is a starting point for initiating proposals and may change in the future as the system is tested.
+- Any citizen can submit a proposal once it reaches a minimum signature threshold. The initial proposed threshold is **1,000 signatures**, the example in paper §4.4.1 and in the companion Medium article. It is a starting point for initiating proposals and may change in the future as the system is tested.
 - Public comment period of 30 to 90 days, then an amendment process.
 - Advisory referenda pass on a simple majority.
 - Binding policy changes need a 60 to 67% supermajority plus geographic distribution requirements.
+- Minimum participation thresholds apply; the paper gives no figure.
 
 ## Liquid delegation
 
@@ -33,7 +34,7 @@ The paper does not say what happens in these two cases. The simulator models the
 
 **Delegate competence (approximated in the simulator).** Paper section 4.4.2 also proposes expertise verification for delegates. The simulator has an optional accuracy model for it: option A is the correct one, an ordinary voter picks it with the "share who prefer A" chance, and anyone holding delegations picks it with a separate, usually higher, chance. The results then show how often the direct vote and the delegated tally each pick the correct option. At the default settings it is off. This is a simplification: it does not model how expertise would be verified or kept up to date, delegators still choose delegates as before rather than by skill, and a real question rarely has one knowable right answer. Illustrative result (500 voters, 40% delegating, ordinary voters picking A 52% of the time, 300 trials, seed 1, cap on): the direct vote picked A in 236 of 300 trials. With delegates picking A 70% of the time, the delegated tally picked it in all 300. With delegates at 52%, the same as everyone else, it picked it in 232. With delegates at 40%, it picked it in only 50. Delegation passes on the quality of whoever holds the votes, good or bad, and the cap changed little at these settings. This is a toy model, not a prediction (open question 8).
 
-Not modeled: whether the delegation graph is public. It is open, because public delegations can show how a person's vote was cast.
+Not modeled: whether the delegation graph is public. The paper lists "all delegation relationships visible" as a safeguard (§4.4.2); this draft treats it as open, because public delegations can show how a person's vote was cast.
 
 ## Quadratic voting (budgets)
 

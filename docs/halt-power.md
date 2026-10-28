@@ -45,7 +45,7 @@ The Oversight Board does not trigger or lift holds. The paper bars it from direc
 
 - Any verified citizen or node operator can challenge a hold.
 - A review panel, drawn by lottery from guardians in regions other than the signers' (using verifiable public randomness), must decide within 24 hours. It can lift a hold. It cannot extend one.
-- Overturned holds appear on a public scorecard next to each signer, in the same spirit as the referral and declination scorecard in Appendix A.8. Signers of repeatedly overturned holds lose eligibility to concur in holds.
+- Overturned holds appear on a public scorecard next to each signer, in the same spirit as the public dashboard of referrals and declinations in Appendix A.6. Signers of repeatedly overturned holds lose eligibility to concur in holds.
 
 ## Public log
 
