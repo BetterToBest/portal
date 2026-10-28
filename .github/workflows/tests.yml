@@ -1,15 +1,20 @@
 name: Tests
 
-# Runs the ranked-choice engine tests and the PR guard tests on every push and pull request
-# that touches the simulator or the tests. You can also run it by hand: Actions tab > Tests > Run workflow.
+# Runs the ranked-choice engine tests, the fork and halt-power model tests and the PR guard tests on
+# every push and pull request that touches those simulators, the halt-power draft or the tests.
+# You can also run it by hand: Actions tab > Tests > Run workflow.
 on:
   push:
     paths:
       - "simulator/ranked/**"
+      - "simulator/fork/**"
+      - "docs/halt-power.md"
       - "tests/**"
   pull_request:
     paths:
       - "simulator/ranked/**"
+      - "simulator/fork/**"
+      - "docs/halt-power.md"
       - "tests/**"
   workflow_dispatch:
 
@@ -28,6 +33,18 @@ jobs:
           node-version: 20
       - name: Run the ranked-choice tests
         run: node tests/ranked-choice.test.js simulator/ranked/index.html
+
+  fork:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run the fork and halt-power model tests
+        run: node tests/fork.test.js
 
   pr-guard:
     runs-on: ubuntu-latest

@@ -60,9 +60,40 @@ Every flag, hold, pause, extension, and lift is published at once on all chains 
 | Repeated short holds to stall a decision | Fresh signers needed for each extension; 14-day cap; scorecard |
 | Guardians in several regions collude | Still expires, still public, still challengeable, and cannot alter or discard ballots |
 
+## What the model shows
+
+*Illustrative model output, not a prediction; every threshold is a placeholder.*
+
+[tests/fork-sweep.js](../tests/fork-sweep.js) runs the guardian part of the [fork simulator](https://bettertobest.github.io/portal/simulator/fork/) against the thresholds above, for corps of 500, 1,000 and 2,000 guardians (the paper's range). Guardians are split evenly over 50 regions, and the review panel has 7 members, of whom 4 can lift a hold; the panel size is a placeholder of the simulator, not of this draft. Each cell is the smallest colluding group, over the two placements the simulator offers (spread evenly, or packed into as few regions as possible). The model gives the colluders their best case: it assumes they can produce the evidence a hold needs, which the draft says must be checkable by any independent node, and for a real halt it assumes the honest signers come from the regions with the fewest colluders, which leaves the most colluders in the panel pool. Each hold gets one challenge and one panel. [tests/fork.test.js](../tests/fork.test.js) fails if this table falls out of step with the simulator.
+
+<!-- fork-sweep:start -->
+| Smallest colluding group that can | 500 guardians | 1,000 guardians | 2,000 guardians |
+|---|---|---|---|
+| Force a false scoped hold (72 hours) | 5 (1.0%) | 5 (0.5%) | 5 (0.3%) |
+| Force a false full pause (24 hours) | 15 (3.0%) | 15 (1.5%) | 20 (1.0%) |
+| Stall to the 14-day cap with scoped holds | 25 (5.0%) | 25 (2.5%) | 25 (1.3%) |
+| Stall to the 14-day cap with full pauses | 210 (42.0%) | 210 (21.0%) | 280 (14.0%) |
+| Keep a false scoped hold past review, 1 in 100 chance | 71 (14.2%) | 141 (14.1%) | 284 (14.2%) |
+| Keep a false scoped hold past review, even odds | 251 (50.2%) | 501 (50.1%) | 997 (49.9%) |
+| Block a real scoped hold by lifting it in review, 1 in 100 chance | 68 (13.6%) | 135 (13.5%) | 269 (13.4%) |
+| Block a real scoped hold by lifting it in review, even odds | 236 (47.2%) | 471 (47.1%) | 940 (47.0%) |
+| Block a real full pause by lifting it in review, even odds | 226 (45.2%) | 450 (45.0%) | 900 (45.0%) |
+| Block a real scoped hold by refusing to sign | 480 (96.0%) | 960 (96.0%) | 1,920 (96.0%) |
+| Block a real full pause by refusing to sign | 460 (92.0%) | 920 (92.0%) | 1,840 (92.0%) |
+<!-- fork-sweep:end -->
+
+What this suggests, if the model is right:
+
+- **Signing a false hold is cheap.** 5 colluding guardians in 3 regions can sign a scoped hold at any corps size, and 25 can chain holds with fresh signers up to the 14-day cap. The signer counts do not stop a small captured group; the evidence test, expiry, the extended voting window and review do. The evidence test carries the most weight, and the model does not test it.
+- **The minimum of 15 decides the full pause for smaller corps.** At 500 and 1,000 guardians, 1% would be 5 and 10, so the floor of 15 applies and the share needed falls from 3% to 1% as the corps grows.
+- **Review cuts both ways.** About 13 to 14% of the corps gives colluders a 1 in 100 chance of holding a 7-member panel: enough to keep a false hold in place or to lift a real one. About half the corps gives even odds. A packed group does a little better at lifting a real halt (45 to 47%), because the honest signers' regions are left out of the pool.
+- **Refusing to sign is not a practical way to block a real halt.** It needs 92 to 96% of the corps, all but 2 or 4 regions' worth of guardians. Lifting a real hold in review is the weaker point.
+
+Not modelled: repeated challenges (the draft does not say whether a hold can be challenged again; if each challenge draws a new panel, a 1 in 100 chance adds up over draws), the scorecard and loss of eligibility, slashing, bribes to honest guardians, regions of unequal size, and real evidence checks.
+
 ## Open questions
 
-1. Can a hold be tested against real attack strategies? A first model is the [ledger fork and halt-power simulator](https://bettertobest.github.io/portal/simulator/fork/) (issue #6). It tests colluding guardians against these thresholds, but the thresholds above are still guesses.
+1. Can a hold be tested against real attack strategies? A first model is the [ledger fork and halt-power simulator](https://bettertobest.github.io/portal/simulator/fork/) (issue #6), and its first numbers are in [What the model shows](#what-the-model-shows). They suggest three questions: should the scoped-hold signer count grow with the corps, should a hold get only one challenge, and how large should the review panel be? The thresholds above are still guesses.
 2. A community vote on whether to continue past the cap runs on the very system that is partly halted. Is that circular?
 3. How do guardians authenticate evidence without one trusted verifier?
 4. Should a Flag from one guardian carry any cost, to deter spam?
