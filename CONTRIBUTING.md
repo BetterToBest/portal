@@ -17,10 +17,10 @@ You do not need to be a developer. Every contribution below matters.
 | Phase | Goal | Status |
 |---|---|---|
 | 0 | Overview page and contributor guide | Done |
-| 1 | Specs: threat model, data model, voting rules in `/docs` | In progress: drafts in `/docs` |
+| 1 | Specs: threat model, data model, voting rules in `/docs` | In progress: drafts in `/docs`, including a [glossary](docs/glossary.md) and a [pilot brief](docs/pilot-brief.md); none has had an outside review |
 | 2 | Simulator: browser demo of direct, liquid and quadratic voting | Four models live in `/simulator` (voting, liquid delegation, ranked-choice, ledger fork); more welcome |
-| 3 | Prototype: proposals, signatures, comment periods, tamper-evident log | Started: [plan](docs/phase-3-plan.md); first pieces (test log and two verifiers, test data only) in [prototype/](prototype/) |
-| 4 | Privacy layer: verifiable ballots without revealing votes | Open |
+| 3 | Prototype: proposals, signatures, comment periods, tamper-evident log | Started: [plan](docs/phase-3-plan.md); a test log, two verifiers, a log viewer and a [proposal flow page](prototype/try/index.html), all on test data only, in [prototype/](prototype/); a draft [test plan](docs/phase-3-test-plan.md) lists ten gates, most not met |
+| 4 | Privacy layer: verifiable ballots without revealing votes | Design drafted, nothing built: [options and a proposed ballot shape](docs/phase-4-privacy-design.md), not reviewed by a cryptographer |
 | 5 | Pilot design: a small advisory vote with a real community | Started: first draft in [docs/pilot-design.md](docs/pilot-design.md); no community approached |
 
 Phases 1 and 2 are the best places to start.

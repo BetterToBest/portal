@@ -9,11 +9,11 @@ Nothing in this plan may collect or monetize user behavior data. That is a core 
 | Area | What exists |
 |---|---|
 | Overview and contributor guide | Live (Phase 0) |
-| Draft specs | Threat model, voting rules, ranked-choice rules, halt-power limits, data-collection policy in `/docs` (Phase 1, in progress) |
+| Draft specs | Threat model, voting rules, ranked-choice rules, halt-power limits, data-collection policy, a glossary and a pilot brief in `/docs` (Phase 1, in progress; no outside review yet) |
 | Simulators | Four browser models: one person one vote versus quadratic voting, liquid delegation, ranked-choice tie-breaks, ledger fork and halt power (Phase 2) |
-| Prototype | Phase 3 has started: a tamper-evident test log for proposals, signatures and comment periods, with two verifiers and corrupted test logs, in `/prototype` (test data only; a viewer page checks a log in the browser, and a draft test plan lists what must pass before any real vote) |
-| Quality checks | Engine tests for the ranked-choice counter run automatically when that page or the tests change; accessibility checks with automated tools |
-| Starter issues | Seven starter issues open for newcomers (#8 to #14), none claimed yet |
+| Prototype | Phase 3 has started: a tamper-evident test log for proposals, signatures and comment periods, with two verifiers and corrupted test logs, in `/prototype` (test data only; a viewer page checks a log in the browser, a proposal flow page builds one step by step, and a draft test plan lists what must pass before any real vote) |
+| Quality checks | Automated tests for the ranked-choice counter, the fork model, the prototype and the pull request guard, and browser checks of every page for outside requests, accessibility findings, keyboard use and broken links. Testing by people who use assistive technology has not happened |
+| Starter issues | Seven starter issues for newcomers (#8 to #14), listed in [good-first-issues.md](good-first-issues.md) |
 
 ## Low outcome: specs people can review
 
@@ -21,7 +21,7 @@ The smallest useful result. A reader can see exactly what CIP would do and chall
 
 - Every draft in `/docs` has had at least one outside review, recorded on its issue (#3, #4, #12, #13 and the threat model in #8).
 - A proposal and ballot data schema exists (#9). The proposal part is the test log format in [prototype/SPEC.md](../prototype/SPEC.md); a sealed ballot shape is sketched in [phase-4-privacy-design.md](phase-4-privacy-design.md) and has not been reviewed.
-- A plain-language glossary exists (#10).
+- A plain-language glossary exists (#10). A first draft is in [glossary.md](glossary.md); it has not been reviewed.
 - Every placeholder number in the drafts is either backed by a source or marked as a placeholder.
 - The oversight-body numbers are settled and the wording in the paper and the docs agrees (#2).
 
@@ -32,7 +32,7 @@ The smallest useful result. A reader can see exactly what CIP would do and chall
 - All four simulators have been tried with real assistive technology (screen reader and keyboard only) and the findings are fixed or logged (#7, #11).
 - At least two contributors outside the maintainer have merged a change.
 - The simulators cover the main open questions in the drafts: the delegation cap, loops, topic limits and renewal, tie-breaks, and the halt-power thresholds. Each result is labeled illustrative.
-- A one-page pilot brief exists for a community group (#14).
+- A one-page pilot brief exists for a community group (#14). A first draft is in [pilot-brief.md](pilot-brief.md); it rests on a pilot design that has not been reviewed.
 
 **Check:** someone who did not build a simulator can use it, understand its limits, and point to the rule it informs.
 
