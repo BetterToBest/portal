@@ -6,7 +6,8 @@
 // the JSON Schema (prototype/schema/) accepts every valid example and rejects every invalid one for the stated
 // reason, and agrees with the verifiers' own format checks on every test log and every edited log; the canonical form and Merkle tree match
 // independent reference values; saving and comparing checkpoints (SPEC 5.1) behave the same in
-// both verifiers, in code and on the command line; and a coarse scan finds no network code in prototype/.
+// both verifiers, in code and on the command line; the proposal flow page (prototype/try/) writes, step by step,
+// the same log as cip-log.js, which both verifiers accept; and a coarse scan finds no network code in prototype/.
 // Needs Node 18 or later and Python 3 with the `cryptography` package (pip install cryptography).
 // Run from the repo root: node tests/prototype.test.js
 'use strict';
@@ -609,8 +610,109 @@ print(json.dumps([v.verify_sig(c['pub'], c['msg'], c['sig']) for c in cases]))`;
         ok(n.ok === want && deepEq(n, pyLogs[i]) && deepEq(n, v) && (want || n.integrity_errors.some(e => e.code === 'BAD_SIG' && e.index === 1)), 'whole log, ' + name + ': ' + (want ? 'passes' : 'fails with BAD_SIG at entry 1') + ', and Node, Python and the viewer give identical output');
       }
     }
+    await flowPage(prims);
     finish();
   })();
+}
+
+// ---- 4d. the proposal flow page (prototype/try/): a scripted run through every state ----
+// The page's own builder (between FLOW-START and FLOW-END) writes each step, or refuses it as a rule-following
+// operator would. At every step the page's log must be byte-identical to the one cip-log.js builds from the same
+// steps, the page's own check must equal the Node verifier's, and the Python verifier must agree with both.
+async function flowPage(prims) {
+  const part = (s, a, b) => s.split(a)[1].split(b)[0];
+  const html = fs.readFileSync(path.join(root, 'try', 'index.html'), 'utf8');
+  const core = part(html, '/*CORE-START*/', '/*CORE-END*/');
+  ok(core === part(fs.readFileSync(path.join(root, 'viewer', 'index.html'), 'utf8'), '/*CORE-START*/', '/*CORE-END*/'), 'flow page: checks logs with a byte-identical copy of the viewer page\'s checking code');
+  // The advisory notice (docs/advisory-notice.md, gate G10): in full at the top, and in the result block before and
+  // after the part the page redraws (id="out"), so a redraw cannot drop it.
+  const top = part(html, '<section class="notice"', '</section>'), block = part(html, '<section class="card result"', '</section>');
+  const shorts = block.split('<p class="notice short">').slice(1).map(s => s.split('</p>')[0]);
+  ok(['advisory', 'decides anything', 'not a live voting system', 'SPEC.md', 'draft v0.1', 'have not all been checked'].every(w => top.includes(w)) &&
+    shorts.length === 2 && shorts[0] === shorts[1] && ['advisory', 'decides nothing', 'test identities', 'SPEC.md', 'draft v0.1'].every(w => shorts[0].includes(w)) &&
+    block.indexOf('notice short') < block.indexOf('id="out"') && block.lastIndexOf('notice short') > block.indexOf('id="out"'),
+    'flow page: the advisory notice is at the top, and in the result block before and after the results');
+  const T = new Function(core + part(html, '/*FLOW-START*/', '/*FLOW-END*/') + ';return {newFlow, standing}')();
+  const F = T.newFlow(Object.assign({}, prims, { identity: async l => { const i = L.testIdentity(l); return { pub: i.pub, sign: async m => i.sign(m) }; } }));
+  const id = L.testIdentity, steps = [], cps = [], snaps = [], bad = { bytes: [], check: [], state: [] }, seen = [];
+  const logOf = (s, c) => ({ format: 'cip-test-log/0', entries: L.makeEntries(s), checkpoints: c.slice() });
+  const copy = o => JSON.parse(JSON.stringify(o));
+  const now = () => T.standing(F.log, F.time()).state; // where the proposal stands at the clock's time
+  // One step: r is what the page's builder did; label, type and body say what it was asked to write.
+  async function step(name, r, label, type, body, refused) {
+    const want = type && { time: F.time(), record: L.makeRecord(id(label), type, body) };
+    if (refused) {
+      const cand = logOf(steps.concat([want]), cps);
+      ok(!r.written && r.result.integrity_errors.length === 0 && deepEq(r.result.rule_errors, [{ code: refused, where: 'entry', index: steps.length }]) &&
+        deepEq(r.entry, cand.entries[steps.length]) && JSON.stringify(F.log) === JSON.stringify(logOf(steps, cps)),
+        'flow page: ' + name + ' is refused with ' + refused + ', the log is unchanged, and the refused entry is the one cip-log.js builds');
+      snaps.push({ name, log: cand, refused, index: steps.length });
+      return;
+    }
+    if (type) steps.push(want);
+    if (!r.written || JSON.stringify(F.log) !== JSON.stringify(logOf(steps, cps))) bad.bytes.push(name);
+    const n = L.verifyLog(copy(F.log));
+    if (!n.ok || !deepEq(n, r.result)) bad.check.push(name);
+    const s = T.standing(F.log, F.log.entries[F.log.entries.length - 1].time), q = n.summary.proposals[0];
+    if (s ? !(q && s.id === q.id && s.title === q.title && s.state === q.state && s.signatures === q.signatures && s.versions === q.versions) : q) bad.state.push(name);
+    snaps.push({ name, log: copy(F.log) });
+  }
+  const B1 = { title: 'Open the budget meetings', text: 'All budget meetings are open to the public and the minutes are posted within 7 days.' };
+  const B2 = { title: B1.title, text: B1.text.replace('7 days', '5 days') };
+  await step('start', await F.start(3, 120), 'test-operator', 'genesis', { threshold: 3, comment_seconds: 120 });
+  for (const w of ['test-alice', 'test-bob', 'test-carol', 'test-dave']) await step('register ' + w, await F.register(w), w, 'register_key', { public_key: id(w).pub, label: w });
+  F.wait(30);
+  const rp = await F.propose('test-alice', B1.title, B1.text);
+  await step('propose', rp, 'test-alice', 'propose', { title: B1.title, text: B1.text });
+  const p = rp.entry.hash, v1 = L.versionHash(B1.title, B1.text), v2 = L.versionHash(B2.title, B2.text);
+  ok(p === L.makeEntries(steps)[5].hash && await F.versionHash(B1.title, B1.text) === v1, 'flow page: the proposal id and the version hash are the ones cip-log.js computes');
+  seen.push(now());
+  const sign = async (w, v, refused) => step('sign ' + (v === v1 ? 'version 1' : 'version 2') + ' as ' + w, await F.sign(w, p, v), w, 'sign', { proposal: p, version: v }, refused);
+  await sign('test-alice', v1); await sign('test-bob', v1);
+  seen.push(now());
+  F.wait(30);
+  await sign('test-carol', v1); // the threshold is reached: the comment period starts
+  seen.push(now());
+  F.wait(30);
+  const c1 = 'Seven days is too slow for urgent items.';
+  await step('comment', await F.comment('test-dave', p, c1), 'test-dave', 'comment', { proposal: p, text: c1 });
+  await step('amend by someone other than the proposer', await F.amend('test-bob', p, B2.title, B2.text), 'test-bob', 'amend', { proposal: p, title: B2.title, text: B2.text }, 'NOT_PROPOSER');
+  await step('amend', await F.amend('test-alice', p, B2.title, B2.text), 'test-alice', 'amend', { proposal: p, title: B2.title, text: B2.text });
+  seen.push(now()); // the amendment cleared the signatures
+  await sign('test-bob', v1, 'STALE_VERSION'); // a signature on the earlier text
+  await sign('test-alice', v2); await sign('test-bob', v2);
+  F.wait(30);
+  await sign('test-carol', v2);
+  seen.push(now());
+  const c2 = 'Five days works for me.';
+  await step('second comment', await F.comment('test-dave', p, c2), 'test-dave', 'comment', { proposal: p, text: c2 });
+  F.wait(120); // to the exact end of the comment period: closed
+  seen.push(now());
+  ok(L.verifyLog(copy(F.log)).summary.proposals[0].state === 'comment', 'flow page: with the clock moved on and nothing written, the verifier (which judges at the last entry) still says comment while the page says closed');
+  await step('comment after the period', await F.comment('test-dave', p, 'Too late?'), 'test-dave', 'comment', { proposal: p, text: 'Too late?' }, 'PROPOSAL_CLOSED');
+  await step('register test-erin', await F.register('test-erin'), 'test-erin', 'register_key', { public_key: id('test-erin').pub, label: 'test-erin' });
+  const rc = await F.checkpoint();
+  cps.push(L.makeCheckpoint(id('test-operator'), L.makeEntries(steps), steps.length));
+  await step('checkpoint', rc);
+  ok(seen.join() === 'collecting,collecting,comment,collecting,comment,closed', 'flow page: the run goes through every state: collecting, comment, collecting again after the amendment, comment, closed (' + seen.join(', ') + ')');
+  const written = snaps.filter(s => !s.refused).length;
+  ok(bad.bytes.length === 0, 'flow page: the log it wrote is byte-identical to the one cip-log.js builds, at all ' + written + ' written steps' + (bad.bytes.length ? ' (differs: ' + bad.bytes.join(', ') + ')' : ''));
+  ok(bad.check.length === 0, 'flow page: its own check of the log passes and equals the Node verifier\'s output at every step' + (bad.check.length ? ' (differs: ' + bad.check.join(', ') + ')' : ''));
+  ok(bad.state.length === 0, 'flow page: where it says the proposal stands equals the Node verifier\'s summary at every step' + (bad.state.length ? ' (differs: ' + bad.state.join(', ') + ')' : ''));
+  // The Python verifier on every step's log: the written ones pass with Node's exact output, the refused ones fail with the same one rule.
+  const files = snaps.map((s, i) => { const f = path.join(tmp, 'flow-' + i + '.json'); fs.writeFileSync(f, JSON.stringify(s.log)); return { log: f }; });
+  const py = pythonVerify(files, tmp);
+  const pyBad = snaps.filter((s, i) => !deepEq(py[i], L.verifyLog(copy(s.log))) || (s.refused ? !deepEq(py[i].rule_errors, [{ code: s.refused, where: 'entry', index: s.index }]) : !py[i].ok)).map(s => s.name);
+  ok(pyBad.length === 0, 'flow page: the Python verifier gives Node\'s output on all ' + snaps.length + ' step logs: ' + written + ' pass, and ' + (snaps.length - written) + ' refused steps fail with their one rule' + (pyBad.length ? ' (differs: ' + pyBad.join(', ') + ')' : ''));
+  // The final log through both command lines, and its checkpoint saved and compared (SPEC 5.1).
+  const fin = path.join(tmp, 'flow-final.json'), cpf = path.join(tmp, 'flow-final.checkpoint.json');
+  fs.writeFileSync(fin, JSON.stringify(F.log, null, 1) + '\n');
+  const nv = cp.spawnSync('node', [path.join(root, 'node', 'cip-log.js'), 'verify', fin], { encoding: 'utf8' });
+  const pv = cp.spawnSync('python3', [path.join(root, 'python', 'verify.py'), fin], { encoding: 'utf8' });
+  ok(nv.status === 0 && pv.status === 0 && deepEq(JSON.parse(nv.stdout), JSON.parse(pv.stdout)), 'flow page: the final log passes both command lines with identical output');
+  const sv = cp.spawnSync('node', [path.join(root, 'node', 'cip-log.js'), 'checkpoint', fin, '--out', cpf], { encoding: 'utf8' });
+  const cmp = sv.status === 0 && L.compareCheckpoints(readJson(cpf), cps[0]);
+  ok(cmp && cmp.relation === 'identical' && deepEq(readJson(cpf), F.log.checkpoints[0]), 'flow page: the checkpoint saved from the final log is the one cip-log.js signs (compare says identical)');
 }
 
 function finish() {

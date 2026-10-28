@@ -85,6 +85,7 @@ Two forms of the same notice. The **before** form is for the consent screen and 
 | Published report | After, then the report list in the pilot design | Same wording |
 | Any summary or caption the project writes about a result | After | The project follows its own rule |
 | Log viewer, simulators | Their own "illustrative, test data" note | Already present; should match this style (open question 7) |
+| Proposal flow page ([prototype/try/](../prototype/try/index.html)) | Before form at the top, adapted for a test with no vote; a short form before and after its result | Built; the adaptation has not been reviewed |
 
 ## Examples
 
@@ -102,7 +103,7 @@ Two forms of the same notice. The **before** form is for the consent screen and 
 
 ## What the prototype shows and does not show
 
-The prototype has a log viewer and four simulators, each with its own "illustrative" note. It has no vote interface, no result screen, no export and no consent screen. There is nothing yet to apply this notice to. Writing it does not meet G10.
+The prototype has a log viewer and four simulators, each with its own "illustrative" note. It also has a proposal flow page ([prototype/try/](../prototype/try/index.html)) that carries this notice, adapted for a test with no vote: the before form at the top, and a short form before and after its result. In place of [GROUP] and [NUMBER] it says that the signers are made-up test identities. The adaptation has not been reviewed. The prototype has no vote interface, no vote result and no consent screen. The log that the flow page lets you download has no room for the notice, because the log format allows only its own fields (SPEC section 1). Putting the notice on one page does not meet G10.
 
 ## What would count as meeting G10 (a proposal)
 
