@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you refer to this work, please cite it as below. It is a research proposal, not a live voting system."
+title: "Citizens Internet Portal (CIP)"
+type: software
+authors:
+  - given-names: "Duke"
+    family-names: "Johnson"
+repository-code: "https://github.com/BetterToBest/portal"
+url: "https://bettertobest.github.io/portal/"
+abstract: "A research proposal for transparent democratic participation, with draft rules, browser models and a test-data prototype. Not a live voting system."
+license: Apache-2.0
+keywords:
+  - democratic participation
+  - research proposal
+  - tamper-evident log
+references:
+  - type: report
+    title: "Citizens Internet Portal"
+    authors:
+      - given-names: "Duke"
+        family-names: "Johnson"
+    url: "https://bettertobest.github.io/research-hub/citizens-internet-portal.html"
+    notes: "The research paper. Documentation and research text are licensed CC BY 4.0."
