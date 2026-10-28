@@ -22,8 +22,8 @@ No single point of failure. Transparent operations. Cryptographic verification i
 | Capturing the operators | Nodes in all 50 states, at most 10% in one location, no funder above 5%, mixed institutional operators (§4.2.2) | Proposed |
 | 51% attack | Six overlapping safeguards: proof-of-stake with slashing, verified identity, geographic and institutional consensus, time delays, Judicial Guard halt (§4.2.3; see below) | Proposed |
 | Single implementation bug | Several implementations so one flaw does not compromise the whole (§4.2.1) | Proposed |
-| Vote buying or coercion | Verifiable but unlinkable ballots (§4.3); reduced incentive when basic needs are met (§6) | Proposed |
-| Learning how someone voted | Zero-knowledge proofs, homomorphic encryption (§4.3) | Proposed |
+| Vote buying or coercion | Verifiable but unlinkable ballots (§4.3); reduced incentive when basic needs are met (§6). The design draft in [phase-4-privacy-design.md](phase-4-privacy-design.md) finds that none of the options it compares stops vote selling or coercion when people vote from their own devices, and limits remote voting to low-stakes advisory tests | Proposed; draft under review |
+| Learning how someone voted | Zero-knowledge proofs, homomorphic encryption (§4.3). Five design families, how each would sit on the Phase 3 log, and a proposed ballot shape are compared in [phase-4-privacy-design.md](phase-4-privacy-design.md) (issue #9); nothing is built or reviewed | Proposed; draft under review |
 | Lost or stolen keys | Keys stay with the citizen; social recovery through trusted contacts (§4.3). The paper gives no parameters; a draft with options and open questions is in [key-handling.md](key-handling.md) | Proposed; draft under review |
 | Insecure software | Regular independent audits and transparent disclosure (§4.5.1) | Proposed |
 | Excluding people without devices or skills | Multiple access channels, literacy support, no mandatory participation (§4.6) | Proposed |

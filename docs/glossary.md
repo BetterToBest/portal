@@ -52,7 +52,7 @@ Each entry gives the paper section it comes from, checked against the paper text
 
 **Recovery (social recovery, time lock).** Ways to regain access after losing a key. The paper proposes social recovery (trusted contacts help restore access), Judicial Guard help in extreme cases, and a time-locked recovery to prevent hasty theft (§4.3.2). It gives no parameters; options and open questions are in [key-handling.md](key-handling.md).
 
-**Sealed ballot.** A ballot that is recorded in a form that does not show how the person voted. Phase 3 has none. The paper proposes an encrypted vote with a proof it is valid (§4.3.1). The design is Phase 4 work and is not written ([phase-3-plan.md](phase-3-plan.md)).
+**Sealed ballot.** A ballot that is recorded in a form that does not show how the person voted. Phase 3 has none. The paper proposes an encrypted vote with a proof it is valid (§4.3.1). The design is Phase 4 work: a first draft compares the options and sketches a ballot shape ([phase-4-privacy-design.md](phase-4-privacy-design.md)); nothing is built or reviewed.
 
 **Signature threshold.** The number of signatures a proposal needs before it can go further. The paper gives 1,000 as an example (§4.4.1). That figure is an accepted starting point and may change as the system is tested.
 
@@ -68,7 +68,7 @@ Each entry gives the paper section it comes from, checked against the paper text
 
 **Watcher.** Not in the paper. Anyone who keeps the checkpoints they see and compares them with others, so a rewritten log can be exposed. A watcher needs no account and may be pseudonymous ([checkpoints.md](checkpoints.md)).
 
-**Zero-knowledge proof.** A way to prove a statement is true without revealing why. The paper proposes using it so a voter can check their vote was recorded and anyone can check the totals without learning how an individual voted (§4.3.1). It is not built; Phase 4 would design it ([phase-3-plan.md](phase-3-plan.md)).
+**Zero-knowledge proof.** A way to prove a statement is true without revealing why. The paper proposes using it so a voter can check their vote was recorded and anyone can check the totals without learning how an individual voted (§4.3.1). It is not built; the Phase 4 draft says where it could fit ([phase-4-privacy-design.md](phase-4-privacy-design.md)).
 
 ## Not defined here
 

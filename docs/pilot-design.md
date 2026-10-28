@@ -63,7 +63,7 @@ The log is built so entries cannot be edited or removed after the fact. That is 
 | Public log: proposal text, signed entries, ballot counts, checkpoints | Public, copies kept by watchers ([checkpoints.md](checkpoints.md)) | Kept as the record of the run. Contains no names and no contact details | Public by design (tier 2) |
 | Public keys of participants | In the log | Same as the log. A key must not be derived from, or labeled with, a name | Public by design |
 | Private keys | Only the person | Until the person deletes them. Never sent, never backed up by the project ([key-handling.md](key-handling.md), rule 1) | Not collected |
-| Sealed ballots | Per the Phase 4 design, not yet written | Until counted and checked, then per that design | Not collected in readable form |
+| Sealed ballots | Per the Phase 4 design, drafted in [phase-4-privacy-design.md](phase-4-privacy-design.md) and not reviewed | Until counted and checked, then per that design | Not collected in readable form |
 | Eligibility check (who may take part) | The host, not the project | Deleted after the vote closes plus a short check period (placeholder: 30 days). Never joined to a ballot or a key | Outside the project's data |
 | Consent records | The host, kept apart from keys and ballots | Same as the eligibility check | Outside the project's data |
 | Node counters: request counts, error counts, speed | The node operator | Short (placeholder: 30 days), no identifiers, IP addresses only in the short-lived memory that rate limiting needs | Tier 2 |
