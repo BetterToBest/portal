@@ -1,0 +1,54 @@
+name: PR guard
+
+# Checks every pull request for changes that could run code on the machine of whoever reviews or
+# checks it out: editor and dev-container settings, workflow changes by anyone but the owner,
+# install hooks, unfamiliar file types, disguised fonts, large or binary files, and code pushed
+# off-screen. The rules and their reasons are in tests/pr-guard.js; tests in tests/pr-guard.test.js.
+#
+# How it stays safe:
+# - It runs on pull_request, never pull_request_target, with read-only permissions and no secrets.
+# - It runs tests/pr-guard.js as it is on the BASE branch, never the pull request's copy, so a pull
+#   request cannot weaken the check by editing the script.
+# - The pull request's commits are fetched into a bare repository, so its files are never written
+#   to disk as files, installed or run; the guard reads them from git as data.
+# - It uses no actions from the marketplace, only git and the runner's own Node.
+# One limit: GitHub reads THIS file from the pull request, so a pull request that edits it changes
+# what runs. The guard reports any .github/ change by anyone but the owner, but read such a pull
+# request by eye before approving its workflow runs (see CONTRIBUTING.md, "Pull request safety").
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: PR guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the pull request with the base branch's guard
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          repo="$RUNNER_TEMP/repo.git"
+          git init -q --bare "$repo"
+          git -C "$repo" fetch -q --no-tags "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+            "+$BASE_SHA:refs/guard/base" "+refs/pull/$PR_NUMBER/head:refs/guard/head"
+          if ! git -C "$repo" cat-file -e "$HEAD_SHA^{commit}" 2>/dev/null; then
+            echo "::error::The pull request changed while it was being checked. The newer push starts its own check."
+            exit 1
+          fi
+          if ! git -C "$repo" cat-file -e "$BASE_SHA:tests/pr-guard.js" 2>/dev/null; then
+            echo "::warning::The base branch has no tests/pr-guard.js yet, so there is nothing to run. This is expected only for the pull request that adds the guard."
+            exit 0
+          fi
+          git -C "$repo" show "$BASE_SHA:tests/pr-guard.js" > "$RUNNER_TEMP/pr-guard.js"
+          cd "$RUNNER_TEMP"
+          node --version
+          node pr-guard.js --repo "$repo" --author "$PR_AUTHOR" --owner "$OWNER" "$BASE_SHA" "$HEAD_SHA"

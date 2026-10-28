@@ -30,6 +30,7 @@ No single point of failure. Transparent operations. Cryptographic verification i
 | Blocked accountability | Distributed Judicial Guard with concurrent prosecution paths and a public referral dashboard (§5, A.8) | Proposed |
 | Abuse of the halt power | Checkable triggers, multi-guardian concurrence, automatic expiry, challenge and public log, in [halt-power.md](halt-power.md) (§4.2.3 is silent) | Draft, under review |
 | Usage data becoming tracking | Three-tier data policy: never collected, aggregate only, opt-in only, in [data-collection.md](data-collection.md) (§4.5.2 vs §4.6.2) | Draft, under review |
+| Malicious contributions to this repository | Automatic PR guard and reviewer rules; see "Malicious contributions" below | In place (Oct 2026) |
 
 ## How the paper proposes to prevent a 51% attack (paper §4.2.3)
 
@@ -65,6 +66,20 @@ The paper names the classic risk: if attackers control more than half the nodes,
 
 - The **1,000-signature threshold for initiating a proposal** is an accepted starting point taken from the author's earlier Medium article. It may change, so keep this caveat wherever the number appears.
 - Appendix A.8 uses a separate pair of figures (1,000 versus 5,000 signatures) for citizen grand jury cases. That is a different mechanism from proposal initiation.
+
+## Malicious contributions
+
+The project is open to outside contributions, so a pull request is itself a route of attack: not on the future platform, but on the computers of the people who review and test it.
+
+**The October 2026 attempt.** An outside account opened two pull requests that added an editor settings file, `.vscode/tasks.json`, with a task set to run automatically when the folder is opened. The task ran a script stored in a file made to look like a font (`public/fonts/fa-solid.lkf`), with its code pushed far to the right by a long run of tabs so that it would not be seen on screen. Anyone who opened a checkout of either branch in an editor that trusted the folder could have run that script without noticing. Both pull requests were closed and nothing was merged.
+
+**Mitigations.**
+
+- The PR guard ([tests/pr-guard.js](../tests/pr-guard.js), run by `.github/workflows/pr-guard.yml`) fails any pull request that adds or changes editor or dev-container settings, changes `.github/` without being from the owner, adds install hooks, adds a file type the repository does not already use, places a font outside `assets/fonts/`, adds large or binary files, or hides code with very long lines or long runs of blanks. The October attempt fails it on five counts.
+- The workflow runs on `pull_request` with read-only permissions and no secrets, and runs the guard as it is on the base branch, so a pull request cannot weaken the script. It never checks out, installs or runs the pull request's files.
+- Reviewer rules in [CONTRIBUTING.md](../CONTRIBUTING.md): read the changed-file list first; do not open, install or run a branch before reading every file it changes.
+
+**Known limits.** GitHub takes the workflow file itself from the pull request, so a pull request that edits `.github/workflows/pr-guard.yml` could change what runs; this is why `.github/` changes need a human read before their workflow runs are approved. The guard checks names, sizes and the shape of lines, not what code does: a short, plainly visible malicious change in an allowed file type still needs a reviewer. The repository settings that back this up (approval before workflows run for outside contributors, and the guard as a required check) are set by the owner and are not visible in the repository.
 
 ## Out of scope for the first prototype
 
