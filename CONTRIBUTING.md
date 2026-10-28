@@ -31,6 +31,19 @@ Phases 1 and 2 are the best places to start.
 2. Pick an open issue (starter ideas are in `docs/good-first-issues.md`), or propose one.
 3. Fork, make a small change, open a pull request. Short pull requests get reviewed fastest.
 
+## Pull request safety
+
+Every pull request is checked automatically by the PR guard ([tests/pr-guard.js](tests/pr-guard.js)). It reads the changed files as data and never runs them. It fails, with a plain-English reason, when a pull request:
+
+- adds or changes anything in `.vscode/`, `.devcontainer/` or `.idea/` (editor settings can run commands as soon as a folder is opened), or in `.github/` unless it comes from the repository owner;
+- adds a `package.json` or another file that runs code on install or build (`setup.py`, `build.rs`, git hooks and similar);
+- adds a file type the repository does not already use, or a font outside `assets/fonts/`;
+- adds a file over 300 KB, a binary file outside `assets/`, a symbolic link, or a line over 2,000 characters or with a run of 40 or more tabs or spaces (a trick that pushes code past the edge of the screen).
+
+If a rule blocks a change that is genuinely needed, say so in the pull request and a maintainer will look. Run the check yourself with `node tests/pr-guard.js main HEAD` and its tests with `node tests/pr-guard.test.js`.
+
+For reviewers: read the list of changed files before anything else. Do not open a pull request's branch in an editor, install it or run it until you have read every file it changes; if you must open it, use the editor's restricted mode (in VS Code, do not trust the folder). GitHub reads a workflow from the pull request itself, so a pull request that edits `.github/workflows/` can change its own checks: read those by eye before approving their workflow runs.
+
 ## Ground rules
 
 - Be kind and assume good faith.
