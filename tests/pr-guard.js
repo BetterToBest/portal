@@ -5,7 +5,7 @@
 //   - adds or edits a package.json or another file that makes an install or build step run code;
 //   - adds a file whose type (extension) is not already used in the repo, or a font outside assets/fonts/;
 //   - adds a file over 300 KB, a binary file outside assets/, a symbolic link or a submodule;
-//   - adds a line over 2,000 characters, or a line with a run of 40 or more tabs or spaces
+//   - adds a line over 2,000 characters (except in the generated logs in prototype/edge-cases/inputs/), or a line with a run of 40 or more tabs or spaces
 //     (the trick used to push code past the right-hand edge of the screen).
 // The pull request's files are read from git as data. Their contents are never printed.
 //
@@ -23,6 +23,9 @@ const posix = require('path').posix;
 
 const MAX_BYTES = 300 * 1024;
 const MAX_LINE = 2000;
+// Generated test logs that are one long JSON line by design. Only the long-line rule is relaxed here;
+// every other rule, including the run-of-blanks rule, still applies.
+const LONG_LINES_OK = /^prototype\/edge-cases\/inputs\/[^/]+\.json$/;
 const MAX_BLANK_RUN = 40;          // a run of this many tabs or spaces in a row fails
 const READ_CAP = 8 * 1024 * 1024;  // files bigger than this already fail on size; do not read them
 const EDITOR_DIRS = ['.vscode', '.devcontainer', '.idea'];
@@ -180,7 +183,7 @@ function check({ repo = '.', base, head, author = '', owner = '' }) {
             const long = [], hidden = [], cargoBuild = [];
             for (const l of newLines(before, buf.toString('utf8'))) {
               if (name === 'cargo.toml' && /^\s*build\s*=/.test(l.text)) cargoBuild.push(l.n);
-              if ([...l.text].length > MAX_LINE) long.push(l.n);
+              if (!LONG_LINES_OK.test(p) && [...l.text].length > MAX_LINE) long.push(l.n);
               const runs = l.text.match(blankRun) || [];
               if (runs.some(r => r.length >= MAX_BLANK_RUN)) hidden.push(l.n);
             }
