@@ -8,7 +8,7 @@ Citizens Internet Portal (CIP): a research proposal for transparent democratic p
 - `docs/`: draft specs, plans and policies (threat model, voting rules, phase-3 plan, data-collection policy). Markdown only.
 - `simulator/`: four single-page browser models (`ranked`, `liquid`, `fork`, and the voting model at `index.html`). Results are illustrative.
 - `prototype/`: Phase 3 test log with two verifiers (`node/`, `python/`), `SPEC.md`, JSON Schema, test data, viewer page. Test data only.
-- `tests/`: `prototype.test.js`, `ranked-choice.test.js`, the PR guard and `pages.test.py` (browser checks of every page).
+- `tests/`: `prototype.test.js`, `ranked-choice.test.js`, `fork.test.js` with the halt-power sweep `fork-sweep.js`, the PR guard and `pages.test.py` (browser checks of every page).
 - `.github/workflows/`: CI, issue tooling and `apply-update.yml`.
 
 ## Commands
@@ -16,6 +16,8 @@ Citizens Internet Portal (CIP): a research proposal for transparent democratic p
 ```bash
 node tests/prototype.test.js                                  # needs Python 3 + `pip install cryptography jsonschema` (about 70 s)
 node tests/ranked-choice.test.js simulator/ranked/index.html
+node tests/fork.test.js                                       # also checks the sweep table in docs/halt-power.md
+node tests/fork-sweep.js                                      # prints that table; --check compares it with the doc
 node prototype/node/cip-log.js verify prototype/testdata/good.json
 node prototype/node/make-answer-key.js --check                # generated files have --check modes; run it before regenerating
 node prototype/node/build-viewer.js --check
