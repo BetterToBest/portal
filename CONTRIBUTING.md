@@ -38,7 +38,7 @@ Every pull request is checked automatically by the PR guard ([tests/pr-guard.js]
 - adds or changes anything in `.vscode/`, `.devcontainer/` or `.idea/` (editor settings can run commands as soon as a folder is opened), or in `.github/` unless it comes from the repository owner;
 - adds a `package.json` or another file that runs code on install or build (`setup.py`, `build.rs`, git hooks and similar);
 - adds a file type the repository does not already use, or a font outside `assets/fonts/`;
-- adds a file over 300 KB, a binary file outside `assets/`, a symbolic link, or a line over 2,000 characters or with a run of 40 or more tabs or spaces (a trick that pushes code past the edge of the screen).
+- adds a file over 300 KB, a binary file outside `assets/`, a symbolic link, or a line over 2,000 characters (the generated test logs in `prototype/edge-cases/inputs/` are exempt from this one) or with a run of 40 or more tabs or spaces (a trick that pushes code past the edge of the screen).
 
 If a rule blocks a change that is genuinely needed, say so in the pull request and a maintainer will look. Run the check yourself with `node tests/pr-guard.js main HEAD` and its tests with `node tests/pr-guard.test.js`.
 

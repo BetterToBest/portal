@@ -160,6 +160,9 @@ blocks({ 'docs/link.md': { symlink: '../README.md' } }, 'docs/link.md', /symboli
 // ---- Long lines and runs of blanks ----
 passes({ 'docs/long.md': 'y'.repeat(2000) + '\n' }, 'a line of exactly 2,000 characters passes');
 blocks({ 'docs/long.md': 'y'.repeat(2001) + '\n' }, 'docs/long.md', /Line 1 is over 2,000 characters/, 'a line of 2,001 characters is refused');
+passes({ 'prototype/edge-cases/inputs/e99-new.json': '{"a": "' + 'z'.repeat(2500) + '"}\n' }, 'a long line in a generated edge-case log passes');
+blocks({ 'prototype/edge-cases/inputs/e99-new.json': '{"a": 1,' + ' '.repeat(40) + '"b": 2}\n' }, 'prototype/edge-cases/inputs/e99-new.json', /has a run/, 'a run of blanks in an edge-case log is still refused');
+blocks({ 'prototype/edge-cases/e99.json': 'z'.repeat(2001) + '\n' }, 'prototype/edge-cases/e99.json', /over 2,000 characters/, 'the long-line exception covers only prototype/edge-cases/inputs/');
 passes({ 'simulator/app.js': 'const votes = 0;' + ' '.repeat(39) + '// 39 spaces\n' }, 'a run of 39 spaces passes');
 blocks({ 'simulator/app.js': 'const votes = 0;' + ' '.repeat(40) + 'hidden();\n' }, 'simulator/app.js', /Line 1 has a run of 40 or more/, 'a run of 40 spaces is refused');
 blocks({ 'simulator/app.js': 'const votes = 0;\n' + ' \t'.repeat(20) + 'hidden();\n' }, 'simulator/app.js', /Line 2 has a run/, 'a run of mixed tabs and spaces is refused');
