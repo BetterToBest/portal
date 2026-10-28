@@ -6,7 +6,7 @@ Nothing the software does may collect or monetize user behavior data. That is a 
 
 ## How to read this plan
 
-Each check is a gate: if it fails, no real vote happens until it passes. "Status today" says honestly where the project stands. Most gates are **not met yet**, because the prototype so far is a test log with two verifiers and a viewer, on test data only (see [prototype/](../prototype/)).
+Each check is a gate: if it fails, no real vote happens until it passes. "Status today" says honestly where the project stands. Most gates are **not met yet**, because the prototype so far is a test log with two verifiers, a viewer and a page that runs the proposal flow, on test data only (see [prototype/](../prototype/)).
 
 A gate is only met when the evidence is public: the commit it was run on, the date, the command, and the result, recorded in the repository.
 
@@ -23,7 +23,7 @@ A gate is only met when the evidence is public: the commit it was run on, the da
 | G7 | People can use it | Automated accessibility checks in light and dark, then testing by people who use a screen reader, a keyboard alone and a small screen. | Partly met: on every page in the repository, in light and dark, a browser check ([tests/pages.test.py](../tests/pages.test.py), run in CI) finds no serious or critical axe-core problems, before or after the buttons are clicked; every control is reached by Tab and shows visible focus, with no Tab traps; and no relative link or anchor is broken. These are automated checks only. Testing by people who use a screen reader, a keyboard alone or a small screen has not happened (#7, #11). |
 | G8 | Outside security review | An independent review of the threat model (#8) and of the cryptography, with findings fixed or published. | Not met. What an outside reviewer would be asked to do, what they get and how findings are published is in [review-brief.md](review-brief.md); nobody has been asked, and it has not been reviewed. |
 | G9 | The community agrees to what is being tested | A pilot design written first: consent, what data exists and for how long, an accessibility plan, how a result is reported, and who can stop it. | Not met: Phase 5. A written proposal for consent, data, access, result reporting and who can stop a pilot, with open questions, is in [pilot-design.md](pilot-design.md); it has not been reviewed. No community has been approached and none has agreed. |
-| G10 | It is clear what the result means | Every screen and every result says that the vote is advisory, what it does not show, and where the rules are written. | Not met: no vote interface exists. A written proposal of wording rules, a template notice and examples is in [advisory-notice.md](advisory-notice.md); no volunteer has read it and nothing is built or reviewed. |
+| G10 | It is clear what the result means | Every screen and every result says that the vote is advisory, what it does not show, and where the rules are written. | Partly met: the [proposal flow page](../prototype/try/index.html) shows the notice, adapted for a test with no vote, at the top of the page and inside its result block before and after the numbers, and a test checks that it is there. No vote interface exists, so no vote result carries it yet. The wording rules, template and examples in [advisory-notice.md](advisory-notice.md) are a written proposal; no volunteer has read the notice and nobody has reviewed it or its adaptation. |
 
 ## What a run must publish
 

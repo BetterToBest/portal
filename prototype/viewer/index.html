@@ -73,7 +73,7 @@ pre{overflow:auto; max-height:22rem; background:var(--paper); border:1px solid v
 </head>
 <body>
 <main>
-<p><a href="../../">&larr; Citizens Internet Portal</a> &nbsp;|&nbsp; <a href="../../simulator/">Simulators</a> &nbsp;|&nbsp; <a href="https://github.com/BetterToBest/portal/tree/main/prototype">Prototype code and spec</a></p>
+<p><a href="../../">&larr; Citizens Internet Portal</a> &nbsp;|&nbsp; <a href="../../simulator/">Simulators</a> &nbsp;|&nbsp; <a href="../try/">Try the proposal flow</a> &nbsp;|&nbsp; <a href="https://github.com/BetterToBest/portal/tree/main/prototype">Prototype code and spec</a></p>
 <h1>Log viewer: check a proposal log</h1>
 <p class="lede">This page checks a test log from the CIP prototype: who proposed what, how many people signed, where each proposal is in its comment period, and whether anything in the record was changed. It follows the written rules in <a href="https://github.com/BetterToBest/portal/blob/main/prototype/SPEC.md">prototype/SPEC.md</a> (draft v0.1).</p>
 <p class="lede"><strong>Research prototype on test data. Not a voting system, and CIP is not live.</strong> Everything happens in your browser: the page makes no network requests and stores nothing, and the file you choose never leaves your device.</p>
@@ -94,7 +94,7 @@ pre{overflow:auto; max-height:22rem; background:var(--paper); border:1px solid v
 <input type="file" id="logfile" accept=".json,application/json" aria-describedby="filehint">
 <label class="f" for="cpfile">Saved checkpoint, optional (.json)</label>
 <input type="file" id="cpfile" accept=".json,application/json" aria-describedby="filehint">
-<p class="note" id="filehint">Files up to 5 MB. A saved checkpoint is one you kept from an earlier time; it lets the page see changes to the part of the log it covers.</p>
+<p class="note" id="filehint">Files up to 5 MB. A saved checkpoint is one you kept from an earlier time; it lets the page see changes to the part of the log it covers. A log and checkpoint you downloaded from the <a href="../try/">proposal flow page</a> work here too.</p>
 <div id="err" class="err" hidden></div>
 <div class="row"><button type="button" id="go">Check this log</button></div>
 </section>

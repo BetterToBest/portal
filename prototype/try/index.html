@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; font-src 'self'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>CIP Prototype: try the proposal flow</title>
+<meta name="description" content="Walk a test proposal through filing, signatures, a comment period and an amendment, then download the test log and check it. Test data only; nothing leaves your device.">
+<link rel="preload" href="../../assets/fonts/newsreader-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../assets/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Newsreader';font-style:normal;font-weight:200 800;font-display:swap;src:url(../../assets/fonts/newsreader-normal.woff2) format('woff2')}
+@font-face{font-family:'Newsreader';font-style:italic;font-weight:200 800;font-display:swap;src:url(../../assets/fonts/newsreader-italic.woff2) format('woff2')}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(../../assets/fonts/instrument-sans.woff2) format('woff2')}
+:root{
+  --paper:#eef1f4; --card:#ffffff; --ink:#14213d; --muted:#4a5a73; --line:#cbd3dd;
+  --teal:#0a7375; --amber:#d98a1f; --warn:#9a5b00;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0e1522; --card:#16202f; --ink:#e8edf4; --muted:#a3b3c9; --line:#2b394d;
+    --teal:#3cc0c2; --amber:#f0a94a; --warn:#f0a94a;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0e1522; --card:#16202f; --ink:#e8edf4; --muted:#a3b3c9; --line:#2b394d;
+  --teal:#3cc0c2; --amber:#f0a94a; --warn:#f0a94a;
+}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0; min-height:100%; background:var(--paper); color:var(--ink);
+  font:16px/1.55 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1180px; margin:0 auto; padding:20px 18px 56px}
+a{color:var(--teal)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.scroll:focus-visible{outline:3px solid var(--ink); outline-offset:2px}
+h1{font:600 clamp(1.7rem,4.5vw,2.3rem)/1.15 Newsreader,Georgia,serif; margin:.6em 0 .3em}
+h2{font:600 1.35rem/1.2 Newsreader,Georgia,serif; margin:0 0 .5em}
+h3{font:600 1.1rem/1.25 Newsreader,Georgia,serif; margin:1.2em 0 .3em}
+p{margin:.5em 0; max-width:68ch}
+.lede{font-size:1.06rem}
+.card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; margin:18px 0}
+.notice{background:var(--card); border:2px solid var(--ink); border-radius:10px; padding:14px 18px; margin:18px 0}
+p.notice.short{border-width:1px 1px 1px 6px; border-color:var(--line) var(--line) var(--line) var(--ink); padding:10px 14px; margin:10px 0; max-width:none}
+label.f{display:block; font-weight:600; margin:14px 0 4px}
+.fields{display:flex; flex-wrap:wrap; gap:0 24px}
+select,input[type=text],textarea{font:inherit; color:var(--ink); background:var(--card); border:1px solid var(--muted); border-radius:6px; padding:7px 9px; max-width:100%}
+input[type=text],textarea{width:100%}
+textarea{resize:vertical}
+select:disabled,input:disabled,textarea:disabled{opacity:.6}
+.row{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px}
+button{font:inherit; font-weight:600; border-radius:8px; padding:9px 14px; cursor:pointer;
+  border:1px solid var(--teal); background:var(--teal); color:#fff}
+button.alt{background:transparent; color:var(--teal)}
+button:disabled{opacity:.55; cursor:not-allowed}
+:root[data-theme="dark"] button:not(.alt){color:#0e1522}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button:not(.alt){color:#0e1522}}
+@media (min-width:960px){
+  .cols{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:0 22px; align-items:start}
+  .result{position:sticky; top:12px}
+}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%}
+.wide{min-width:560px}
+caption{text-align:left; font-weight:600; padding:0 0 6px}
+th,td{text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top}
+.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+code{font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
+.note{color:var(--muted); font-size:.92rem}
+.verdict{margin:12px 0; padding:10px 14px; border-left:6px solid var(--teal); border-radius:6px; background:rgba(15,139,141,.13); max-width:68ch}
+.verdict.bad{border-left-color:var(--amber); background:rgba(217,138,31,.18)}
+.verdict .tag{display:block; font-size:.78rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.err{margin:10px 0; padding:8px 12px; border-left:6px solid var(--warn); background:rgba(217,138,31,.14); border-radius:6px; max-width:68ch}
+.empty{color:var(--muted)}
+.facts{display:flex; flex-wrap:wrap; gap:6px 18px; margin:10px 0; padding:0; list-style:none; color:var(--muted); font-size:.92rem}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+</style>
+</head>
+<body>
+<main>
+<p><a href="../../">&larr; Citizens Internet Portal</a> &nbsp;|&nbsp; <a href="../viewer/">Log viewer</a> &nbsp;|&nbsp; <a href="https://github.com/BetterToBest/portal/tree/main/prototype">Prototype code and spec</a></p>
+<h1>Try the proposal flow</h1>
+<p class="lede">Walk a test proposal through the steps the CIP paper proposes in section 4.4.1: someone files it, people sign it until it has enough signatures, a comment period runs, and the proposer may amend it. Every step is written to a test log, which you can download and check again in the <a href="../viewer/">log viewer</a>. This page plays every part: the operator, who keeps the log, stamps the time and signs checkpoints, and each test identity.</p>
+
+<section class="notice" aria-labelledby="about">
+<h2 id="about">Read this first</h2>
+<p><strong>This is a test, on made-up data. It is advisory: nothing on this page decides anything, and no one has to act on it.</strong></p>
+<p>It shows what a few made-up test identities did. Anyone can work out their keys from their names, so a signature here does not show that a real, unique person signed. Nothing here shows what any group, or the public, thinks. CIP is a research proposal, not a live voting system.</p>
+<p>The rules are written in <a href="https://github.com/BetterToBest/portal/blob/main/prototype/SPEC.md">prototype/SPEC.md</a>, draft v0.1. They are proposals, and they have not all been checked. The <a href="https://github.com/BetterToBest/portal/blob/main/docs/phase-3-test-plan.md">test plan</a> says what has been checked and what has not.</p>
+<p>Everything happens in your browser. The page makes no network requests and stores nothing: when you close or reload it, the test log is gone unless you downloaded it.</p>
+<p class="note">This notice follows the draft wording in <a href="https://github.com/BetterToBest/portal/blob/main/docs/advisory-notice.md">docs/advisory-notice.md</a> (v0.1), adapted for a test with no vote. It has not been reviewed.</p>
+</section>
+<noscript><p class="err">This page needs JavaScript.</p></noscript>
+<div id="unsupported" class="err" hidden>This browser cannot make Ed25519 signatures, so this page cannot write a test log. Use a recent version of Chrome, Firefox or Safari.</div>
+
+<div class="cols">
+<div>
+<section class="card" aria-labelledby="h-start">
+<h2 id="h-start">1. Start a test log</h2>
+<div class="fields">
+<div><label class="f" for="threshold">Signatures needed</label>
+<select id="threshold"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div><label class="f" for="period">Comment period</label>
+<select id="period"><option value="60">1 minute</option><option value="120" selected>2 minutes</option><option value="300">5 minutes</option></select></div>
+</div>
+<p class="note">Tiny numbers, so you can see every step in a few minutes. The paper's examples are 1,000 signatures and a comment period of 30 to 90 days (section 4.4.1). Those are an accepted starting point and may change.</p>
+<div class="row"><button type="button" id="start">Start a new test log</button></div>
+</section>
+
+<section class="card" aria-labelledby="h-clock">
+<h2 id="h-clock">2. Test clock</h2>
+<p id="clock">The clock starts with the log.</p>
+<div class="row" role="group" aria-label="Move the test clock forward">
+<button type="button" class="alt" data-wait="30">Forward 30 seconds</button>
+<button type="button" class="alt" data-wait="60">Forward 1 minute</button>
+<button type="button" class="alt" data-wait="300">Forward 5 minutes</button>
+</div>
+<p class="note">The operator stamps every entry with the time on this clock. It only moves forward, and only when you move it. Who checks the operator's clock is an open question (SPEC section 9, question 2).</p>
+</section>
+
+<section class="card" aria-labelledby="h-people">
+<h2 id="h-people">3. Register test identities</h2>
+<p>Each person registers their own key before they can propose, sign or comment.</p>
+<div class="row" role="group" aria-label="Test identities">
+<button type="button" class="alt" data-reg="test-alice">Register test-alice</button>
+<button type="button" class="alt" data-reg="test-bob">Register test-bob</button>
+<button type="button" class="alt" data-reg="test-carol">Register test-carol</button>
+<button type="button" class="alt" data-reg="test-dave">Register test-dave</button>
+<button type="button" class="alt" data-reg="test-erin">Register test-erin</button>
+</div>
+<p class="note">Test identities only: each key is worked out from its name, so anyone can sign as test-alice. A real system would have to check that each key belongs to one real person. That is not built (gate G5 in the test plan).</p>
+</section>
+
+<section class="card" aria-labelledby="h-propose">
+<h2 id="h-propose">4. File a proposal</h2>
+<label class="f" for="proposer">Proposed by</label>
+<select id="proposer"></select>
+<label class="f" for="title">Title</label>
+<input type="text" id="title" maxlength="120" value="Open the budget meetings">
+<label class="f" for="text">Text</label>
+<textarea id="text" rows="3" maxlength="2000">All budget meetings are open to the public and the minutes are posted within 7 days.</textarea>
+<div class="row"><button type="button" id="propose">File the proposal</button></div>
+<p class="note">One proposal per test log. Start a new log to try again.</p>
+</section>
+
+<section class="card" aria-labelledby="h-act">
+<h2 id="h-act">5. Sign, comment and amend</h2>
+<label class="f" for="actor">Acting as</label>
+<select id="actor"></select>
+<h3>Sign</h3>
+<p>A signature covers one exact version of the text.</p>
+<div class="row"><button type="button" id="sign">Sign the current text</button><button type="button" class="alt" id="signold" hidden>Sign the earlier text</button></div>
+<h3>Comment</h3>
+<label class="f" for="comment">Comment</label>
+<textarea id="comment" rows="2" maxlength="2000">Seven days is too slow for urgent items.</textarea>
+<div class="row"><button type="button" id="post">Post the comment</button></div>
+<h3>Amend</h3>
+<p>Only the proposer may amend. An amendment clears every signature, so nobody stays signed to text they did not see. Whether that is the right rule is an open question (SPEC section 9, question 1).</p>
+<label class="f" for="ntitle">New title</label>
+<input type="text" id="ntitle" maxlength="120" value="Open the budget meetings">
+<label class="f" for="ntext">New text</label>
+<textarea id="ntext" rows="3" maxlength="2000">All budget meetings are open to the public and the minutes are posted within 5 days.</textarea>
+<div class="row"><button type="button" id="amend">Amend the proposal</button></div>
+</section>
+
+<section class="card" aria-labelledby="h-keep">
+<h2 id="h-keep">6. Checkpoint and download</h2>
+<p>A checkpoint is the operator's signed summary of the whole log so far. Anyone who keeps a copy can later tell if the part it covers was changed, even by the operator.</p>
+<div class="row"><button type="button" id="checkpoint">Sign a checkpoint</button><button type="button" class="alt" id="dl">Download the log</button><button type="button" class="alt" id="dlcp">Download the latest checkpoint</button></div>
+<p>Then open the <a href="../viewer/">log viewer</a> and choose the log file, and the checkpoint as the saved checkpoint if you like. The viewer checks the log again with the same rules.</p>
+</section>
+</div>
+
+<section class="card result" aria-labelledby="h-result">
+<h2 id="h-result">Where things stand</h2>
+<p class="notice short">Test data, advisory: this decides nothing, and no one has to act on it. The signers are made-up test identities, not real people, so it shows nothing about what any group thinks. Rules: <a href="https://github.com/BetterToBest/portal/blob/main/prototype/SPEC.md">prototype/SPEC.md</a>, draft v0.1, proposals that have not all been checked.</p>
+<div id="out"><p class="empty">No test log yet. Choose the settings and start one.</p></div>
+<p class="notice short">Test data, advisory: this decides nothing, and no one has to act on it. The signers are made-up test identities, not real people, so it shows nothing about what any group thinks. Rules: <a href="https://github.com/BetterToBest/portal/blob/main/prototype/SPEC.md">prototype/SPEC.md</a>, draft v0.1, proposals that have not all been checked.</p>
+<p id="status" class="sr" role="status"></p>
+</section>
+</div>
+
+<section class="card" aria-labelledby="h-log">
+<h2 id="h-log">The log so far</h2>
+<div id="entries"><p class="empty">No entries yet.</p></div>
+</section>
+
+<p class="note">Illustrative prototype on test data. The page plays the operator as well as every person, so it shows how the record works, not who would run it. Before writing an entry, the operator checks the log with that entry added, using the same code as the log viewer, and refuses an entry that breaks a rule. Entry numbers start at 0, as in the spec.</p>
+</main>
+
+<script>
+/*CORE-START*/
+const HEX64=/^[0-9a-f]{64}$/,HEX128=/^[0-9a-f]{128}$/,LONE=/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+const isHex64=v=>typeof v==='string'&&HEX64.test(v),isHex128=v=>typeof v==='string'&&HEX128.test(v);
+const enc=new TextEncoder();
+const toHex=u=>Array.from(u,b=>b.toString(16).padStart(2,'0')).join('');
+const fromHex=h=>Uint8Array.from(h.match(/../g),x=>parseInt(x,16));
+const cat=(...a)=>{const o=new Uint8Array(a.reduce((n,x)=>n+x.length,0));let i=0;for(const x of a){o.set(x,i);i+=x.length}return o};
+function canon(v){
+  if(typeof v==='string'){if(LONE.test(v))throw new Error('lone surrogate');return JSON.stringify(v)}
+  if(typeof v==='number'){if(!Number.isSafeInteger(v))throw new Error('not a safe integer');return String(v)}
+  if(Array.isArray(v))return '['+v.map(canon).join(',')+']';
+  if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(k=>canon(k)+':'+canon(v[k])).join(',')+'}';
+  throw new Error('type not allowed');
+}
+const canonOk=v=>{try{canon(v);return true}catch(e){return false}};
+const isInt=v=>typeof v==='number'&&Number.isSafeInteger(v);
+const isStr=(v,lo,hi)=>typeof v==='string'&&[...v].length>=lo&&[...v].length<=hi;
+const keysAre=(o,ks)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).sort().join()===ks.slice().sort().join();
+function entryFormatOk(e){
+  return keysAre(e,['index','prev','time','record','hash'])&&isInt(e.index)&&isHex64(e.prev)&&isInt(e.time)&&e.time>=0&&isHex64(e.hash)&&
+    keysAre(e.record,['type','author','body','sig'])&&typeof e.record.type==='string'&&isHex64(e.record.author)&&isHex128(e.record.sig)&&
+    e.record.body&&typeof e.record.body==='object'&&!Array.isArray(e.record.body)&&canonOk(e.record.body);
+}
+function bodyOk(type,b){
+  switch(type){
+    case 'genesis':return keysAre(b,['threshold','comment_seconds'])&&isInt(b.threshold)&&b.threshold>=1&&isInt(b.comment_seconds)&&b.comment_seconds>=0;
+    case 'register_key':return keysAre(b,['public_key','label'])&&isHex64(b.public_key)&&isStr(b.label,1,40);
+    case 'propose':return keysAre(b,['title','text'])&&isStr(b.title,1,120)&&isStr(b.text,1,20000);
+    case 'amend':return keysAre(b,['proposal','title','text'])&&isHex64(b.proposal)&&isStr(b.title,1,120)&&isStr(b.text,1,20000);
+    case 'sign':return keysAre(b,['proposal','version'])&&isHex64(b.proposal)&&isHex64(b.version);
+    case 'comment':return keysAre(b,['proposal','text'])&&isHex64(b.proposal)&&isStr(b.text,1,2000);
+    default:return false;
+  }
+}
+const stateOf=(p,st,now)=>p.sigs.size<st.threshold?'collecting':(now<p.thresholdTime+st.comment_seconds?'comment':'closed');
+// P supplies two primitives, so the same logic runs in a browser and in Node tests:
+//   P.sha256(Uint8Array) -> Promise<Uint8Array>, P.verify(pubHex, Uint8Array message, sigHex) -> Promise<boolean>
+// SPEC section 4.2, rules 2 and 3: a public key must be a canonical encoding and not a point of small order (rule 5, below, adds the prime-order subgroup).
+const P25519=(1n<<255n)-19n;
+const SMALL_ORDER=new Set(['01'+'00'.repeat(31),'ec'+'ff'.repeat(30)+'7f','00'.repeat(32),'00'.repeat(31)+'80','c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a','c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa','26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05','26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85']);
+const keyAllowed=h=>{const b=fromHex(h),sign=b[31]>>7;b[31]&=0x7f;let y=0n;for(let i=31;i>=0;i--)y=(y<<8n)|BigInt(b[i]);if(y>=P25519)return false;if(sign&&(y===1n||y===P25519-1n))return false;return !SMALL_ORDER.has(h)};
+// SPEC section 4.2, rule 5: the key and R must lie in the prime-order subgroup ([L] times the point is the identity).
+// Libraries differ on points with a small-order component, so this check is ours, made after the library says yes.
+const L25519=(1n<<252n)+27742317777372353535851937790883648493n;
+const mod25519=x=>((x%P25519)+P25519)%P25519;
+const powMod=(b,e,m)=>{let r=1n;b%=m;while(e>0n){if(e&1n)r=r*b%m;b=b*b%m;e>>=1n}return r};
+const D25519=mod25519(-121665n)*powMod(121666n,P25519-2n,P25519)%P25519;
+const SQRT_M1=powMod(2n,(P25519-1n)/4n,P25519);
+const decodePoint=h=>{const b=fromHex(h),sign=BigInt(b[31]>>7);b[31]&=0x7f;let y=0n;for(let i=31;i>=0;i--)y=(y<<8n)|BigInt(b[i]);if(y>=P25519)return null;const y2=y*y%P25519,x2=mod25519(y2-1n)*powMod((D25519*y2+1n)%P25519,P25519-2n,P25519)%P25519;if(x2===0n)return sign?null:[0n,y,1n,0n];let x=powMod(x2,(P25519+3n)/8n,P25519);if(x*x%P25519!==x2)x=x*SQRT_M1%P25519;if(x*x%P25519!==x2)return null;if((x&1n)!==sign)x=P25519-x;return [x,y,1n,x*y%P25519]};
+const edAdd=(p,q)=>{const a=mod25519((p[1]-p[0])*(q[1]-q[0])),b=mod25519((p[1]+p[0])*(q[1]+q[0])),c=mod25519(2n*p[3]*q[3]%P25519*D25519),d=mod25519(2n*p[2]*q[2]),e=b-a,f=d-c,g=d+c,h=b+a;return [mod25519(e*f),mod25519(g*h),mod25519(f*g),mod25519(e*h)]};
+const subgroupMemo=new Map();
+const inPrimeSubgroup=h=>{if(subgroupMemo.has(h))return subgroupMemo.get(h);const pt=decodePoint(h);let ok=false;if(pt){let r=[0n,1n,1n,0n],base=pt;for(let s=L25519;s>0n;s>>=1n){if(s&1n)r=edAdd(r,base);base=edAdd(base,base)}ok=r[0]===0n&&mod25519(r[1]-r[2])===0n}if(subgroupMemo.size>4096)subgroupMemo.clear();subgroupMemo.set(h,ok);return ok};
+// The whole signature check: format, the key rules, the browser's (or Node's) own Ed25519, then the subgroup rule.
+const checkSigAsync=async(P,pub,msg,sig)=>{if(!isHex64(pub)||!isHex128(sig)||!keyAllowed(pub))return false;try{return (await P.verify(pub,enc.encode(msg),sig))===true&&inPrimeSubgroup(pub)&&inPrimeSubgroup(sig.slice(0,64))}catch(e){return false}};
+async function verifyLogAsync(log,trusted,P){
+  const sha=async s=>toHex(await P.sha256(enc.encode(s)));
+  const vsig=(pub,msg,sig)=>checkSigAsync(P,pub,msg,sig);
+  const merkle=async hs=>{
+    const leaf=h=>P.sha256(cat(Uint8Array.of(0),fromHex(h)));
+    const go=async(lo,hi)=>{const n=hi-lo;if(n===1)return leaf(hs[lo]);let k=1;while(k*2<n)k*=2;return P.sha256(cat(Uint8Array.of(1),await go(lo,lo+k),await go(lo+k,hi)))};
+    return toHex(await go(0,hs.length));
+  };
+  const recordPayload=r=>canon({type:r.type,author:r.author,body:r.body});
+  const entryHash=e=>sha(canon({index:e.index,prev:e.prev,record:e.record,time:e.time}));
+  const versionHash=(t,x)=>sha(canon({title:t,text:x}));
+  const cpPayload=c=>canon({operator:c.operator,root:c.root,size:c.size,time:c.time});
+  const res={ok:false,integrity_errors:[],rule_errors:[],summary:null};
+  if(!keysAre(log,['format','entries','checkpoints'])||log.format!=='cip-test-log/0'||!Array.isArray(log.entries)||!Array.isArray(log.checkpoints)){
+    res.integrity_errors.push({code:'BAD_FORMAT',where:'log',index:0});return res;
+  }
+  const E=log.entries,IE=res.integrity_errors,RE=res.rule_errors,bad=new Set(),hashes=[],ZERO='0'.repeat(64);
+  async function cpChecks(prefix,c,operator,out,where,index){
+    const err=code=>out.push({code:prefix+code,where,index});
+    if(!keysAre(c,['operator','root','size','time','sig'])||!isHex64(c.operator)||!isHex64(c.root)||!isInt(c.size)||!isInt(c.time)||!isHex128(c.sig))return err('BAD_FORMAT');
+    if(c.operator!==operator)err('WRONG_OPERATOR');
+    if(!await vsig(c.operator,cpPayload(c),c.sig))err('BAD_SIG');
+    const range=c.size<1||c.size>E.length;
+    if(prefix==='CP_'){if(range)return err('BAD_SIZE');if(await merkle(hashes.slice(0,c.size))!==c.root)err('BAD_ROOT')}
+    else{if(range)return err('TRUNCATED');if(await merkle(hashes.slice(0,c.size))!==c.root)err('MISMATCH')}
+  }
+  for(let i=0;i<E.length;i++){
+    const e=E[i],flag=code=>{IE.push({code,where:'entry',index:i});bad.add(i)};
+    if(!entryFormatOk(e)){flag('BAD_FORMAT');hashes.push(ZERO);continue}
+    if(e.index!==i)flag('BAD_INDEX');
+    if(e.prev!==(i?(E[i-1]&&E[i-1].hash):ZERO))flag('BAD_PREV');
+    const h=await entryHash(e);hashes.push(h);
+    if(h!==e.hash)flag('BAD_HASH');
+    if(!await vsig(e.record.author,recordPayload(e.record),e.record.sig))flag('BAD_SIG');
+  }
+  const g=E[0]&&E[0].record&&E[0].record.type==='genesis'&&isHex64(E[0].record.author)?E[0].record.author:null;
+  for(let j=0;j<log.checkpoints.length;j++)await cpChecks('CP_',log.checkpoints[j],g,IE,'checkpoint',j);
+  if(trusted!==undefined)await cpChecks('TRUSTED_',trusted,g,IE,'trusted',0);
+  const keys=new Set(),proposals=new Map(),order=[];let st=null,lastTime=0,comments=0,registered=0;
+  for(let i=0;i<E.length;i++){
+    if(bad.has(i))continue;
+    const e=E[i],err=code=>RE.push({code,where:'entry',index:i}),r=e.record,b=r.body;
+    if(i>0&&E[i-1]&&isInt(E[i-1].time)&&e.time<E[i-1].time)err('TIME_REVERSED');
+    lastTime=e.time;
+    if(i===0){if(r.type!=='genesis')err('NO_GENESIS')}else if(r.type==='genesis'){err('DUPLICATE_GENESIS');continue}
+    if(!bodyOk(r.type,b)){err('BAD_BODY');continue}
+    if(r.type==='genesis'){if(i===0){st={threshold:b.threshold,comment_seconds:b.comment_seconds};keys.add(r.author)}continue}
+    if(!st)continue;
+    if(r.type==='register_key'){
+      if(b.public_key!==r.author){err('SELF_REGISTER_MISMATCH');continue}
+      if(keys.has(b.public_key)){err('DUPLICATE_KEY');continue}
+      if(!b.label.startsWith('test-')){err('BAD_LABEL');continue}
+      keys.add(b.public_key);registered++;continue;
+    }
+    if(!keys.has(r.author)){err('UNREGISTERED_AUTHOR');continue}
+    if(r.type==='propose'){
+      proposals.set(hashes[i],{author:r.author,title:b.title,versions:[await versionHash(b.title,b.text)],sigs:new Set(),thresholdTime:null});
+      order.push(hashes[i]);continue;
+    }
+    const p=proposals.get(b.proposal);
+    if(!p){err('UNKNOWN_PROPOSAL');continue}
+    if(stateOf(p,st,e.time)==='closed'){err('PROPOSAL_CLOSED');continue}
+    if(r.type==='amend'){
+      if(r.author!==p.author){err('NOT_PROPOSER');continue}
+      p.versions.push(await versionHash(b.title,b.text));p.title=b.title;p.sigs=new Set();p.thresholdTime=null;
+    }else if(r.type==='sign'){
+      if(b.version!==p.versions[p.versions.length-1]){err('STALE_VERSION');continue}
+      if(p.sigs.has(r.author)){err('DUPLICATE_SIGNATURE');continue}
+      p.sigs.add(r.author);if(p.sigs.size===st.threshold)p.thresholdTime=e.time;
+    }else if(r.type==='comment')comments++;
+  }
+  if(st)res.summary={entries:E.length,registered,comments,proposals:order.map(id=>{const p=proposals.get(id);
+    return {id,title:p.title,versions:p.versions.length,version:p.versions[p.versions.length-1],signatures:p.sigs.size,state:stateOf(p,st,lastTime)}})};
+  res.ok=IE.length===0&&RE.length===0;
+  return res;
+}
+/*CORE-END*/
+
+/*FLOW-START*/
+// Writes a test log the way prototype/node/cip-log.js does (makeRecord, makeEntries, makeCheckpoint), so the two
+// give the same bytes. Besides P.sha256 and P.verify (above), P supplies the test identities:
+//   P.identity(label) -> Promise<{pub, sign: async msg -> sigHex}>, the key worked out from the label as in cip-log.js.
+// The page plays the operator: an entry or checkpoint is written only if the log with it still passes every check.
+const FLOW_T0=1790900000,OPERATOR='test-operator';
+function newFlow(P){
+  const ZERO='0'.repeat(64),log={format:'cip-test-log/0',entries:[],checkpoints:[]},ids={};
+  let now=FLOW_T0;
+  const sha=async s=>toHex(await P.sha256(enc.encode(s)));
+  const who=async l=>ids[l]||(ids[l]=await P.identity(l));
+  const merkle=async hs=>{
+    const leaf=h=>P.sha256(cat(Uint8Array.of(0),fromHex(h)));
+    const go=async(lo,hi)=>{const n=hi-lo;if(n===1)return leaf(hs[lo]);let k=1;while(k*2<n)k*=2;return P.sha256(cat(Uint8Array.of(1),await go(lo,lo+k),await go(lo+k,hi)))};
+    return toHex(await go(0,hs.length));
+  };
+  async function add(label,type,body){
+    const id=await who(label),r={type,author:id.pub,body};
+    r.sig=await id.sign(canon({type:r.type,author:r.author,body:r.body}));
+    const i=log.entries.length,e={index:i,prev:i?log.entries[i-1].hash:ZERO,time:now,record:r};
+    e.hash=await sha(canon({index:e.index,prev:e.prev,record:e.record,time:e.time}));
+    const result=await verifyLogAsync({format:log.format,entries:log.entries.concat([e]),checkpoints:log.checkpoints},undefined,P);
+    if(result.ok)log.entries.push(e);
+    return {written:result.ok,entry:e,result};
+  }
+  return {
+    log,
+    time:()=>now,
+    wait:s=>{now+=s},
+    labelOf:pub=>Object.keys(ids).find(l=>ids[l].pub===pub)||'',
+    versionHash:(title,text)=>sha(canon({title,text})),
+    start:(threshold,comment_seconds)=>add(OPERATOR,'genesis',{threshold,comment_seconds}),
+    register:async l=>add(l,'register_key',{public_key:(await who(l)).pub,label:l}),
+    propose:(l,title,text)=>add(l,'propose',{title,text}),
+    sign:(l,proposal,version)=>add(l,'sign',{proposal,version}),
+    comment:(l,proposal,text)=>add(l,'comment',{proposal,text}),
+    amend:(l,proposal,title,text)=>add(l,'amend',{proposal,title,text}),
+    async checkpoint(){
+      const op=await who(OPERATOR),E=log.entries,size=E.length;
+      const c={operator:op.pub,root:await merkle(E.map(e=>e.hash)),size,time:E[size-1].time};
+      c.sig=await op.sign(canon({operator:c.operator,root:c.root,size:c.size,time:c.time}));
+      const result=await verifyLogAsync({format:log.format,entries:log.entries,checkpoints:log.checkpoints.concat([c])},undefined,P);
+      if(result.ok)log.checkpoints.push(c);
+      return {written:result.ok,checkpoint:c,result};
+    }
+  };
+}
+// Where the log's first proposal stands at test time t (SPEC section 6, "States"), for a log that passes every check.
+// The verifiers judge it at the time of the last entry instead (SPEC section 7); the two differ only once the
+// clock has moved on with nothing written since.
+function standing(log,t){
+  const E=log.entries,g=E.length&&E[0].record.body,p=E.find(e=>e.record.type==='propose');
+  if(!g||!p)return null;
+  let sigs=new Set(),tt=null,versions=1,title=p.record.body.title;
+  for(const e of E){
+    const r=e.record;
+    if(r.type==='amend'&&r.body.proposal===p.hash){sigs=new Set();tt=null;versions++;title=r.body.title}
+    else if(r.type==='sign'&&r.body.proposal===p.hash){sigs.add(r.author);if(sigs.size===g.threshold)tt=e.time}
+  }
+  const state=sigs.size<g.threshold?'collecting':(t<tt+g.comment_seconds?'comment':'closed');
+  return {id:p.hash,title,state,signatures:sigs.size,threshold:g.threshold,versions,ends:tt===null?null:tt+g.comment_seconds};
+}
+/*FLOW-END*/
+
+/* ---------- page ---------- */
+(function(){
+if(typeof document==='undefined')return;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PKCS8=fromHex('302e020100300506032b657004220420');
+const P={
+  sha256:async b=>new Uint8Array(await crypto.subtle.digest('SHA-256',b)),
+  verify:async(pub,msg,sig)=>{const k=await crypto.subtle.importKey('raw',fromHex(pub),{name:'Ed25519'},false,['verify']);return crypto.subtle.verify({name:'Ed25519'},k,fromHex(sig),msg)},
+  // TEST identities only, as in cip-log.js: the key comes from the label, so anyone can recompute it. Never use for real.
+  identity:async label=>{
+    const seed=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode('cip-test-identity:'+label)));
+    const key=await crypto.subtle.importKey('pkcs8',cat(PKCS8,seed),{name:'Ed25519'},true,['sign']);
+    const x=(await crypto.subtle.exportKey('jwk',key)).x;
+    const pub=toHex(Uint8Array.from(atob(x.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)));
+    return {pub,sign:async m=>toHex(new Uint8Array(await crypto.subtle.sign({name:'Ed25519'},key,enc.encode(m))))};
+  }
+};
+const WHY={
+ BAD_BODY:'A record’s contents do not have the shape its type requires.',
+ DUPLICATE_KEY:'The same key was registered twice.',
+ UNREGISTERED_AUTHOR:'A record was written by a key that was never registered.',
+ UNKNOWN_PROPOSAL:'A record refers to a proposal that does not exist at that point in the log.',
+ PROPOSAL_CLOSED:'A record was added after the proposal’s comment period was over.',
+ NOT_PROPOSER:'Someone other than the proposer tried to amend a proposal.',
+ STALE_VERSION:'A signature was for an old version of a proposal, not its current text.',
+ DUPLICATE_SIGNATURE:'The same person signed the same version twice.'
+};
+const STATE={collecting:'Collecting signatures',comment:'In its comment period',closed:'Comment period over'};
+const fmt=s=>{const m=Math.floor(s/60),r=s%60;return m?m+' min'+(r?' '+r+' s':''):r+' s'};
+let F=null,busy=false,last=null,versions=[],proposal=null,said=null;
+const notes=[]; // a plain description of each entry, written when the entry is
+const reg=()=>F?F.log.entries.filter(e=>e.record.type==='register_key').map(e=>e.record.body.label):[];
+const at=t=>fmt(t-FLOW_T0);
+
+function say(text,good){said={text,good};$('status').textContent=text}
+function where(t){
+  const s=F&&standing(F.log,t);
+  if(!s)return '';
+  if(s.state==='collecting')return s.signatures+' of '+s.threshold+' signatures: collecting signatures.';
+  if(s.state==='comment')return s.signatures+' of '+s.threshold+' signatures: in its comment period until '+at(s.ends)+'.';
+  return 'The comment period ended at '+at(s.ends)+'.';
+}
+// One write: report it, or say why the operator refused it. An integrity error here would be a bug in this page.
+function report(r,who,did,tried,note){
+  const res=r.result;
+  if(res.integrity_errors.length)console.error('This page built an entry that fails an integrity check: '+JSON.stringify(res.integrity_errors));
+  if(r.written){
+    last=res;
+    if(r.entry){notes[r.entry.index]=note||did;say(('Entry '+r.entry.index+' written at '+at(r.entry.time)+': '+who+' '+did+'. '+where(F.time())).trim(),true)}
+    else say('Checkpoint '+(F.log.checkpoints.length-1)+' signed by test-operator over entries 0 to '+(r.checkpoint.size-1)+'.',true);
+  }else{
+    const errs=res.integrity_errors.concat(res.rule_errors);
+    say('Not written: '+who+' tried to '+tried+'. An operator following the rules refuses it. '+errs.map(e=>(WHY[e.code]||'The entry breaks a rule.').replace(/\.$/,'')+' ('+e.code+').').join(' ')+' The log is unchanged.',false);
+  }
+  return r.written;
+}
+function fill(sel,labels){
+  const keep=sel.value;
+  if([...sel.options].map(o=>o.value).join()===labels.join())return;
+  sel.textContent='';
+  labels.forEach(l=>sel.add(new Option(l,l)));
+  if(labels.includes(keep))sel.value=keep;
+}
+function refresh(){
+  const on=!!(F&&F.log.entries.length),r=reg(),hasP=!!proposal,cps=on?F.log.checkpoints:[];
+  $('start').textContent=on?'Start again with a new test log':'Start a new test log';
+  document.querySelectorAll('[data-wait]').forEach(b=>{b.disabled=!on});
+  document.querySelectorAll('[data-reg]').forEach(b=>{const done=r.includes(b.dataset.reg);b.disabled=!on||done;b.textContent=done?b.dataset.reg+' is registered':'Register '+b.dataset.reg});
+  fill($('proposer'),r);fill($('actor'),r);
+  ['proposer','title','text','propose'].forEach(id=>{$(id).disabled=!on||hasP||!r.length});
+  ['actor','sign','signold','comment','post','ntitle','ntext','amend'].forEach(id=>{$(id).disabled=!hasP});
+  $('signold').hidden=versions.length<2;
+  $('checkpoint').disabled=!on||(cps.length>0&&cps[cps.length-1].size===F.log.entries.length);
+  $('dl').disabled=!on;$('dlcp').disabled=!cps.length;
+}
+function render(){
+  const on=!!(F&&F.log.entries.length);
+  $('clock').textContent=on?'Test time: '+at(F.time())+' after the log started.':'The clock starts with the log.';
+  let h='';
+  if(said)h+='<div class="'+(said.good?'verdict':'err')+'"><span class="sr">Last step: </span>'+esc(said.text)+'</div>';
+  if(on){
+    const s=last.summary,g=F.log.entries[0].record.body,cps=F.log.checkpoints.length;
+    h+=last.ok
+      ?'<div class="verdict"><span class="tag">Check</span><strong>The log passes every check.</strong> The page checked all '+s.entries+' entries and '+cps+' checkpoint'+(cps===1?'':'s')+' with the same code as the log viewer.</div>'
+      :'<div class="verdict bad"><span class="tag">Check</span><strong>The log fails a check.</strong> This should not happen; please report it.</div>';
+    h+='<ul class="facts"><li>Test time: '+esc(at(F.time()))+'</li><li>Signatures needed: '+g.threshold+'</li><li>Comment period: '+esc(fmt(g.comment_seconds))+'</li><li>Test identities registered: '+s.registered+'</li><li>Comments: '+s.comments+'</li></ul>';
+    const now=standing(F.log,F.time());
+    if(!now)h+='<p class="empty">No proposal yet.</p>';
+    else{
+      const when=now.state==='comment'?' until '+at(now.ends)+' ('+fmt(now.ends-F.time())+' left)':now.state==='closed'?' (it ended at '+at(now.ends)+')':'';
+      h+='<table><caption>The proposal at test time '+esc(at(F.time()))+'</caption><tbody>'+
+        '<tr><th scope="row">Title</th><td>'+esc(now.title)+'</td></tr>'+
+        '<tr><th scope="row">Where it stands</th><td>'+STATE[now.state]+esc(when)+'</td></tr>'+
+        '<tr><th scope="row">Signatures on the current text</th><td>'+now.signatures+' of '+now.threshold+'</td></tr>'+
+        '<tr><th scope="row">Versions</th><td>'+now.versions+'</td></tr></tbody></table>';
+      if(now.state==='closed')h+='<p class="note">In the paper, a vote would come next. Voting is not part of this prototype (it is Phase 4).</p>';
+      const lastE=F.log.entries[F.log.entries.length-1],then=standing(F.log,lastE.time);
+      if(then.state!==now.state)h+='<p class="note">The log viewer judges a proposal at the time of the log’s last entry (SPEC section 7), which is '+esc(at(lastE.time))+'. At that time it was: '+STATE[then.state]+'.</p>';
+    }
+  }
+  $('out').innerHTML=h||'<p class="empty">No test log yet. Choose the settings and start one.</p>';
+  if(!on){$('entries').innerHTML='<p class="empty">No entries yet.</p>';return}
+  let t='<div class="scroll" tabindex="0" role="region" aria-label="Log entries"><table class="wide"><caption>'+F.log.entries.length+' entries, oldest first</caption><thead><tr><th scope="col" class="num">Entry</th><th scope="col" class="num">Test time</th><th scope="col">Who</th><th scope="col">What happened</th></tr></thead><tbody>';
+  F.log.entries.forEach((e,i)=>{t+='<tr><td class="num">'+i+'</td><td class="num">'+esc(at(e.time))+'</td><td>'+esc(F.labelOf(e.record.author))+'</td><td>'+esc(notes[i]||'')+'</td></tr>'});
+  t+='</tbody></table></div>';
+  const cps=F.log.checkpoints;
+  t+=cps.length?'<h3>Checkpoints</h3><ul>'+cps.map((c,j)=>'<li>Checkpoint '+j+': signed by test-operator at '+esc(at(c.time))+', covering entries 0 to '+(c.size-1)+'.</li>').join('')+'</ul>':'<p class="note">No checkpoints yet.</p>';
+  $('entries').innerHTML=t;
+}
+// Runs one step. Steps never overlap, and every step ends with the page redrawn. If the step disabled or hid the
+// control that started it, focus moves to the control a keyboard user most likely wants next.
+async function step(btn,work,next){
+  if(busy)return;
+  busy=true;
+  try{await work()}catch(e){console.error(e);say('Something went wrong: '+e.message,false)}
+  busy=false;
+  refresh();render();
+  if(btn&&(btn.disabled||btn.hidden)&&next){const n=next();if(n)n.focus()}
+}
+const actor=()=>$('actor').value;
+const current=()=>versions[versions.length-1].hash;
+
+$('start').addEventListener('click',e=>step(e.currentTarget,async()=>{
+  F=newFlow(P);last=null;versions=[];proposal=null;notes.length=0;said=null;
+  const thr=+$('threshold').value,cs=+$('period').value;
+  report(await F.start(thr,cs),'test-operator','started the test log','start the log','Started the test log: '+thr+' signature'+(thr===1?'':'s')+' needed, comment period '+fmt(cs)+'.');
+}));
+document.querySelectorAll('[data-wait]').forEach(b=>b.addEventListener('click',()=>step(b,async()=>{
+  F.wait(+b.dataset.wait);
+  say(('Test clock moved forward to '+at(F.time())+'. '+where(F.time())).trim(),true);
+})));
+document.querySelectorAll('[data-reg]').forEach(b=>b.addEventListener('click',()=>step(b,async()=>{
+  const l=b.dataset.reg;
+  report(await F.register(l),l,'registered their test key','register their test key');
+},()=>document.querySelector('[data-reg]:not(:disabled)')||(proposal?$('actor'):$('proposer')))));
+$('propose').addEventListener('click',e=>step(e.currentTarget,async()=>{
+  const who=$('proposer').value,title=$('title').value,text=$('text').value;
+  if(!title||!text){say('Write a title and a text first.',false);return}
+  const r=await F.propose(who,title,text);
+  if(report(r,who,'filed the proposal','file the proposal','Filed the proposal “'+title+'” (version 1).')){
+    proposal=r.entry.hash;versions=[{title,text,hash:await F.versionHash(title,text)}];
+    $('ntitle').value=title;$('ntext').value=text;$('actor').value=who;
+  }
+},()=>$('actor')));
+$('sign').addEventListener('click',e=>step(e.currentTarget,async()=>{
+  const who=actor();
+  report(await F.sign(who,proposal,current()),who,'signed the current text','sign the current text','Signed version '+versions.length+'.');
+}));
+$('signold').addEventListener('click',e=>step(e.currentTarget,async()=>{
+  const who=actor(),n=versions.length-1;
+  report(await F.sign(who,proposal,versions[n-1].hash),who,'signed the earlier text','sign the earlier text (version '+n+')','Signed version '+n+'.');
+}));
+$('post').addEventListener('click',e=>step(e.currentTarget,async()=>{
+  const who=actor(),text=$('comment').value;
+  if(!text){say('Write a comment first.',false);return}
+  report(await F.comment(who,proposal,text),who,'posted a comment','post a comment','Commented: “'+(text.length>140?text.slice(0,140)+'…':text)+'”');
+}));
+$('amend').addEventListener('click',e=>step(e.currentTarget,async()=>{
+  const who=actor(),title=$('ntitle').value,text=$('ntext').value;
+  if(!title||!text){say('Write a new title and text first.',false);return}
+  const n=versions.length+1;
+  if(report(await F.amend(who,proposal,title,text),who,'amended the proposal','amend the proposal','Amended the proposal (version '+n+'). Signatures on earlier versions no longer count.')){
+    versions.push({title,text,hash:await F.versionHash(title,text)});
+  }
+}));
+$('checkpoint').addEventListener('click',e=>step(e.currentTarget,async()=>{
+  report(await F.checkpoint(),'test-operator','','sign a checkpoint');
+},()=>$('dl')));
+// A download is a file the person asked for, made in the page; nothing is sent anywhere.
+function save(name,obj){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,1)+'\n'],{type:'application/json'}));
+  a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+$('dl').addEventListener('click',e=>step(e.currentTarget,async()=>{
+  save('cip-test-log.json',F.log);
+  say('Downloaded cip-test-log.json ('+F.log.entries.length+' entries). Open the log viewer and choose that file to check it again.',true);
+}));
+$('dlcp').addEventListener('click',e=>step(e.currentTarget,async()=>{
+  const cps=F.log.checkpoints;
+  save('cip-test-checkpoint.json',cps[cps.length-1]);
+  say('Downloaded cip-test-checkpoint.json (checkpoint '+(cps.length-1)+'). In the log viewer, choose it as the saved checkpoint.',true);
+}));
+refresh();
+(async()=>{
+  try{await P.identity(OPERATOR)}
+  catch(e){$('unsupported').hidden=false;$('start').disabled=true}
+})();
+})();
+</script>
+</body>
+</html>
