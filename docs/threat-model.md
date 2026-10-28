@@ -58,13 +58,13 @@ The paper names the classic risk: if attackers control more than half the nodes,
 
 ## Inconsistencies in the paper (tracked as issues)
 
-- **Oversight body size.** A 7-member board appears in §5.4 and Appendix A.3, with a 5-of-7 supermajority in A.3. A "6/9" supermajority and tripartite appointment appear in §8.3.2 and §9.6. These need to be reconciled.
+- **Oversight body size.** A 7-member board appears in §5.4 and Appendix A.3, with a 5-of-7 supermajority in A.3. A "6/9" supermajority appears in §8.3.2, and tripartite appointment in §8.3.2 and §9.6. These need to be reconciled.
 - **Telemetry versus privacy.** Draft policy in [data-collection.md](data-collection.md).
 - **Halt-power limits.** The Judicial Guard override (§4.2.3) has no stated limits; draft limits in [halt-power.md](halt-power.md).
 
 ## Notes on thresholds
 
-- The **1,000-signature threshold for initiating a proposal** is an accepted starting point taken from the author's earlier Medium article. It may change, so keep this caveat wherever the number appears.
+- The **1,000-signature threshold for initiating a proposal** is an accepted starting point: the example in paper §4.4.1, also used in the author's earlier Medium article. It may change, so keep this caveat wherever the number appears.
 - Appendix A.5 (citizen grand juries) uses a separate pair of figures (1,000 versus 5,000 signatures) for citizen grand jury cases. That is a different mechanism from proposal initiation.
 
 ## Malicious contributions
