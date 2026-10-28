@@ -31,6 +31,10 @@ Phases 1 and 2 are the best places to start.
 2. Pick an open issue (starter ideas are in `docs/good-first-issues.md`), or propose one.
 3. Fork, make a small change, open a pull request. Short pull requests get reviewed fastest.
 
+## Checking the pages
+
+Every page is checked in a browser by [tests/pages.test.py](tests/pages.test.py), in light and dark: no requests off the local server, no serious or critical accessibility findings from axe-core, every control reachable by Tab with visible focus and no Tab traps, no console errors after clicking the buttons, and no broken relative links. How to run it is at the top of the file. It is an automated check only; testing by people who use a screen reader is still needed.
+
 ## Pull request safety
 
 Every pull request is checked automatically by the PR guard ([tests/pr-guard.js](tests/pr-guard.js)). It reads the changed files as data and never runs them. It fails, with a plain-English reason, when a pull request:
